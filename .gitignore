@@ -8,3 +8,5 @@ voice-trial/list.json
 .DS_Store
 node_modules/
 *.log
+# Local Claude Code session files
+.claude/
