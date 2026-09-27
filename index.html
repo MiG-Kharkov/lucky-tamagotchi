@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <!-- Только собственные файлы игры: никаких чужих скриптов, запросов и встраиваний -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
+  <meta name="referrer" content="no-referrer">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <title>Лаки</title>
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Лаки">
+  <meta name="theme-color" content="#FFE3F0">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="top" id="top">
+      <button class="lvl" id="lvlCard">
+        <span class="lvl-top"><span class="lvl-badge">💗 <small id="lvlLabel">Ур.</small> <b id="lvlNum">1</b></span><span class="plan" id="plan"></span></span>
+        <div class="bar"><i id="lvlBar"></i></div>
+      </button>
+      <button class="belt-chip" id="beltChip" aria-label="belt"></button>
+      <span class="turbo-badge" id="turboBadge" hidden>TURBO</span>
+      <button class="icon-btn" id="sleepBtn" aria-label="sleep">🌙</button>
+      <button class="icon-btn gear" id="gearBtn" aria-label="parents">⚙️</button>
+    </header>
+    <section class="stats" id="stats"></section>
+    <main class="scene" id="scene">
+      <div class="bg" id="bg"></div>
+      <div class="dusk"></div>
+      <button class="word-btn" id="wordBtn" aria-label="phrase">💬</button>
+      <button class="word-btn edit-btn" id="editBtn" aria-label="decorate">✏️</button>
+      <div class="edit-tools" id="editTools" hidden><button data-a="minus">➖</button><button data-a="plus">➕</button><button data-a="flip">↔️</button><button data-a="del">🗑️</button></div>
+      <div class="decor" id="decor"></div>
+      <div class="bubble" id="bubble"></div>
+      <div class="choices" id="choices" hidden></div>
+      <div class="dog" id="dog"></div>
+      <div class="lucky" id="lucky"></div>
+      <div class="decor decor-front" id="decorFront"></div>
+      <div class="fx" id="fx"></div>
+    </main>
+    <nav class="actions" id="actions"></nav>
+    <nav class="tray" id="tray" hidden></nav>
+  </div>
+  <div class="sheet-wrap" id="sheetWrap"><div class="sheet" id="sheet"></div></div>
+  <div class="overlay" id="overlay"></div>
+  <div class="modal" id="modal"></div>
+  <div class="toast" id="toast"></div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

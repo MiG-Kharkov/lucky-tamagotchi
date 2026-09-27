@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Выбор голосов</title>
+  <style>
+    :root { --pink: #FF5FA2; --pink-d: #E23D86; --purple: #8B6CFF; --ink: #4A2B4F; --muted: #9A7C9E; font-family: ui-rounded, -apple-system, system-ui, sans-serif; color: var(--ink); }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin: 0; background: #FFE3F0; padding: calc(env(safe-area-inset-top) + 12px) 16px 40px; }
+    h1 { font-size: 24px; margin: 4px 0 4px; }
+    .note { color: var(--muted); font-size: 14px; line-height: 1.4; margin: 0 0 14px; }
+    h2 { font-size: 20px; margin: 22px 0 8px; }
+    .pitch { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; background: #fff; border-radius: 16px; padding: 10px 12px; box-shadow: 0 4px 14px #a03c7822; }
+    .pitch span { font-weight: 700; margin-right: 4px; }
+    .pitch button { border: 0; border-radius: 12px; padding: 8px 12px; font: inherit; font-weight: 800; background: #F4ECF7; color: var(--ink); }
+    .pitch button.on { background: var(--pink); color: #fff; }
+    .card { background: #fff; border-radius: 20px; padding: 12px 14px; margin-top: 10px; box-shadow: 0 4px 14px #a03c7822; }
+    .card h3 { margin: 0 0 8px; font-size: 18px; display: flex; justify-content: space-between; align-items: baseline; }
+    .card h3 small { color: var(--muted); font-weight: 600; font-size: 13px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; align-items: center; }
+    .flag { font-size: 11px; font-weight: 800; color: #fff; background: var(--purple); border-radius: 8px; padding: 3px 6px; }
+    .play { border: 0; border-radius: 14px; padding: 9px 12px; font: inherit; font-size: 14px; font-weight: 700; background: #FFF0F7; color: var(--pink-d); text-align: left; }
+    .play.now { background: var(--pink); color: #fff; }
+    .all { border: 0; border-radius: 14px; padding: 9px 14px; font: inherit; font-weight: 800; background: var(--purple); color: #fff; }
+  </style>
+</head>
+<body>
+  <h1>🎧 Выбор голосов</h1>
+  <p class="note">Послушай варианты и напиши, какой голос нравится для Лаки и какой для Тали, и какую высоту выбрать. Если звука нет, проверь переключатель беззвучного режима сбоку на iPhone.</p>
+  <div id="root"></div>
+<script>
+const CH = {
+  lucky: { title: '🐰 Лаки', pitch: 1.1 },
+  dog: { title: '🐶 Тали', pitch: 1.25 },
+};
+const PITCHES = [1, 1.1, 1.2, 1.3, 1.4];
+let ctx, current;
+const cache = {};
+
+async function play(file, rate, btn) {
+  ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
+  if (ctx.state === 'suspended') await ctx.resume();
+  if (current) { try { current.stop(); } catch {} }
+  document.querySelectorAll('.play.now').forEach((b) => b.classList.remove('now'));
+  if (!cache[file]) cache[file] = await fetch(file).then((r) => r.arrayBuffer()).then((b) => new Promise((ok, err) => ctx.decodeAudioData(b, ok, err)));
+  const src = ctx.createBufferSource();
+  src.buffer = cache[file];
+  src.playbackRate.value = rate;
+  src.connect(ctx.destination);
+  src.start();
+  current = src;
+  btn?.classList.add('now');
+  return new Promise((ok) => { src.onended = () => { btn?.classList.remove('now'); ok(); }; });
+}
+
+fetch('list.json').then((r) => r.json()).then((list) => {
+  const root = document.getElementById('root');
+  for (const who of Object.keys(CH)) {
+    const voices = [...new Set(list.filter((x) => x.who === who).map((x) => x.voice))];
+    const sec = document.createElement('section');
+    sec.innerHTML = `<h2>${CH[who].title}</h2>
+      <div class="pitch"><span>Высота:</span>${PITCHES.map((p) => `<button data-p="${p}" class="${p === CH[who].pitch ? 'on' : ''}">${p === 1 ? 'обычная' : '×' + p}</button>`).join('')}</div>
+      ${voices.map((v, i) => `<div class="card"><h3>Вариант ${'ABCD'[i]} <small>${v}</small></h3>
+        ${['ru', 'en'].map((lang) => `<div class="row"><span class="flag">${lang.toUpperCase()}</span>
+          ${list.filter((x) => x.who === who && x.voice === v && x.lang === lang).map((x) => `<button class="play" data-f="${x.file}">▶︎ ${x.text}</button>`).join('')}</div>`).join('')}
+        <div class="row"><button class="all" data-v="${v}">▶︎ Всё подряд</button></div></div>`).join('')}`;
+    root.appendChild(sec);
+    sec.querySelectorAll('.pitch button').forEach((b) => b.onclick = () => {
+      CH[who].pitch = Number(b.dataset.p);
+      sec.querySelectorAll('.pitch button').forEach((x) => x.classList.toggle('on', x === b));
+    });
+    sec.querySelectorAll('.play').forEach((b) => b.onclick = () => play(b.dataset.f, CH[who].pitch, b));
+    sec.querySelectorAll('.all').forEach((b) => b.onclick = async () => {
+      for (const btn of sec.querySelectorAll(`.card .play`)) {
+        if (!btn.dataset.f.includes(`-${b.dataset.v}-`)) continue;
+        await play(btn.dataset.f, CH[who].pitch, btn);
+        await new Promise((r) => setTimeout(r, 350));
+      }
+    });
+  }
+});
+</script>
+</body>
+</html>

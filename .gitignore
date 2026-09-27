@@ -1,0 +1,10 @@
+# Secrets: the Google Text-to-Speech key lives only here
+.env
+.env.*
+# Voice trial clips (regenerate with tools/voice-trial.mjs)
+voice-trial/*.mp3
+voice-trial/list.json
+# System and tooling
+.DS_Store
+node_modules/
+*.log
