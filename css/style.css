@@ -971,3 +971,9 @@ body:not(.editing) .dec-rainbow { pointer-events: none; }
 @keyframes stampIn { from { transform: scale(2.4) rotate(-30deg); opacity: 0; } }
 .stamp-card .skill-up { font-weight: 800; color: var(--pink-d); }
 .stamp-card .dots { justify-content: center; margin: 6px 0 12px; }
+
+/* ---------- parent password ---------- */
+.pw-row { display: flex; gap: 6px; align-items: center; }
+.pw-row .pw-new { flex: 1; min-width: 0; border: 0; background: #F4ECF7; border-radius: 14px; padding: 12px; font-size: 17px; }
+.pw-row .btn { flex: none; padding: 11px 14px; }
+.pw-change .pw-err:empty { display: none; }

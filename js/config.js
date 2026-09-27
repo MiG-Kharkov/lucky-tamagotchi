@@ -4,4 +4,8 @@
 export const CONFIG = {
   child: { en: 'Liza', ru: 'Лиза' },
   dog: { en: 'Tali', ru: 'Тали' },
+  // Parents' area. The default password works until a parent sets their own inside the parents' area.
+  // The recovery password always works: it's written in the README for when the parent's password is forgotten.
+  // Both are case-insensitive.
+  parent: { password: 'mango42', recovery: 'carrot-rescue-2026' },
 };

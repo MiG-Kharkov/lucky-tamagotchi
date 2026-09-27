@@ -101,18 +101,16 @@ export function wipe() {
   try { localStorage.removeItem(KEY); localStorage.removeItem(SNAP); } catch { /* ignore */ }
 }
 
-// Parent password: hash only, on this device only (kept by Start over)
-const PARENT = 'lucky-parent-v1';
-// { hash: password, rec: recovery code }, hashes only, on this device only
-export function parentData() {
-  try {
-    const raw = localStorage.getItem(PARENT);
-    if (!raw) return {};
-    const d = JSON.parse(raw);
-    return typeof d === 'number' ? { hash: d } : d;
-  } catch { return {}; }
+// The parent's own password, set in the parents' area: its hash only, on this device only (kept by Start over).
+// Without it the default password from config.js works.
+const PARENT = 'lucky-parent-v2';
+// The old per-device password (v1) was created by whoever opened the parents' area first, which could be the child.
+// It is dropped, so the default and recovery passwords work again.
+try { localStorage.removeItem('lucky-parent-v1'); } catch { /* ignore */ }
+export function parentHash() {
+  try { return JSON.parse(localStorage.getItem(PARENT))?.hash ?? null; } catch { return null; }
 }
-export function setParentData(d) { try { localStorage.setItem(PARENT, JSON.stringify(d)); } catch { /* ignore */ } }
+export function setParentHash(h) { try { localStorage.setItem(PARENT, JSON.stringify({ hash: h })); } catch { /* ignore */ } }
 
 // Turbo mode: save progress before switching on, restore it when switching off
 export function snapshot(S) {

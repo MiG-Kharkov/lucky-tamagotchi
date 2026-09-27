@@ -111,7 +111,7 @@ and a step towards the next belt (3 stamps per belt).
 
 ## Parents' area
 
-⚙️ → password (created on the device on first use, with a one-time recovery code). Inside: session length,
+⚙️ → password (a default one until the parent sets their own inside; the recovery password from the README always works). Inside: session length,
 rest time, games per day, daily limit, bedtime, wake-up time, sound, voice, translation, "we have a real bunny",
-today's stats and mood, Wake Lucky (also cancels the rest of the night), invite Tali, sound test,
+today's stats and mood, change the parent password, Wake Lucky (also cancels the rest of the night), invite Tali, sound test,
 **Standard / Turbo**, and Start over (double confirmation).

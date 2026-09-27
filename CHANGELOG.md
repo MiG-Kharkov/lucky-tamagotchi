@@ -3,6 +3,15 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.3.0] – 2026-09-27
+
+### Changed
+- **Parent password, simpler and safer:** the parents' area opens with a default password until a parent sets their own
+  inside (no need to repeat the old one). A recovery password, written in the README, always works.
+  The one-time recovery code is gone.
+- The password created on first open by earlier versions is removed on update: the child could have created it
+  by opening ⚙️ first. After the update the default password works until you set your own.
+
 ## [1.2.0] – 2026-09-27
 
 ### Added
@@ -66,6 +75,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.3.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.0.0...v1.1.0

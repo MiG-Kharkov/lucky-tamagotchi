@@ -117,28 +117,21 @@ All limits can be changed in the password-protected **parents' area** (⚙️).
 <details>
 <summary><b>🔒 The parents' area and its password (and what if you forget it)</b></summary>
 
-**Setting it up**
-1. The first time you tap ⚙️, you **create a parent password** on that phone.
-   It is stored only on that device as a hash. It is never in the code or online.
-2. Right after that, Lucky shows a **recovery code** once, like `K7QM-4XPA`.
-   **Write it on paper or take a photo with *your* phone.** Don't screenshot it on the child's phone,
-   because they could find it in Photos.
+**The password**
+1. Out of the box, ⚙️ opens with the default password **`mango42`**.
+2. Inside the parents' area, under **Parent password**, type your own and tap **Save**
+   (no need to repeat the old one). From then on the default no longer works.
+   Your password is stored only on that phone, as a hash.
+3. Capital letters and spaces around the password don't matter.
 
-**Forgot the password?**
-1. Tap ⚙️ → **Forgot the password?**
-2. Enter the recovery code (capital letters and the dash don't matter).
-3. Create a new password. You get a new recovery code, and **game progress is kept**.
+**Forgot your password?**
+Enter the **recovery password** instead: **`carrot-rescue-2026`**. It always works and keeps all progress.
+Then set a new password inside.
 
-**Lost the recovery code too?**
-There is deliberately **no way to reset the password inside the game** without the code,
-so a child can't take over the settings. The only way is to delete the game's data on the phone,
-which **also erases the game progress**:
-- Home Screen app: delete the Lucky icon, then add it again from Safari.
-- In Safari: Settings → Apps → Safari → Advanced → Website Data → `mig-kharkov.github.io` → Delete.
-
-> [!TIP]
-> With Screen Time web restrictions on (see above), iOS usually greys out *Clear History and Website Data*,
-> so the child can't wipe the game themselves. You can also block deleting apps in Screen Time.
+> [!NOTE]
+> Both passwords are written here on purpose, so a parent can always get in. Anyone who reads this page could use them
+> too, so set your own password right after installing. If you publish your own copy, change them in
+> [`js/config.js`](js/config.js).
 
 **Inside the parents' area:** session length, rest time, bedtime, games per day, daily limit, sound, translation.
 **Turbo** mode unlocks everything for testing and showing; your real progress comes back when you switch it off.
@@ -152,7 +145,7 @@ no build step, no frameworks.
 
 | I want to change… | Where |
 |---|---|
-| 👧 The child's and the dog's names | [`js/config.js`](js/config.js) |
+| 👧 The child's and the dog's names, the default and recovery parent passwords | [`js/config.js`](js/config.js) |
 | 💬 What Lucky says | [`js/i18n.js`](js/i18n.js) (lines, jokes, facts) and [`js/dialogs.js`](js/dialogs.js) (questions, stories, frog riddles) |
 | 👗 Outfits | [`js/wardrobe.js`](js/wardrobe.js), each item is a small SVG drawing |
 | 🌍 Worlds, decorations, stickers, badges | [`js/content.js`](js/content.js) and [`js/art.js`](js/art.js) |

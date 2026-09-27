@@ -5,6 +5,7 @@ import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
+import { CONFIG } from './config.js';
 import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
@@ -1925,10 +1926,15 @@ function askBed() {
 
 // ---------- parents ----------
 
-// Password-protected parents' area. The password is created on each device on first use;
-// only its hash is stored, only on that phone. There is no password in the code.
+// Password-protected parents' area. A default password works until the parent sets their own inside;
+// the recovery password from the README always works (config.js). Only the hash of the parent's own password
+// is stored, only on this phone.
 let adminUntil = 0;
 const pwHash = (v) => st.hash(v.trim().toLowerCase());
+const passwordOk = (v) => {
+  const h = pwHash(v);
+  return h === (st.parentHash() ?? pwHash(CONFIG.parent.password)) || h === pwHash(CONFIG.parent.recovery);
+};
 
 function bindParentGear(btn) {
   btn.addEventListener('click', () => { sfx.tap(); askPassword(); });
@@ -1948,48 +1954,8 @@ function pwCard(host, text, fields, onOk, done) {
   host.querySelector('.pw-cancel').onclick = () => { sfx.tap(); done(); };
 }
 
-// Recovery code: 8 characters without look-alikes (O/0, I/1)
-function recoveryCode() {
-  const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  const r = crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(8)) : Array.from({ length: 8 }, () => Math.random() * 1e9);
-  const c = Array.from(r, (x) => A[x % A.length]).join('');
-  return c.slice(0, 4) + '-' + c.slice(4);
-}
-const recHash = (v) => st.hash(v.replace(/[^a-z0-9]/gi, '').toUpperCase());
-
 function fmtDateTime(t) {
   return new Date(t).toLocaleString(S.lang === 'ru' ? 'ru-RU' : 'en-IE', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
-}
-
-// New password, then show the recovery code
-function createPassword(host, done, note = '') {
-  pwCard(host, (note ? note + '<br>' : '') + tr('pwNew'), ['•••••', tr('pwRepeat')], ([a, b], err) => {
-    if (a.trim().length < 4) return err(tr('pwShort'));
-    if (a.trim().toLowerCase() !== b.trim().toLowerCase()) return err(tr('pwMismatch'));
-    const code = recoveryCode();
-    st.setParentData({ hash: pwHash(a), rec: recHash(code) });
-    adminUntil = Date.now() + 10 * 60e3;
-    host.innerHTML = `<div class="modal-card pw-card"><h2>🔑 ${tr('pwRecTitle')}</h2><div class="rec-code">${code}</div><p>${tr('pwRecText')}</p>
-      <div class="m-btns"><button class="btn pink rec-ok">${tr('pwRecSaved')}</button></div></div>`;
-    host.querySelector('.rec-ok').onclick = () => { sfx.tap(); toast('🔒 ' + tr('pwSaved'), 2000); done(); openParent(); };
-  }, done);
-}
-
-// Forgot the password: it can only be reset with the parent's recovery code.
-// No code, no reset (otherwise a child could take over the settings); the last resort is described in the README.
-function forgotPassword(host, done) {
-  pwCard(host, tr('pwRecEnter'), ['XXXX-XXXX'], ([code], err) => {
-    if (recHash(code) !== st.parentData().rec) return err(tr('pwRecBad'));
-    createPassword(host, done);
-  }, done);
-  const row = host.querySelector('.m-btns');
-  row.insertAdjacentHTML('beforeend', `<button class="btn ghost pw-nocode">${tr('pwNoCode')}</button>`);
-  row.querySelector('.pw-nocode').onclick = () => {
-    sfx.tap();
-    host.innerHTML = `<div class="modal-card pw-card"><h2>🔒 ${tr('pwForgot')}</h2><p>${tr('pwNoCodeText')}</p>
-      <div class="m-btns"><button class="btn pink nocode-ok">${tr('close')}</button></div></div>`;
-    host.querySelector('.nocode-ok').onclick = () => { sfx.tap(); done(); };
-  };
 }
 
 let pwOpen = false;
@@ -1997,18 +1963,25 @@ function askPassword() {
   if (Date.now() < adminUntil) return openParent();
   if (pwOpen) return;
   pwOpen = true;
-  const d = st.parentData();
   showModal({ cls: '', custom: (host, doneModal) => {
     const done = () => { pwOpen = false; doneModal(); };
-    if (!d.hash) return createPassword(host, done);
-    pwCard(host, tr('pwHint'), [''], ([a], err) => {
-      if (pwHash(a) !== d.hash) return err('');
-      adminUntil = Date.now() + 10 * 60e3;
-      done();
-      openParent();
-    }, done);
-    host.querySelector('.m-btns').insertAdjacentHTML('afterend', `<button class="btn ghost pw-forgot">${tr('pwForgot')}</button>`);
-    host.querySelector('.pw-forgot').onclick = () => { sfx.tap(); forgotPassword(host, done); };
+    const ask = () => {
+      pwCard(host, tr('pwHint'), [''], ([a], err) => {
+        if (!passwordOk(a)) return err('');
+        adminUntil = Date.now() + 10 * 60e3;
+        done();
+        openParent();
+      }, done);
+      host.querySelector('.m-btns').insertAdjacentHTML('afterend', `<button class="btn ghost pw-forgot">${tr('pwForgot')}</button>`);
+      // Forgot it: the recovery password from the README opens the area, then a new password can be set there
+      host.querySelector('.pw-forgot').onclick = () => {
+        sfx.tap();
+        host.innerHTML = `<div class="modal-card pw-card"><h2>🔒 ${tr('pwForgot')}</h2><p>${tr('pwForgotText')}</p>
+          <div class="m-btns"><button class="btn pink pw-back">${tr('pwOk')}</button></div></div>`;
+        host.querySelector('.pw-back').onclick = () => { sfx.tap(); ask(); };
+      };
+    };
+    ask();
   } });
 }
 
@@ -2080,6 +2053,12 @@ function openParent() {
       <p class="muted">${turbo() ? tr('turboNote') : tr('stdNote')}</p>
       ${turbo() ? `<div class="tools">${TURBO_TOOLS.map(([id, e]) => `<button class="tool" data-t="${id}"><span>${e}</span>${tr('tool_' + id)}</button>`).join('')}</div>` : ''}
     </div>
+    <div class="card pw-change"><div class="card-title">🔒 ${tr('pwChangeTitle')}</div>
+      ${st.parentHash() ? '' : `<p class="muted">${tr('pwDefaultNote')}</p>`}
+      <div class="pw-row"><input type="password" class="pw-new" placeholder="${tr('pwNewPh')}" autocomplete="off" autocapitalize="none" spellcheck="false" enterkeyhint="done">
+        <button class="btn ghost pw-eye" aria-label="show">👁</button><button class="btn pink pw-save">${tr('pwSave')}</button></div>
+      <p class="pw-err"></p>
+    </div>
     <div class="card sound-test"><div class="row wrap" style="margin:0"><button class="btn purple test-sound">🔊 ${tr('testSound')}</button></div><p class="muted sound-status"></p></div>
     <div class="row wrap">
       <button class="btn purple wake">⏰ ${tr('wakeLucky')}</button>
@@ -2114,6 +2093,18 @@ function openParent() {
     showStatus();
     root.querySelector('.test-sound').onclick = () => { testSound(say2(LUCKY.greet[2], 'en')); setTimeout(showStatus, 600); setTimeout(showStatus, 2000); };
     root.querySelector('.reset').onclick = () => { sfx.tap(); closeSheet(); resetAll(); };
+    // a new parent password: no need for the old one, the parent is already inside
+    const pwIn = root.querySelector('.pw-new'), pwErr = root.querySelector('.pw-change .pw-err');
+    root.querySelector('.pw-eye').onclick = () => { pwIn.type = pwIn.type === 'password' ? 'text' : 'password'; };
+    const savePw = () => {
+      if (pwIn.value.trim().length < 4) { pwErr.textContent = tr('pwShort'); hop(pwIn, 'shake'); return; }
+      st.setParentHash(pwHash(pwIn.value));
+      sfx.happy();
+      toast('🔒 ' + tr('pwSaved'), 2500);
+      openParent();
+    };
+    root.querySelector('.pw-save').onclick = savePw;
+    pwIn.onkeydown = (e) => { if (e.key === 'Enter') savePw(); };
     root.querySelectorAll('.mode-tabs .tab').forEach((b) => {
       b.onclick = () => { if ((b.dataset.m === 'turbo') !== turbo()) { sfx.tap(); closeSheet(); setTurbo(b.dataset.m === 'turbo'); } };
     });

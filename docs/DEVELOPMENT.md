@@ -94,9 +94,11 @@ Tali is **Orus**, the frog is **Charon**. About 1250 MP3 files, ~15 MB. If a lin
 
 ## Parents' area
 
-- The password is created on each device on first use and stored only there, as a hash.
-  A one-time **recovery code** is shown right after. There is deliberately no reset without the code,
-  so a child can't take over the settings.
+- The parents' area opens with the default password from [`js/config.js`](../js/config.js) (`CONFIG.parent.password`)
+  until a parent sets their own inside. Only the hash of that one is stored, on the device (`lucky-parent-v2`),
+  and Start over keeps it. The recovery password (`CONFIG.parent.recovery`, also in the README) always works.
+- Older versions let whoever opened ⚙️ first create the password, which could be the child. That data (`lucky-parent-v1`)
+  is removed on start, so the default password works again after the update.
 - **Turbo** mode removes all limits for testing and showing, with tools for levels, visitors, questions, naps and
   a new day. The real progress is saved before Turbo and restored when it is switched off.
 
@@ -110,7 +112,7 @@ Tali is **Orus**, the frog is **Charon**. About 1250 MP3 files, ~15 MB. If a lin
 ## Testing
 
 There is no test framework in the repo. During development the game was checked with Playwright scripts
-(iPhone emulation, muted audio) covering care actions, questions, the frog, Turbo, password recovery,
+(iPhone emulation, muted audio) covering care actions, questions, the frog, Turbo, the parent password,
 limits, voice clip coverage, every gesture on every scene thing and every mission kind (with Playwright's fake clock).
 When changing speech or audio code, check on a real iPhone: first-tap audio unlock, silent switch,
 switching to another app and back (the sound must come back on the next tap), returning after a call, and offline mode.
