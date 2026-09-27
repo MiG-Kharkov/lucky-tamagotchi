@@ -475,7 +475,21 @@ function trayItems() {
   ].filter((o) => !seen.has(o.id) && seen.add(o.id));
 }
 
-function startEdit() {
+// Put an item on the scene: decorations go to their usual spot, emoji near the centre
+function addItem(o) {
+  const items = layout();
+  if (items.length >= MAX_ITEMS) return toast(tr('editFull'), 2500);
+  const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : [50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8];
+  items.push({ k: o.k, id: o.id, x, y, s: 1, f: 0 });
+  editSel = items.length - 1;
+  sfx.pop();
+  renderDecor();
+  st.save(S);
+  stat('decorPlaced');
+  react('place-' + (LUCKY.place_item[o.id] ? o.id : 'sticker'), LUCKY.place_item[o.id] || LUCKY.placeGeneric, 0.9);
+}
+
+function startEdit(addId = null) {
   if (mode !== 'main') return;
   cancelAsk();
   closeSheet();
@@ -487,22 +501,11 @@ function startEdit() {
     <div class="tray-items">${list.map((o, i) => `<button class="tray-it" data-i="${i}">${o.k === 'decor' ? art.decor(o.id) : o.id}</button>`).join('')}</div>`;
   ui.tray.hidden = false;
   ui.tray.querySelector('.tray-done').onclick = finishEdit;
-  ui.tray.querySelectorAll('.tray-it').forEach((b) => {
-    b.onclick = () => {
-      const items = layout();
-      if (items.length >= MAX_ITEMS) return toast(tr('editFull'), 2500);
-      const o = list[b.dataset.i];
-      items.push({ k: o.k, id: o.id, x: 50 + Math.random() * 20 - 10, y: 55 + Math.random() * 16 - 8, s: 1, f: 0 });
-      editSel = items.length - 1;
-      sfx.pop();
-      renderDecor();
-      st.save(S);
-      stat('decorPlaced');
-      react('place-' + (LUCKY.place_item[o.id] ? o.id : 'sticker'), LUCKY.place_item[o.id] || LUCKY.placeGeneric, 0.9);
-    };
-  });
+  ui.tray.querySelectorAll('.tray-it').forEach((b) => { b.onclick = () => addItem(list[b.dataset.i]); });
   renderDecor();
-  say(LUCKY.decorate[0]);
+  // Opened from Collection → Home with a decoration: put it back on the scene right away
+  if (addId) addItem({ k: 'decor', id: addId });
+  else say(LUCKY.decorate[0]);
 }
 
 function finishEdit(silent = false) {
@@ -885,8 +888,8 @@ function ears(ear) {
   // Three quick ear taps: helicopter ears
   if (earTimes.length >= 3) { earTimes = []; helicopter(); return; }
   sfx.tap();
+  setTemp('laugh', 900); // face first: Safari doesn't animate SVG parts re-rendered after the class was added
   ui.lucky.querySelectorAll('.ear').forEach((x) => hop(x, 'wiggle'));
-  setTemp('laugh', 900);
   react('ears', LUCKY.ears);
 }
 
@@ -1560,7 +1563,7 @@ function openCollection(tab = 'outfits') {
       b.onclick = () => {
         if (b.classList.contains('locked')) { sfx.tap(); hop(b, 'wiggle'); return; }
         sfx.sparkle();
-        if (b.dataset.d !== undefined) { startEdit(); return; }
+        if (b.dataset.d !== undefined) { startEdit(layout().some((it) => it.id === b.dataset.d) ? null : b.dataset.d); return; }
         if (b.dataset.p) { goPlace(b.dataset.p); st.save(S); closeSheet(); say(fresh(LUCKY.arrive[b.dataset.p] || LUCKY.place)); return; }
         if (b.dataset.w !== undefined) {
           const w = WEAR_BY_ID[b.dataset.w];
@@ -2127,6 +2130,22 @@ document.addEventListener('visibilitychange', () => {
   if (gap > 3 * 3600e3 && mode === 'main') sayAuto(fresh(LUCKY.welcomeBack));
 });
 window.addEventListener('pagehide', () => st.save(S));
+
+// After a rotation iOS can leave the page scrolled or keep stale sizes: reset and redraw once upright
+let rotateT = 0;
+const redrawAfterRotate = () => {
+  clearTimeout(rotateT);
+  rotateT = setTimeout(() => {
+    if (window.innerWidth > window.innerHeight) return;
+    window.scrollTo(0, 0);
+    renderBg();
+    renderDecor();
+    renderLucky(true);
+    if (mode === 'sleep') renderSleep(true);
+  }, 300);
+};
+window.addEventListener('orientationchange', redrawAfterRotate);
+window.addEventListener('resize', redrawAfterRotate);
 
 ['touchend', 'click', 'pointerup'].forEach((ev) => document.addEventListener(ev, unlockAudio, { passive: true, capture: true }));
 // iOS stays silent until the first tap, so replay the greeting that was on screen

@@ -335,8 +335,26 @@ input, select { font: inherit; }
 .petal.p7 { animation-delay: -6s; } .petal.p8 { animation-delay: -8s; } .petal.p9 { animation-delay: -.5s; }
 @keyframes petal { from { transform: translate(0, 0) rotate(0); } to { transform: translate(-60px, 720px) rotate(540deg); } }
 
+/* ---------- portrait only ----------
+   iOS web apps can't lock the orientation, so in landscape on a phone we cover the game with a hint. */
+.rotate-hint { display: none; }
+@media (orientation: landscape) and (max-height: 540px) {
+  .rotate-hint {
+    display: flex; position: fixed; inset: 0; z-index: 100; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    background: radial-gradient(circle at 50% 40%, #FFF0F7, var(--pink-l) 60%, #FFD6EA); color: var(--ink); text-align: center;
+  }
+  .rotate-hint p { margin: 0; font-size: 20px; font-weight: 800; }
+  .rotate-hint small { color: var(--muted); font-weight: 600; }
+  .rh-phone { font-size: 56px; animation: rhTurn 2s ease-in-out infinite; }
+  #app, .sheet-wrap, .overlay, .modal, .toast { visibility: hidden; }
+}
+@keyframes rhTurn { 0%, 30% { transform: rotate(-90deg); } 60%, 100% { transform: rotate(0deg); } }
+
+/* Reduce Motion (iOS accessibility setting): keep short tap feedback, which is how the child
+   sees Lucky react, but stop the ambient loops that drift or spin in the background. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+  .cloud, .petal, .snow, .waves, .gull, .comet, .rays, .shooting, .word-btn, .twinkle { animation: none !important; }
+  .confetti { display: none; }
 }
 
 /* ---------- game picker and mini-games ---------- */
@@ -692,3 +710,5 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .choices.compact { flex-direction: row; flex-wrap: wrap; justify-content: center; }
 .choices.compact .choice { flex: 1 1 28%; align-items: center; text-align: center; padding: 8px 6px; }
 .choices.compact .choice b { font-size: 15px; }
+/* the rainbow covers the sky: let taps reach the sun and clouds (it stays draggable in Decorate) */
+body:not(.editing) .dec-rainbow { pointer-events: none; }

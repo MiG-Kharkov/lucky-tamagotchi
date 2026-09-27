@@ -1,4 +1,4 @@
 // Single source of the game version (semantic versioning: MAJOR.MINOR.PATCH).
 // BUILD is replaced with the commit hash by the deploy workflow; locally it stays 'dev'.
-export const VERSION = '1.1.0';
+export const VERSION = '1.1.1';
 export const BUILD = 'dev';

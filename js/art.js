@@ -133,7 +133,7 @@ export function scene(bg = 'garden') {
     return `<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC4E1"/><stop offset="1" stop-color="#FFF1E6"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<circle cx="90" cy="150" r="46" fill="#FF7AA8" opacity=".55"/>
+<circle cx="90" cy="250" r="40" fill="#FF7AA8" opacity=".55"/>
 <g data-tap="fuji"><path d="M120 470 L230 300 L340 470Z" fill="#E4B6E6"/><path d="M205 338 L230 300 L255 338 L242 332 L230 342 L218 332Z" fill="#fff"/></g>
 <g fill="#FF5C8A" data-tap="gong"><rect x="40" y="330" width="12" height="160"/><rect x="148" y="330" width="12" height="160"/><rect x="24" y="318" width="152" height="14" rx="4"/><rect x="36" y="350" width="128" height="9"/></g>
 <rect x="0" y="470" width="400" height="230" fill="#F2D2A2"/>
@@ -152,7 +152,7 @@ ${petals}
     return `<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C7B4FF"/><stop offset="1" stop-color="#FFC6E6"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>${sparkles}
-${cloud(60, 170, 1.1)}${cloud(260, 120, .9, 'slow')}
+${cloud(40, 250, 1)}${cloud(250, 215, .85, 'slow')}
 ${lolly(70, 380, '#FF7AB8')}${lolly(340, 360, '#9B7BFF')}
 <path d="M0 450 Q100 380 200 440 T400 420 V700 H0Z" fill="#FFA6D5"/>
 <path d="M0 500 Q200 440 400 510 V700 H0Z" fill="#FF84C2"/>
@@ -178,8 +178,8 @@ ${[[40, 470, '#fff'], [120, 520, '#FFE66D'], [300, 490, '#fff'], [360, 540, '#C7
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD6FF"/><stop offset=".7" stop-color="#FFDDF0"/></linearGradient>
 <radialGradient id="${u}g"><stop offset="0" stop-color="#FFF6A8"/><stop offset="1" stop-color="#FFF6A8" stop-opacity="0"/></radialGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<g data-tap="sun"><circle cx="325" cy="110" r="80" fill="url(#${u}g)"/><circle cx="325" cy="110" r="36" fill="#FFE066"/></g>
-${cloud(40, 140, 1)}${cloud(230, 220, .8, 'slow')}
+<g data-tap="sun"><circle cx="325" cy="245" r="70" fill="url(#${u}g)"/><circle cx="325" cy="245" r="32" fill="#FFE066"/></g>
+${cloud(30, 235, .9)}${cloud(205, 300, .75, 'slow')}
 <path d="M0 440 Q110 360 230 420 T400 395 V700 H0Z" fill="#B4EBA6"/>
 <g data-tap="tree"><path d="M-10 420 C0 360 20 330 40 330" stroke="#9A6B4A" stroke-width="10" fill="none"/>
 <g fill="#FFB3D6"><circle cx="40" cy="320" r="36"/><circle cx="72" cy="300" r="30"/><circle cx="10" cy="296" r="28"/></g>
@@ -207,9 +207,9 @@ const WORLDS = {
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD3FF"/><stop offset="1" stop-color="#FFE9C9"/></linearGradient>
 <linearGradient id="${u}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FA9E0"/><stop offset="1" stop-color="#8FE0F7"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<g data-tap="sun"><circle cx="320" cy="110" r="70" fill="#FFF3A8" opacity=".35"/><circle cx="320" cy="110" r="36" fill="#FFD23F"/></g>
-${cloud(40, 150, .9)}
-<path class="gull" d="M150 170 q10 -10 20 0 q10 -10 20 0" stroke="#fff" stroke-width="3" fill="none"/>
+<g data-tap="sun"><circle cx="320" cy="250" r="62" fill="#FFF3A8" opacity=".35"/><circle cx="320" cy="250" r="32" fill="#FFD23F"/></g>
+${cloud(30, 240, .85)}
+<path class="gull" d="M150 280 q10 -10 20 0 q10 -10 20 0" stroke="#fff" stroke-width="3" fill="none"/>
 <rect x="0" y="380" width="400" height="110" fill="url(#${u}w)"/>
 <g class="waves"><path d="M-40 400 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/>
 <path d="M-20 440 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-width="3" fill="none" opacity=".5"/></g>
@@ -226,7 +226,7 @@ ${cloud(40, 150, .9)}
   winter: (u) => `${svgOpen}
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#B7D3FF"/><stop offset="1" stop-color="#F3F7FF"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-${cloud(250, 120, .8, 'slow')}
+${cloud(240, 245, .8, 'slow')}
 <path d="M0 420 L90 300 L160 390 L250 280 L400 430 V700 H0Z" fill="#DCE8FB"/><path d="M90 300 L115 334 L100 330 L90 344 L78 330 L68 330Z M250 280 L278 318 L262 314 L250 330 L238 314 L224 318Z" fill="#fff"/>
 ${pine(40, 420, 1.1)}${pine(355, 410, 1.3)}${pine(300, 440, .8)}
 <path d="M0 470 Q200 430 400 480 V700 H0Z" fill="#F7FBFF"/><path d="M0 540 Q200 510 400 550 V700 H0Z" fill="#EAF2FE"/>
@@ -241,10 +241,10 @@ ${snow(22)}
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0B1030"/><stop offset="1" stop-color="#3A2470"/></linearGradient>
 <radialGradient id="${u}p" cx="35%" cy="35%"><stop offset="0" stop-color="#FFB3D6"/><stop offset="1" stop-color="#B05BD6"/></radialGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>${stars(30)}
-<g data-tap="planet"><ellipse cx="300" cy="150" rx="70" ry="16" fill="none" stroke="#FFD23F" stroke-width="6" opacity=".8" transform="rotate(-15 300 150)"/>
-<circle cx="300" cy="150" r="40" fill="url(#${u}p)"/><path d="M262 140 q38 14 76 -6" stroke="#fff" stroke-width="4" opacity=".35" fill="none"/></g>
-<g data-tap="planet"><circle cx="80" cy="260" r="20" fill="#4D9BFF"/><path d="M68 252 q8 -6 14 2 q-2 10 -12 8z M84 266 q8 -4 10 4" fill="#4CD37B"/></g>
-<path class="comet" d="M40 90 l60 20" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+<g data-tap="planet"><ellipse cx="300" cy="265" rx="64" ry="15" fill="none" stroke="#FFD23F" stroke-width="6" opacity=".8" transform="rotate(-15 300 265)"/>
+<circle cx="300" cy="265" r="36" fill="url(#${u}p)"/><path d="M266 256 q34 13 68 -5" stroke="#fff" stroke-width="4" opacity=".35" fill="none"/></g>
+<g data-tap="planet"><circle cx="70" cy="330" r="20" fill="#4D9BFF"/><path d="M58 322 q8 -6 14 2 q-2 10 -12 8z M74 336 q8 -4 10 4" fill="#4CD37B"/></g>
+<path class="comet" d="M40 220 l60 20" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>
 <path d="M0 480 Q200 440 400 490 V700 H0Z" fill="#8E86B8"/><path d="M0 560 Q200 530 400 570 V700 H0Z" fill="#7A72A6"/>
 ${[[70, 520, 26], [300, 600, 34], [180, 650, 20], [360, 520, 14]].map(([x, y, r]) => `<g data-tap="crater"><ellipse cx="${x}" cy="${y}" rx="${r}" ry="${r * .35}" fill="#6A6394"/><ellipse cx="${x}" cy="${y - 2}" rx="${r * .8}" ry="${r * .25}" fill="#5B5586"/></g>`).join('')}
 </svg>`,
@@ -252,7 +252,7 @@ ${[[70, 520, 26], [300, 600, 34], [180, 650, 20], [360, 520, 14]].map(([x, y, r]
   irish: (u) => `${svgOpen}
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD0FF"/><stop offset="1" stop-color="#E6F6FF"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-${cloud(30, 110, 1)}${cloud(260, 170, .8, 'slow')}
+${cloud(25, 240, .9)}${cloud(250, 290, .75, 'slow')}
 <g opacity=".85">${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) => `<path d="M${40 + i * 8} 470 A${160 - i * 8} ${160 - i * 8} 0 0 1 ${360 - i * 8} 470" stroke="${c}" stroke-width="8" fill="none"/>`).join('')}</g>
 <path d="M0 420 Q100 360 200 410 T400 390 V700 H0Z" fill="#8ED87E"/>
 <g data-tap="castle"><rect x="276" y="330" width="44" height="80" fill="#A8A4AE"/><path d="M276 330 h44 v-10 h-8 v6 h-7 v-6 h-7 v6 h-7 v-6 h-7 v6 h-8z" fill="#A8A4AE"/>
@@ -269,7 +269,7 @@ ${[[40, 610], [120, 650], [210, 600], [330, 640], [370, 590]].map(([x, y]) => `<
   castle: (u) => `${svgOpen}
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FF9EC7"/><stop offset=".7" stop-color="#FFD6A5"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<circle cx="90" cy="150" r="40" fill="#FFF0C4" opacity=".8"/>
+<circle cx="80" cy="250" r="36" fill="#FFF0C4" opacity=".8"/>
 <g data-tap="pagoda"><rect x="150" y="300" width="100" height="150" fill="#FFF6EE"/><rect x="170" y="200" width="60" height="100" fill="#FFF6EE"/>
 <path d="M120 310 Q200 270 280 310 L260 300 Q200 276 140 300Z" fill="#3A2A3E"/><path d="M146 212 Q200 176 254 212 L238 204 Q200 184 162 204Z" fill="#3A2A3E"/><path d="M176 130 L200 100 L224 130 Q200 120 176 130Z" fill="#3A2A3E"/>
 <rect x="184" y="130" width="32" height="70" fill="#FFF6EE"/><path d="M160 306 h80 M176 210 h48" stroke="#FF5FA2" stroke-width="4"/>
