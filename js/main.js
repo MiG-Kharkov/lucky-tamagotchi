@@ -3,7 +3,7 @@ import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, MISSIONS, CAR
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import * as art from './art.js';
-import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak } from './sound.js';
+import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, openGame } from './game.js';
 
@@ -1951,6 +1951,7 @@ function openParent() {
       <p class="muted">${turbo() ? tr('turboNote') : tr('stdNote')}</p>
       ${turbo() ? `<div class="tools">${TURBO_TOOLS.map(([id, e]) => `<button class="tool" data-t="${id}"><span>${e}</span>${tr('tool_' + id)}</button>`).join('')}</div>` : ''}
     </div>
+    <div class="card sound-test"><div class="row wrap" style="margin:0"><button class="btn purple test-sound">🔊 ${tr('testSound')}</button></div><p class="muted sound-status"></p></div>
     <div class="row wrap">
       <button class="btn purple wake">⏰ ${tr('wakeLucky')}</button>
       <button class="btn pink invite">🐶 ${tr('inviteDog')}</button>
@@ -1979,6 +1980,9 @@ function openParent() {
       closeSheet();
       loop();
     };
+    const showStatus = () => { const st2 = soundStatus(); root.querySelector('.sound-status').textContent = `Web Audio: ${st2.webAudio} · session: ${st2.session} · silent track: ${st2.silentTrack} · clips: ${st2.clips} · sound: ${st2.sound ? 'on' : 'off'} · voice: ${st2.voice ? 'on' : 'off'}`; };
+    showStatus();
+    root.querySelector('.test-sound').onclick = () => { testSound(say2(LUCKY.greet[2], 'en')); setTimeout(showStatus, 600); setTimeout(showStatus, 2000); };
     root.querySelector('.reset').onclick = () => { sfx.tap(); closeSheet(); resetAll(); };
     root.querySelectorAll('.mode-tabs .tab').forEach((b) => {
       b.onclick = () => { if ((b.dataset.m === 'turbo') !== turbo()) { sfx.tap(); closeSheet(); setTurbo(b.dataset.m === 'turbo'); } };

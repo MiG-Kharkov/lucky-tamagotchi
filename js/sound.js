@@ -15,22 +15,43 @@ export function stopSpeech() {
   try { speechSynthesis.cancel(); } catch { /* ignore */ }
 }
 
+// Голос слышен и в беззвучном режиме iPhone: просим iOS режим «воспроизведение» как можно раньше
+try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* ignore */ }
+
 function audioCtx() {
   if (!ctx) {
-    try {
-      ctx = new (window.AudioContext || window.webkitAudioContext)();
-      // Голос слышен и в беззвучном режиме iPhone (Safari 16.4+)
-      if (navigator.audioSession) navigator.audioSession.type = 'playback';
-    } catch { /* нет Web Audio */ }
+    try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* нет Web Audio */ }
   }
   return ctx;
 }
+
+// Запасной способ для старых iOS: беззвучная дорожка через обычный <audio> переводит звук страницы
+// в режим «воспроизведение», и Web Audio перестаёт зависеть от переключателя беззвучного режима.
+const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+let silentEl = null;
+function silentTrack() {
+  if (silentEl) return silentEl;
+  const rate = 8000, n = rate / 2; // полсекунды тишины, WAV 8 кГц
+  const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
+  const w = (o, str) => [...str].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true);
+  v.setUint32(28, rate * 2, true); v.setUint16(32, 2, true); v.setUint16(34, 16, true); w(36, 'data'); v.setUint32(40, n * 2, true);
+  silentEl = document.createElement('audio');
+  silentEl.src = URL.createObjectURL(new Blob([buf], { type: 'audio/wav' }));
+  silentEl.loop = true;
+  silentEl.setAttribute('playsinline', '');
+  silentEl.setAttribute('x-webkit-airplay', 'deny');
+  return silentEl;
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden && silentEl) silentEl.pause(); });
 
 // iOS разрешает звук только в жесте пользователя (touchend/click), а после звонка
 // или Siri контекст бывает «interrupted» — поэтому возобновляем при каждом касании.
 export function unlockAudio() {
   const c = audioCtx();
   if (c && c.state !== 'running') c.resume().catch(() => {});
+  if (IOS && !navigator.audioSession) { const el = silentTrack(); if (el.paused) el.play().catch(() => {}); }
   if (!speechUnlocked && 'speechSynthesis' in window) {
     try {
       const u = new SpeechSynthesisUtterance('.');
@@ -180,4 +201,21 @@ export async function speak(text, lang, who = 'lucky') {
     }
   }
   speakSystem(text, lang, who, seq);
+}
+
+// Диагностика звука для родительского раздела
+export function soundStatus() {
+  return {
+    webAudio: ctx ? ctx.state : 'not created',
+    session: navigator.audioSession ? navigator.audioSession.type : 'unsupported',
+    silentTrack: silentEl ? (silentEl.paused ? 'paused' : 'playing') : 'off',
+    clips: clips ? clips.size : 'loading',
+    sound: enabled, voice: voiceOn,
+  };
+}
+
+export function testSound(text) {
+  unlockAudio();
+  sfx.happy();
+  return speak(text, 'en');
 }

@@ -1,6 +1,6 @@
 // Офлайн-кеш. Код игры — «сначала сеть, потом кеш», чтобы после обновления не смешивались версии файлов.
 // Записи голоса не меняются (имя = текст фразы), поэтому живут в отдельном кеше и берутся только из него.
-const CACHE = 'lucky-v12';
+const CACHE = 'lucky-v13';
 const AUDIO = 'lucky-audio-v1';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
