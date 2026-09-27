@@ -1705,7 +1705,7 @@ function fmtTime(t) {
 
 function renderSleep(force = false) {
   const now = Date.now();
-  const night = st.isNight(now, S.settings);
+  const night = st.isNight(now, S.settings) && now >= (S.session.wakeUntil || 0);
   const done = !night && now >= S.session.napUntil && dayDone();
   const until = night || done ? st.nextWake(now, S.settings) : S.session.napUntil;
   const key = `${night}-${done}-${until}-${S.lang}`;
@@ -1968,7 +1968,9 @@ function openParent() {
       S.session.napUntil = 0;
       S.session.activeMs = 0;
       S.session.warned = false;
-      if (st.isNight(Date.now(), s)) toast(tr('nightSub', { time: fmtTime(st.nextWake(Date.now(), s)) }));
+      // Ночью — будим до утра (только эту ночь); следующей ночью Лаки снова уснёт по расписанию
+      if (st.isNight(Date.now(), s)) { S.session.wakeUntil = st.nextWake(Date.now(), s); toast('⏰ ' + tr('wokeByParent', { time: fmtTime(S.session.wakeUntil) }), 3500); }
+      st.save(S);
       closeSheet();
       loop();
     };

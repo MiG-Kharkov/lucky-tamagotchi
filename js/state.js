@@ -163,7 +163,8 @@ export function nextWake(t, st) {
   return r.getTime();
 }
 
-export const isAsleep = (S, now) => isNight(now, S.settings) || now < S.session.napUntil;
+// Ночь можно отменить до утра кнопкой родителя «Разбудить Лаки» (wakeUntil)
+export const isAsleep = (S, now) => (isNight(now, S.settings) && now >= (S.session.wakeUntil || 0)) || now < S.session.napUntil;
 
 export function applyDecay(S, now) {
   let t = S.pet.at || now;
