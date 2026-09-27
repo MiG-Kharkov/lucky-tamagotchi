@@ -1,0 +1,27 @@
+name: 💌 Request a custom version
+description: Tell us about the one-of-a-kind pet you'd like for someone
+title: "Custom version: "
+labels: ["custom version"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for your interest! Custom versions are made by our [Authorized Customizers](../blob/main/CUSTOMIZERS.md).
+        Please don't post private details (full names, addresses, photos) here. We'll ask for them privately.
+  - type: textarea
+    id: idea
+    attributes:
+      label: Your idea
+      description: Who is it for (age, first name or nickname), which pet, favourite colours and worlds, language, anything special
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: When do you need it?
+      placeholder: e.g. a birthday on 12 December
+  - type: input
+    id: contact
+    attributes:
+      label: How can we reach you?
+      description: An email or messenger handle (or leave empty and we'll reply here)
