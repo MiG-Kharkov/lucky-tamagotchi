@@ -60,9 +60,9 @@ export function lucky({ face = 'ok', wear = null, outfit = null, belt = '#FF4F9A
 ${W.back}
 <g class="body">
   <ellipse cx="100" cy="152" rx="57" ry="48" fill="url(#${u}f)"/>
-  <ellipse cx="100" cy="161" rx="33" ry="31" fill="#FFEBD3"/>
-  <ellipse cx="67" cy="194" rx="23" ry="10" fill="#FFEBD3"/><ellipse cx="133" cy="194" rx="23" ry="10" fill="#FFEBD3"/>
-  <path d="M58 194 v-3 M64 196 v-4 M136 196 v-4 M142 194 v-3" stroke="#E9C29A" stroke-width="2" stroke-linecap="round"/>
+  <ellipse class="tummy" cx="100" cy="161" rx="33" ry="31" fill="#FFEBD3"/>
+  <g class="feet"><ellipse cx="67" cy="194" rx="23" ry="10" fill="#FFEBD3"/><ellipse cx="133" cy="194" rx="23" ry="10" fill="#FFEBD3"/>
+  <path d="M58 194 v-3 M64 196 v-4 M136 196 v-4 M142 194 v-3" stroke="#E9C29A" stroke-width="2" stroke-linecap="round"/></g>
   <ellipse cx="84" cy="177" rx="11" ry="9" fill="#FFDDB6"/><ellipse cx="116" cy="177" rx="11" ry="9" fill="#FFDDB6"/>
   ${W.body}
 </g>
@@ -70,7 +70,7 @@ ${W.back}
   <path d="M86 47 q7 -15 14 -3 q7 -13 14 3" fill="#F59A45" stroke="#DD7629" stroke-width="2" stroke-linejoin="round"/>
   <ellipse cx="100" cy="90" rx="55" ry="47" fill="url(#${u}f)"/>
   <ellipse cx="100" cy="62" rx="22" ry="9" fill="#FFD29B" opacity=".45"/>
-  ${W.under}
+  <g class="w-under">${W.under}</g>
   <g class="ear ear-l"><ellipse cx="47" cy="106" rx="18.5" ry="45" transform="rotate(12 47 106)" fill="url(#${u}e)"/>
     <ellipse cx="49" cy="112" rx="8" ry="31" transform="rotate(12 49 112)" fill="url(#${u}i)" opacity=".6"/></g>
   <g class="ear ear-r"><ellipse cx="153" cy="106" rx="18.5" ry="45" transform="rotate(-12 153 106)" fill="url(#${u}e)"/>
@@ -81,7 +81,7 @@ ${W.back}
   <g class="nose"><circle cx="100" cy="104" r="13" fill="transparent"/><path d="M93.5 101 q6.5 -4.5 13 0 q-2 6.5 -6.5 7.5 q-4.5 -1 -6.5 -7.5z" fill="#FF6F9A"/></g>
   ${luckyMouth(face)}
   <path d="M80 110 l-18 -3 M80 114 l-17 3 M120 110 l18 -3 M120 114 l17 3" stroke="#D99A6C" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
-  <g pointer-events="none">${W.over}${W.neck}${W.head}</g>
+  <g pointer-events="none"><g class="w-face">${W.over}</g>${W.neck}<g class="w-head">${W.head}</g></g>
 </g>
 </svg>`;
 }
@@ -121,7 +121,7 @@ export function dog({ face = 'ok' } = {}) {
 </svg>`;
 }
 
-const flower = (x, y, c, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><g data-tap="flower"><circle r="11" fill="transparent"/>${[0, 72, 144, 216, 288].map((a) => `<circle cy="-5" r="4.2" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="3" fill="#FFE66D"/></g></g>`;
+const flower = (x, y, c, s = 1) => `<g transform="translate(${x} ${y}) scale(${s})"><g data-tap="flower"><circle r="16" fill="transparent"/>${[0, 72, 144, 216, 288].map((a) => `<circle cy="-5" r="4.2" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="3" fill="#FFE66D"/></g></g>`;
 const cloud = (x, y, s, cls = '') => `<g transform="translate(${x} ${y}) scale(${s})"><g class="cloud ${cls}"><g data-tap="cloud"><circle cx="0" cy="0" r="22" fill="#fff"/><circle cx="24" cy="-10" r="26" fill="#fff"/><circle cx="50" cy="0" r="20" fill="#fff"/><rect x="0" y="0" width="50" height="20" fill="#fff"/></g></g></g>`;
 
 export function scene(bg = 'garden') {
@@ -135,7 +135,7 @@ export function scene(bg = 'garden') {
 <rect width="400" height="700" fill="url(#${u}s)"/>
 <circle cx="90" cy="250" r="40" fill="#FF7AA8" opacity=".55"/>
 <g data-tap="fuji"><path d="M120 470 L230 300 L340 470Z" fill="#E4B6E6"/><path d="M205 338 L230 300 L255 338 L242 332 L230 342 L218 332Z" fill="#fff"/></g>
-<g fill="#FF5C8A" data-tap="gong"><rect x="40" y="330" width="12" height="160"/><rect x="148" y="330" width="12" height="160"/><rect x="24" y="318" width="152" height="14" rx="4"/><rect x="36" y="350" width="128" height="9"/></g>
+<g fill="#FF5C8A" data-tap="gong"><rect x="24" y="318" width="152" height="150" fill="transparent"/><rect x="40" y="330" width="12" height="160"/><rect x="148" y="330" width="12" height="160"/><rect x="24" y="318" width="152" height="14" rx="4"/><rect x="36" y="350" width="128" height="9"/></g>
 <rect x="0" y="470" width="400" height="230" fill="#F2D2A2"/>
 <path d="M0 520 H400 M0 580 H400 M0 640 H400 M100 470 V700 M200 470 V700 M300 470 V700" stroke="#DDB47E" stroke-width="3"/>
 <rect x="0" y="462" width="400" height="12" fill="#C98E5A"/>
@@ -152,7 +152,7 @@ ${petals}
     return `<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C7B4FF"/><stop offset="1" stop-color="#FFC6E6"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>${sparkles}
-${cloud(40, 250, 1)}${cloud(250, 215, .85, 'slow')}
+${cloud(130, 268, .9)}${cloud(262, 238, .78, 'slow')}
 ${lolly(70, 380, '#FF7AB8')}${lolly(340, 360, '#9B7BFF')}
 <path d="M0 450 Q100 380 200 440 T400 420 V700 H0Z" fill="#FFA6D5"/>
 <path d="M0 500 Q200 440 400 510 V700 H0Z" fill="#FF84C2"/>
@@ -179,7 +179,7 @@ ${[[40, 470, '#fff'], [120, 520, '#FFE66D'], [300, 490, '#fff'], [360, 540, '#C7
 <radialGradient id="${u}g"><stop offset="0" stop-color="#FFF6A8"/><stop offset="1" stop-color="#FFF6A8" stop-opacity="0"/></radialGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
 <g data-tap="sun"><circle cx="325" cy="245" r="70" fill="url(#${u}g)"/><circle cx="325" cy="245" r="32" fill="#FFE066"/></g>
-${cloud(30, 235, .9)}${cloud(205, 300, .75, 'slow')}
+${cloud(128, 266, .8)}${cloud(232, 334, .68, 'slow')}
 <path d="M0 440 Q110 360 230 420 T400 395 V700 H0Z" fill="#B4EBA6"/>
 <g data-tap="tree"><path d="M-10 420 C0 360 20 330 40 330" stroke="#9A6B4A" stroke-width="10" fill="none"/>
 <g fill="#FFB3D6"><circle cx="40" cy="320" r="36"/><circle cx="72" cy="300" r="30"/><circle cx="10" cy="296" r="28"/></g>
@@ -208,9 +208,9 @@ const WORLDS = {
 <linearGradient id="${u}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FA9E0"/><stop offset="1" stop-color="#8FE0F7"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
 <g data-tap="sun"><circle cx="320" cy="250" r="62" fill="#FFF3A8" opacity=".35"/><circle cx="320" cy="250" r="32" fill="#FFD23F"/></g>
-${cloud(30, 240, .85)}
+${cloud(130, 266, .8)}
 <path class="gull" d="M150 280 q10 -10 20 0 q10 -10 20 0" stroke="#fff" stroke-width="3" fill="none"/>
-<rect x="0" y="380" width="400" height="110" fill="url(#${u}w)"/>
+<rect data-tap="sea" x="0" y="380" width="400" height="110" fill="url(#${u}w)"/>
 <g class="waves"><path d="M-40 400 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/>
 <path d="M-20 440 q20 -10 40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0 t40 0" stroke="#fff" stroke-width="3" fill="none" opacity=".5"/></g>
 <path d="M0 470 Q200 450 400 480 V700 H0Z" fill="#FFE1A8"/><path d="M0 470 Q200 450 400 480 L400 492 Q200 464 0 484Z" fill="#fff" opacity=".6"/>
@@ -219,7 +219,7 @@ ${cloud(30, 240, .85)}
 <circle cx="90" cy="358" r="7" fill="#8C5A3C"/><circle cx="102" cy="360" r="7" fill="#7A4A30"/></g>
 <g data-tap="shell"><circle cx="300" cy="560" r="16" fill="transparent"/><path d="M288 566 q12 -26 24 0z" fill="#FFB3D6"/><path d="M292 566 l8 -18 M300 566 v-20 M308 566 l-8 -18" stroke="#FF7AB8" stroke-width="1.6"/></g>
 <g data-tap="shell"><circle cx="70" cy="620" r="16" fill="transparent"/><path d="M70 606 l4 9 10 1 -7 7 2 10 -9 -5 -9 5 2 -10 -7 -7 10 -1z" fill="#FF9F43"/></g>
-<g data-tap="crab" class="crab"><g transform="translate(340 600)"><ellipse cx="0" cy="0" rx="18" ry="11" fill="#FF5C4D"/><circle cx="-6" cy="-12" r="3" fill="#222"/><circle cx="6" cy="-12" r="3" fill="#222"/>
+<g data-tap="crab" class="crab"><g transform="translate(340 600)"><circle r="30" fill="transparent"/><ellipse cx="0" cy="0" rx="18" ry="11" fill="#FF5C4D"/><circle cx="-6" cy="-12" r="3" fill="#222"/><circle cx="6" cy="-12" r="3" fill="#222"/>
 <path d="M-6 -9 v-3 M6 -9 v-3" stroke="#FF5C4D" stroke-width="2"/><path d="M-18 -2 q-10 -10 -4 -16 M18 -2 q10 -10 4 -16 M-14 6 l-8 6 M14 6 l8 6 M-8 9 l-4 7 M8 9 l4 7" stroke="#FF5C4D" stroke-width="3" fill="none" stroke-linecap="round"/></g></g>
 </svg>`,
 
@@ -252,7 +252,7 @@ ${[[70, 520, 26], [300, 600, 34], [180, 650, 20], [360, 520, 14]].map(([x, y, r]
   irish: (u) => `${svgOpen}
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD0FF"/><stop offset="1" stop-color="#E6F6FF"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-${cloud(25, 240, .9)}${cloud(250, 290, .75, 'slow')}
+${cloud(130, 266, .8)}${cloud(252, 312, .7, 'slow')}
 <g opacity=".85">${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) => `<path d="M${40 + i * 8} 470 A${160 - i * 8} ${160 - i * 8} 0 0 1 ${360 - i * 8} 470" stroke="${c}" stroke-width="8" fill="none"/>`).join('')}</g>
 <path d="M0 420 Q100 360 200 410 T400 390 V700 H0Z" fill="#8ED87E"/>
 <g data-tap="castle"><rect x="276" y="330" width="44" height="80" fill="#A8A4AE"/><path d="M276 330 h44 v-10 h-8 v6 h-7 v-6 h-7 v6 h-7 v-6 h-7 v6 h-8z" fill="#A8A4AE"/>
@@ -263,7 +263,7 @@ ${cloud(25, 240, .9)}${cloud(250, 290, .75, 'slow')}
 <g data-tap="gold"><path d="M334 470 q-4 -16 16 -16 q20 0 16 16 q-2 12 -16 12 q-14 0 -16 -12z" fill="#2E2A33"/><rect x="332" y="452" width="36" height="6" rx="3" fill="#3A3640"/>
 <circle cx="344" cy="450" r="5" fill="#FFD23F"/><circle cx="354" cy="447" r="5" fill="#FFD23F"/><circle cx="350" cy="452" r="5" fill="#FFC21A"/></g>
 ${sheep(80, 470, 1.2)}${sheep(250, 530, 1, -1)}
-${[[40, 610], [120, 650], [210, 600], [330, 640], [370, 590]].map(([x, y]) => `<g transform="translate(${x} ${y})"><g data-tap="clover"><circle r="12" fill="transparent"/><g fill="#2E9E4E"><circle cy="-5" r="4.5"/><circle cx="-5" cy="1" r="4.5"/><circle cx="5" cy="1" r="4.5"/></g><path d="M0 3 q1 6 3 9" stroke="#2E9E4E" stroke-width="1.8" fill="none"/></g></g>`).join('')}
+${[[40, 610], [120, 650], [210, 600], [330, 640], [370, 590]].map(([x, y]) => `<g transform="translate(${x} ${y})"><g data-tap="clover"><circle r="16" fill="transparent"/><g fill="#2E9E4E"><circle cy="-5" r="4.5"/><circle cx="-5" cy="1" r="4.5"/><circle cx="5" cy="1" r="4.5"/></g><path d="M0 3 q1 6 3 9" stroke="#2E9E4E" stroke-width="1.8" fill="none"/></g></g>`).join('')}
 </svg>`,
 
   castle: (u) => `${svgOpen}
@@ -368,3 +368,54 @@ ${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) 
       return '';
   }
 }
+
+// ---------- props: things Lucky holds or wears for a moment (drawn in Lucky's coordinates, 200×210) ----------
+
+const em = (x, y, size, ch) => `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central">${ch}</text>`;
+const drop = (x, y) => `<path transform="translate(${x} ${y})" d="M0 -7 q6 8 0 11 q-6 -3 0 -11z"/>`;
+const shamrock = (x, y, r = 5) => `<g transform="translate(${x} ${y})" fill="#2E9E4E"><circle cy="${-r}" r="${r}"/><circle cx="${-r}" cy="${r * 0.3}" r="${r}"/><circle cx="${r}" cy="${r * 0.3}" r="${r}"/></g>`;
+const starPath = (x, y, k = 1, fill = '#FFD23F') => `<path transform="translate(${x} ${y}) scale(${k})" d="M0 -16 l4.7 10 11 1.2 -8.2 7.5 2.3 10.8 -9.8 -5.6 -9.8 5.6 2.3 -10.8 -8.2 -7.5 11 -1.2z" fill="${fill}" stroke="#E6A800" stroke-width="2"/>`;
+const MASK_FILL = { rainbow: 'url(#ppRainbow)' };
+
+// slot: only one prop per slot at a time
+export const PROPS = {
+  shades: { slot: 'eyes', art: () => `<path d="M60 83 h36 v5 q0 14 -18 14 q-18 0 -18 -14z M104 83 h36 v5 q0 14 -18 14 q-18 0 -18 -14z" fill="#2A1B2E"/>
+    <path d="M56 84 h88" stroke="#FF5FA2" stroke-width="4" stroke-linecap="round"/>
+    <path d="M67 91 l9 -3 M111 91 l9 -3" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".55"/>` },
+  specs: { slot: 'eyes', art: () => `<g fill="#fff" fill-opacity=".22" stroke="#8C5A3C" stroke-width="3.2"><circle cx="80" cy="90" r="15"/><circle cx="120" cy="90" r="15"/></g>
+    <path d="M95 88 q5 -5 10 0 M65 88 l-12 -4 M135 88 l12 -4" stroke="#8C5A3C" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M72 83 q4 -3 8 -2 M112 83 q4 -3 8 -2" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>` },
+  mask: { slot: 'eyes', art: (c = '#2E2A33') => `<defs><linearGradient id="ppRainbow" x1="0" x2="1">${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((x, i) => `<stop offset="${i / 5}" stop-color="${x}"/>`).join('')}</linearGradient></defs>
+    <path fill-rule="evenodd" d="M46 76 Q100 62 154 76 L154 104 Q100 92 46 104Z M67 90 a13 11 0 1 0 26 0 a13 11 0 1 0 -26 0Z M107 90 a13 11 0 1 0 26 0 a13 11 0 1 0 -26 0Z" fill="${MASK_FILL[c] || c}"/>
+    <path d="M154 82 q16 -4 22 -16 M154 92 q18 2 26 -6" stroke="${MASK_FILL[c] || c}" stroke-width="6" fill="none" stroke-linecap="round"/>` },
+  coins: { slot: 'eyes', art: () => em(80, 90, 26, '🪙') + em(120, 90, 26, '🪙') },
+  tophat: { slot: 'head', art: () => `<rect x="74" y="-2" width="52" height="40" rx="4" fill="#2A1B2E"/><rect x="62" y="34" width="76" height="9" rx="4" fill="#2A1B2E"/><rect x="74" y="25" width="52" height="7" fill="#FF5FA2"/>` },
+  snowcap: { slot: 'head', art: () => `<g fill="#fff" stroke="#DCE8FB" stroke-width="1.5"><ellipse cx="100" cy="46" rx="30" ry="10"/><circle cx="86" cy="40" r="10"/><circle cx="104" cy="35" r="12"/><circle cx="119" cy="42" r="8"/>
+    <ellipse cx="44" cy="68" rx="10" ry="5"/><ellipse cx="156" cy="68" rx="10" ry="5"/></g>` },
+  helmet: { slot: 'head', art: () => `<circle cx="100" cy="94" r="70" fill="#BFE9FF" fill-opacity=".22" stroke="#fff" stroke-width="4"/>
+    <path d="M50 62 q22 -32 58 -36" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round" opacity=".7"/><path d="M100 24 v-14" stroke="#C9C2D6" stroke-width="3"/><circle cx="100" cy="8" r="5" fill="#FF5FA2"/>` },
+  star: { slot: 'head', art: () => starPath(100, 28) },
+  crown: { slot: 'head', art: () => [[66, 56], [82, 45], [100, 40], [118, 45], [134, 56]].map(([x, y]) => shamrock(x, y)).join('') },
+  petals: { slot: 'head', art: () => `<g fill="#FF9EC7">${[[80, 50, 20], [118, 46, -30], [100, 40, 60], [46, 84, 10], [154, 96, -20], [64, 60, 45]].map(([x, y, a]) => `<ellipse cx="${x}" cy="${y}" rx="6" ry="4" transform="rotate(${a} ${x} ${y})"/>`).join('')}</g>` },
+  flower: { slot: 'ear', art: () => `<g transform="translate(148 58)">${[0, 72, 144, 216, 288].map((a) => `<circle cy="-7" r="6" fill="#FF7AB8" transform="rotate(${a})"/>`).join('')}<circle r="4.5" fill="#FFE66D"/></g>` },
+  net: { slot: 'hand', art: () => `<g class="pp-net"><path d="M150 176 L186 62" stroke="#C98E5A" stroke-width="5" stroke-linecap="round"/>
+    <ellipse cx="190" cy="46" rx="20" ry="17" fill="#fff" fill-opacity=".35" stroke="#fff" stroke-width="3.5"/><path d="M174 44 q16 34 32 0 M181 34 q9 30 18 0" stroke="#fff" stroke-width="1.4" fill="none" opacity=".8"/></g>` },
+  umbrella: { slot: 'hand', art: () => `<path d="M128 -6 L158 172 q2 10 -8 10" stroke="#8C5A3C" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M44 14 Q128 -84 212 14 Q191 2 170 14 Q149 2 128 14 Q107 2 86 14 Q65 2 44 14Z" fill="#FF5FA2"/>
+    <g fill="#fff" opacity=".85"><circle cx="92" cy="-12" r="5"/><circle cx="128" cy="-26" r="5"/><circle cx="164" cy="-12" r="5"/></g><circle cx="128" cy="-36" r="4" fill="#8C5A3C"/>` },
+  lolly: { slot: 'hand', art: () => em(162, 150, 44, '🍭') },
+  coconut: { slot: 'hand', art: () => `<path d="M158 150 l16 -34" stroke="#FF5FA2" stroke-width="4" stroke-linecap="round"/>` + em(152, 168, 40, '🥥') },
+  cherry: { slot: 'hand', art: () => em(100, 172, 34, '🍒') },
+  cheese: { slot: 'hand', art: () => em(154, 168, 36, '🧀') },
+  shield: { slot: 'hand', art: () => em(156, 164, 46, '🛡️') },
+  pearl: { slot: 'hand', art: () => `<circle cx="154" cy="166" r="11" fill="#FFF6FB" stroke="#E6D6EA" stroke-width="2"/><circle cx="150" cy="162" r="3.5" fill="#fff"/>` },
+  shell: { slot: 'hand', art: () => em(40, 80, 36, '🐚') },
+  ball: { slot: 'hand', art: () => `<g transform="translate(100 18)"><circle r="20" fill="#FF5FA2"/><path d="M0 0 L0 -20 A20 20 0 0 1 20 0Z M0 0 L0 20 A20 20 0 0 1 -20 0Z" fill="#fff"/><path d="M0 0 L20 0 A20 20 0 0 1 0 20Z" fill="#FFD23F"/><circle r="3.5" fill="#fff" stroke="#FF5FA2" stroke-width="1.5"/></g>` },
+  clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
+  hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },
+  butterfly: { slot: 'nose', art: () => em(100, 98, 30, '🦋') },
+  wet: { slot: 'body', art: () => `<g class="pp-drip" fill="#6FC6FF" stroke="#fff" stroke-width="1">${[[70, 58], [128, 54], [44, 118], [156, 126], [86, 150], [120, 170], [100, 46], [62, 176]].map(([x, y]) => drop(x, y)).join('')}</g>` },
+  ring: { slot: 'body', art: () => `<ellipse class="pp-ring" cx="100" cy="158" rx="76" ry="15" fill="none" stroke="#FFD23F" stroke-width="7"/>` },
+  dizzy: { slot: 'fx', art: () => `<g transform="translate(100 24) scale(1 .4)"><g class="pp-orbit">${[0, 90, 180, 270].map((a) => { const r = (a * Math.PI) / 180; return starPath(Math.cos(r) * 34, Math.sin(r) * 34, 0.6); }).join('')}</g></g>` },
+  bump: { slot: 'bump', art: () => `<ellipse cx="118" cy="44" rx="11" ry="9" fill="#FF9DBB" stroke="#E86A92" stroke-width="2"/><path d="M113 40 q4 -3 8 0" stroke="#fff" stroke-width="2" fill="none"/>` },
+};

@@ -57,6 +57,8 @@ function fresh() {
     days: [],
     today: null,
     dog: { name: '', met: false, forceUntil: 0, visitKey: '', doneKey: '', stayUntil: 0, gift: false, played: false },
+    // ninja missions: stars per skill, the scroll of stamps, today's mask and animal cloud
+    ninja: { skills: {}, scroll: [], mask: null, cloud: null },
     session: { activeMs: 0, lastAt: 0, activeAt: 0, napUntil: 0, warned: false },
     settings: { sessionMin: 15, napMin: 60, bedtime: '22:00', wake: '07:00', sound: true, realPet: true, translate: true, gamesPerDay: 3, dailyMax: 60, voice: true, voiceUri: { ru: '', en: '' } },
     playedMs: {},

@@ -5,6 +5,7 @@ const AUDIO = 'lucky-audio-v1';
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './js/main.js', './js/state.js', './js/i18n.js', './js/dialogs.js', './js/art.js', './js/sound.js', './js/game.js', './js/voicekey.js', './js/content.js', './js/wardrobe.js', './js/config.js', './js/version.js',
+  './js/antics.js', './js/missions.js', './js/ninja.js',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './audio/manifest.json',
 ];
 

@@ -3,6 +3,32 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.2.0] – 2026-09-27
+
+### Added
+- **Ninja missions, reimagined:** Lucky is the sensei. Pick one of two missions a day:
+  - he counts your moves out loud and does them too;
+  - holds come with a ring timer;
+  - *Ninja sneak* ("Sneak!" / "Freeze!") and *Freeze dance* with music;
+  - hunts at home with a grid of English words (and "that doesn't start with B!");
+  - look out of the window: the animal cloud you saw floats in Lucky's sky for the day;
+  - make a ninja mask: Lucky wears your colour all day.
+  - Six ninja skills with stars, a scroll of stamps and a stamp animation.
+- **Every thing in the worlds answers a tap, a double tap and a long press**, and Lucky joins in:
+  sunglasses, a rain cloud that soaks him (he shakes dry), an umbrella, a rainbow, sniffing flowers,
+  hide and seek, running from the crab, a coconut bonk with dizzy stars, snowballs, a top hat, a space helmet,
+  a hula ring, an Irish jig and more. Decorations and stickers join in too.
+- **Lucky's body parts:** head pats, tummy giggles and drums, foot thumps, nose boops, a bunny kiss,
+  an ear massage and purring when you stroke him.
+- **Tali:** double tap to spin after his tail, hold for a belly rub.
+- The riddle frog makes Lucky put on his thinking glasses; a caught butterfly sits on his nose.
+- About 600 new voice clips and new sound effects (rain, splash, sniff, bonk, thump, purr, freeze-dance music).
+
+### Fixed
+- **Sound after switching apps on iPhone:** it now comes back on the next tap (a fresh audio context
+  instead of the stuck one); a line that couldn't play is replayed.
+- Clouds no longer hide under the 💬 and ✏️ buttons, and small things (crab, flowers, clover) are easier to hit.
+
 ## [1.1.1] – 2026-09-27
 
 ### Fixed
@@ -40,6 +66,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.2.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/releases/tag/v1.0.0

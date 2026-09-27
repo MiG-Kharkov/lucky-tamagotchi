@@ -49,8 +49,10 @@ Lucky is a ginger lop-eared bunny who dreams of earning the **Pink Master Belt**
 His best friend **Tali**, a tiny white chihuahua with black spots, drops by to play, and a
 **riddle frog** sometimes hops in with a puzzle.
 
-Lucky talks with real recorded voices, reacts to how he feels, asks questions,
-sneezes when you tap his nose and turns his ears into a helicopter.
+Lucky talks with real recorded voices, reacts to how he feels and asks questions.
+Tap, double-tap, hold or stroke him (and everything around him) and he answers in a different way:
+he sneezes, purrs, thumps his feet, gets soaked by a rain cloud and shakes himself dry,
+runs away from the crab, hides behind a tree and waits for you to find him.
 Nothing bad ever happens to him: no illness, no dying, no guilt.
 
 > [!NOTE]
@@ -65,9 +67,10 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
 | 🎮 **Mini-games** | Carrot Rain · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (English Q&A) |
-| 🥷 **Ninja dojo** | One real-world mission a day (bunny hops, ninja breathing, find 3 pink things) plus caring for a real pet |
+| 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 28 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings… mix and match |
-| 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle. Every world has things to tap |
+| 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle |
+| 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, and Lucky joins in with sunglasses, umbrellas, space helmets and more |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them |
 | 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item) and 34 badges |
 | 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks, 19 kid-friendly jokes |

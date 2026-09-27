@@ -353,7 +353,7 @@ input, select { font: inherit; }
 /* Reduce Motion (iOS accessibility setting): keep short tap feedback, which is how the child
    sees Lucky react, but stop the ambient loops that drift or spin in the background. */
 @media (prefers-reduced-motion: reduce) {
-  .cloud, .petal, .snow, .waves, .gull, .comet, .rays, .shooting, .word-btn, .twinkle { animation: none !important; }
+  .cloud, .petal, .snow, .waves, .gull, .comet, .rays, .shooting, .word-btn, .twinkle, .sky-pet { animation: none !important; }
   .confetti { display: none; }
 }
 
@@ -703,7 +703,7 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .pw-card .pw-forgot { margin-top: 6px; font-size: 14px; }
 
 /* ---------- question: Lucky above the answer choices ---------- */
-.lucky { transition: left .8s cubic-bezier(.4, 1.4, .5, 1), width .6s, bottom .6s; }
+.lucky { transition: left var(--go, .8s) cubic-bezier(.4, 1.4, .5, 1), width .6s, bottom .6s, opacity .5s, scale .5s; }
 .scene.asking .lucky { width: min(40%, 190px); bottom: calc(var(--choicesH, 180px) + 14px); }
 .scene.asking .dog { width: min(24%, 110px); bottom: calc(var(--choicesH, 180px) + 14px); }
 .scene.asking .pill, .scene.asking .gift { display: none; }
@@ -712,3 +712,262 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .choices.compact .choice b { font-size: 15px; }
 /* the rainbow covers the sky: let taps reach the sun and clouds (it stays draggable in Decorate) */
 body:not(.editing) .dec-rainbow { pointer-events: none; }
+
+/* ---------- Lucky's antics: props layer, poses and scene effects ---------- */
+/* the finger can stroke Lucky and hold things without iOS taking it for a scroll */
+.lucky, .bg [data-tap], .dog-body { touch-action: none; }
+.l-art, .l-props { position: absolute; inset: 0; }
+.l-props { pointer-events: none; z-index: 1; }
+.lucky .nose, .lucky .feet { transform-box: fill-box; transform-origin: 50% 50%; }
+.lucky.p-eyes .w-face, .lucky.p-eyes .w-under, .lucky.p-head .w-head { opacity: 0; }
+.pp { transform-box: fill-box; transform-origin: 50% 50%; }
+.pp-in { animation: ppIn .35s cubic-bezier(.3, 1.6, .5, 1); }
+.pp-out { animation: ppOut .3s ease-in forwards; }
+@keyframes ppIn { from { transform: scale(.2); opacity: 0; } }
+@keyframes ppOut { to { transform: scale(.3); opacity: 0; } }
+.pp-net { transform-box: view-box; transform-origin: 150px 176px; animation: netSwing .32s ease-in-out 4 alternate; }
+@keyframes netSwing { from { transform: rotate(-35deg); } to { transform: rotate(25deg); } }
+.pp-orbit { transform-box: fill-box; transform-origin: 50% 50%; animation: spin .9s linear infinite; }
+.pp-drip { animation: drip 1s ease-in infinite; }
+@keyframes drip { to { transform: translateY(9px); opacity: .35; } }
+.pp-ring { transform-box: fill-box; transform-origin: 50% 50%; animation: ringWobble .5s ease-in-out infinite; }
+@keyframes ringWobble { 0%, 100% { transform: translateX(-9px) rotate(-3deg); } 50% { transform: translateX(9px) rotate(3deg); } }
+
+.lucky.walk { animation: walk .3s ease-in-out infinite; }
+@keyframes walk { 50% { translate: 0 -5%; rotate: 2deg; } }
+.lucky.sniff { animation: leanIn 1.5s ease-in-out; }
+.lucky.sniff .nose { animation: noseTwitch .16s ease-in-out 8; }
+@keyframes leanIn { 30%, 80% { rotate: -6deg; translate: -2% 3%; } }
+@keyframes noseTwitch { 50% { transform: scale(1.25, .85); } }
+.lucky.squash { animation: squash .7s ease-out; }
+@keyframes squash { 30% { scale: 1.12 .85; translate: 0 5%; } 60% { scale: .96 1.05; } }
+.lucky.startle { animation: hop .6s cubic-bezier(.3, 1.6, .5, 1); }
+.lucky.startle .ear-l { animation: earUpL 1s ease-out; }
+.lucky.startle .ear-r { animation: earUpR 1s ease-out; }
+@keyframes earUpL { 15%, 70% { transform: rotate(150deg); } }
+@keyframes earUpR { 15%, 70% { transform: rotate(-150deg); } }
+.lucky.kick { animation: kick 1s ease-in-out; }
+@keyframes kick { 20% { rotate: -8deg; } 45% { rotate: 14deg; translate: 8% -8%; } 75% { rotate: 0deg; translate: 0 0; } }
+.lucky.levitate { animation: levitate 4.2s ease-in-out; }
+.lucky.levitate .l-art { filter: drop-shadow(0 0 14px #FFFFFFCC); }
+@keyframes levitate { 20%, 80% { translate: 0 -12%; } 50% { translate: 0 -15%; } }
+.lucky.bask { animation: bask 3.8s ease-in-out; }
+.lucky.bask .l-art { filter: drop-shadow(0 0 18px #FFE066); }
+@keyframes bask { 15%, 85% { scale: 1.06 .92; translate: 0 4%; } }
+.lucky.wet .l-art { filter: saturate(.7) brightness(.95); }
+.lucky.wet .ear { animation: none; transform: translateY(6px) scaleY(1.06); }
+.lucky.shakeOff { transform-origin: 50% 90%; animation: shakeOff 1s ease-in-out; }
+@keyframes shakeOff { 10% { rotate: -14deg; } 25% { rotate: 14deg; } 40% { rotate: -12deg; } 55% { rotate: 10deg; } 70% { rotate: -6deg; } 85% { rotate: 4deg; } }
+.lucky.shiver, .lucky.scared { animation: shiver .12s linear infinite; }
+@keyframes shiver { 25% { translate: -1% 0; } 75% { translate: 1% 0; } }
+.lucky.dance { animation: dance .55s ease-in-out 4; }
+@keyframes dance { 25% { rotate: -10deg; translate: -4% -4%; } 50% { rotate: 0deg; translate: 0 0; } 75% { rotate: 10deg; translate: 4% -4%; } }
+.lucky.bigjump { animation: bigjump 1.1s ease-in-out; }
+@keyframes bigjump { 40% { translate: 0 -45%; scale: .95 1.08; } 70% { translate: 0 0; scale: 1.1 .9; } }
+.lucky.paddle { animation: paddle .6s ease-in-out 3; }
+@keyframes paddle { 25% { translate: -3% -6%; rotate: -5deg; } 50% { translate: 0 0; rotate: 0deg; } 75% { translate: 3% -6%; rotate: 5deg; } }
+.lucky.clap { animation: clap .7s ease-in-out; }
+@keyframes clap { 25%, 75% { translate: 0 -6%; } 50% { translate: 0 0; } }
+.lucky.wave { transform-origin: 50% 100%; animation: waveHi 1.2s ease-in-out; }
+@keyframes waveHi { 25% { rotate: -6deg; } 50% { rotate: 6deg; } 75% { rotate: -6deg; } }
+.lucky.throw { animation: throwIt .6s ease-in-out; }
+@keyframes throwIt { 30% { rotate: -10deg; translate: -3% 0; } 60% { rotate: 8deg; translate: 3% 0; } }
+.lucky.proud { animation: proud 1.2s ease-in-out; }
+@keyframes proud { 30%, 70% { scale: 1.08; translate: 0 -3%; } }
+.lucky.skate { animation: skate 1s ease-in-out; }
+@keyframes skate { 30% { rotate: -10deg; } 70% { rotate: 8deg; } }
+.lucky.pirouette { animation: pirouette .75s ease-in-out 2; }
+@keyframes pirouette { 25% { scale: .08 1; } 50% { scale: -1 1; } 75% { scale: -.08 1; } 100% { scale: 1 1; } }
+.lucky.slip { animation: slip 1.8s ease-in-out; }
+@keyframes slip { 15% { rotate: -18deg; translate: -6% 0; } 35% { rotate: 24deg; translate: 2% 6%; scale: 1.06 .86; } 70% { rotate: 0deg; translate: 0 5%; scale: 1.08 .86; } 100% { rotate: 0deg; translate: 0 0; scale: 1 1; } }
+.lucky.zeroG { animation: zeroG 3.5s ease-in-out; }
+@keyframes zeroG { 35% { translate: 0 -24%; rotate: -14deg; } 65% { translate: 2% -28%; rotate: 12deg; } 100% { translate: 0 0; rotate: 0deg; } }
+.lucky.hula { animation: hula .5s ease-in-out infinite; }
+@keyframes hula { 25% { translate: -3% 0; rotate: -3deg; } 75% { translate: 3% 0; rotate: 3deg; } }
+.lucky.moonjump { animation: moonjump 2.1s ease-in-out; }
+@keyframes moonjump { 45% { translate: 0 -48%; rotate: -10deg; } 55% { translate: 0 -48%; rotate: 10deg; } 100% { translate: 0 0; rotate: 0deg; } }
+.lucky.jig { animation: jig 1.9s linear; }
+@keyframes jig {
+  12% { translate: 0 -9%; rotate: -7deg; } 25% { translate: 0 0; rotate: 0deg; } 37% { translate: 0 -9%; rotate: 7deg; } 50% { translate: 0 0; rotate: 0deg; }
+  62% { translate: 0 -9%; rotate: -7deg; } 75% { translate: 0 0; rotate: 0deg; } 87% { translate: 0 -9%; rotate: 7deg; }
+}
+.lucky.strain { animation: strain .25s ease-in-out infinite; }
+@keyframes strain { 50% { scale: 1.05 .92; translate: .5% 0; } }
+.lucky.bow { animation: bowDown 1.5s ease-in-out; }
+.lucky.bow .head { animation: headDip 1.5s ease-in-out; }
+@keyframes bowDown { 30%, 70% { scale: 1 .92; translate: 0 5%; } }
+@keyframes headDip { 30%, 70% { transform: translateY(12px) scale(.97); } }
+.lucky.vanish { opacity: .12; }
+.lucky.hiding { opacity: .35; scale: .88; }
+.lucky.intohouse { opacity: 0; scale: .4; }
+.lucky.blastoff { animation: blastoff 1.2s ease-in forwards; }
+@keyframes blastoff { 20% { translate: 0 4%; } to { translate: 0 -260%; } }
+.lucky.land { animation: land .9s ease-out; }
+@keyframes land { from { translate: 0 -120%; } 70% { translate: 0 3%; scale: 1.1 .9; } to { translate: 0 0; } }
+.lucky.glow .l-art { filter: drop-shadow(0 0 16px #FFB347) brightness(1.08); }
+.lucky.listen .head { animation: listenTilt 3s ease-in-out; }
+@keyframes listenTilt { 20%, 80% { transform: rotate(-8deg); } }
+.lucky.think .head { animation: thinkTilt 2.4s ease-in-out infinite; }
+@keyframes thinkTilt { 50% { transform: rotate(-5deg); } }
+.lucky.balance { animation: balance .8s ease-in-out infinite; }
+@keyframes balance { 0%, 100% { rotate: -3deg; } 50% { rotate: 3deg; } }
+.lucky.sway { transform-origin: 50% 100%; animation: swayL 1.3s ease-in-out; }
+@keyframes swayL { 30% { rotate: -7deg; } 70% { rotate: 6deg; } }
+.lucky.climb { animation: climb 1.8s ease-in-out; }
+@keyframes climb { 20% { translate: 0 -8%; } 40% { translate: 0 -4%; } 60% { translate: 0 -12%; } 80% { translate: 0 -6%; } }
+/* Lucky's own body parts */
+.lucky.pat, .lucky.jiggle { animation: hop .5s cubic-bezier(.3, 1.6, .5, 1); }
+.lucky.pat .head { animation: headPat .5s ease-out; }
+@keyframes headPat { 40% { transform: scale(1.05, .9); } }
+.lucky.jiggle .body { animation: jiggle .6s ease-out; }
+.lucky.drum .body { animation: jiggle .45s ease-out 2; }
+@keyframes jiggle { 20% { transform: scale(1.06, .94); } 45% { transform: scale(.96, 1.04); } 70% { transform: scale(1.02, .98); } }
+.lucky.paws .feet { animation: pawWiggle .5s ease-in-out; }
+@keyframes pawWiggle { 25% { transform: translateY(-3px) rotate(-3deg); } 75% { transform: translateY(-3px) rotate(3deg); } }
+.lucky.thump { animation: thump .5s ease-out; }
+@keyframes thump { 25%, 75% { scale: 1.03 .95; translate: 0 2%; } 50% { scale: 1 1; translate: 0 0; } }
+.lucky.melt { animation: melt 2.4s ease-in-out; }
+.lucky.melt .ear-l { animation: earMeltL 2.4s ease-in-out; }
+.lucky.melt .ear-r { animation: earMeltR 2.4s ease-in-out; }
+@keyframes melt { 25%, 80% { scale: 1.04 .93; translate: 0 3%; } }
+@keyframes earMeltL { 25%, 80% { transform: rotate(10deg) translateY(4px); } }
+@keyframes earMeltR { 25%, 80% { transform: rotate(-10deg) translateY(4px); } }
+.lucky.boop .nose { animation: boop .22s ease-in-out 3; }
+@keyframes boop { 50% { transform: scale(1.35); } }
+.lucky.kiss { animation: kiss 1s ease-in-out; }
+@keyframes kiss { 40%, 60% { scale: 1.08; translate: 0 2%; } }
+.lucky.purr { animation: purr .08s linear 14; }
+@keyframes purr { 50% { translate: .5% 0; } }
+
+/* things flying around the scene */
+.fly-fx { position: absolute; left: 0; top: 0; z-index: 6; pointer-events: none; line-height: 1; }
+.rain-cloud { filter: drop-shadow(0 4px 6px #0002); }
+.pop-stay { animation: popStay var(--ms, 2s) ease-in-out forwards; }
+@keyframes popStay { 0% { transform: translate(-50%, -50%) scale(0); } 15% { transform: translate(-50%, -50%) scale(1.25); } 25%, 80% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(0); opacity: 0; } }
+.pop-rise { animation: popRise var(--ms, 2s) ease-in-out forwards; }
+@keyframes popRise { 0% { transform: translate(-50%, 0) scale(.6); opacity: 0; } 20%, 80% { transform: translate(-50%, -100%) scale(1); opacity: 1; } 100% { transform: translate(-50%, 0) scale(.6); opacity: 0; } }
+.fx-rainbow { position: absolute; left: 6%; right: 6%; top: 14%; pointer-events: none; animation: rainbowIn var(--ms, 4s) ease-in-out forwards; }
+.fx-rainbow svg { width: 100%; height: auto; display: block; }
+@keyframes rainbowIn { 0% { opacity: 0; transform: translateY(20px) scale(.9); } 15%, 80% { opacity: .9; transform: none; } 100% { opacity: 0; } }
+.sky-pet { position: absolute; left: 56%; top: 9%; font-size: 64px; line-height: 1; filter: brightness(0) invert(1) drop-shadow(0 4px 8px #0002); opacity: .92; animation: skyDrift 18s ease-in-out infinite alternate; cursor: pointer; }
+@keyframes skyDrift { to { translate: -45% 12px; } }
+
+/* scene things */
+[data-tap].bloom { animation: bloom 1.8s cubic-bezier(.3, 1.5, .5, 1); }
+@keyframes bloom { 30%, 70% { transform: scale(1.9); } }
+[data-tap="crab"].crabdance { animation: crabDance 2.2s ease-in-out; }
+@keyframes crabDance { 12%, 37%, 62% { transform: rotate(-12deg) translateY(-6px); } 25%, 50%, 75% { transform: rotate(12deg); } 87% { transform: rotate(-8deg); } }
+[data-tap="lamp"].lit { animation: litPulse 4.2s ease-in-out; }
+@keyframes litPulse { 10%, 90% { filter: drop-shadow(0 0 10px #FFD23F) brightness(1.35); } }
+[data-tap].swingfast { transform-origin: 50% 0; animation: swing .6s ease-in-out 3; }
+.pl.kickup .pl-in { animation: kickup 1.2s cubic-bezier(.3, 1.2, .5, 1); }
+@keyframes kickup { 35% { transform: translateY(-160%) rotate(200deg); } 70% { transform: translateY(0) rotate(360deg); } 85% { transform: translateY(-20%) rotate(360deg); } 100% { transform: rotate(360deg); } }
+.pl.launch .pl-in { animation: launch 3.6s ease-in-out; }
+@keyframes launch { 6% { transform: translateX(-2px); } 12% { transform: translateX(2px); } 18% { transform: none; } 45%, 60% { transform: translateY(-900%); opacity: 0; } 62% { transform: translateY(-900%); opacity: 1; } 95% { transform: translateY(3%); } }
+.pl.floaty .pl-in { animation: floaty 2.4s ease-in-out; }
+@keyframes floaty { 50% { transform: translateY(-40%) rotate(-6deg); } }
+.dog-body.dogspin { animation: dogSpin 1.4s ease-in-out; }
+@keyframes dogSpin { 25%, 75% { scale: -1 1; } 50% { scale: 1 1; } }
+.dog-body.belly { animation: belly 2s ease-in-out; }
+@keyframes belly { 20%, 80% { rotate: 180deg; translate: 0 18%; } 35%, 65% { rotate: 170deg; translate: 0 18%; } 50% { rotate: 190deg; translate: 0 18%; } }
+
+/* ---------- ninja missions ---------- */
+.ninja-mission {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; overflow-y: auto;
+  padding: calc(env(safe-area-inset-top) + 10px) 16px calc(env(safe-area-inset-bottom) + 16px);
+  background: linear-gradient(#FFE3F0, #E9DDFF); text-align: center;
+}
+.m-head { width: 100%; display: flex; justify-content: space-between; align-items: center; }
+.m-head .g-exit { width: 44px; height: 44px; border-radius: 14px; background: #fff; box-shadow: var(--shadow); font-size: 18px; font-weight: 800; color: var(--pink-d); }
+.m-skill { background: #fff; border-radius: 14px; padding: 8px 12px; font-weight: 800; font-size: 14px; box-shadow: var(--shadow); }
+.m-top { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.m-lucky { position: relative; width: min(40vw, 170px); aspect-ratio: 200 / 210; }
+.m-lucky svg { width: 100%; height: 100%; overflow: visible; }
+.m-lucky .head, .m-lucky .body { transform-box: fill-box; transform-origin: 50% 100%; }
+.m-lucky .ear { transform-box: fill-box; transform-origin: 50% 0; }
+.m-say { background: #fff; border-radius: 20px; padding: 10px 14px; box-shadow: var(--shadow); max-width: 340px; min-height: 46px; cursor: pointer; }
+.m-main { font-size: 18px; font-weight: 700; line-height: 1.3; }
+.m-sub { font-size: 13.5px; color: var(--muted); margin-top: 3px; font-weight: 500; }
+.m-sub:empty { display: none; }
+.m-stage { flex: 1; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; min-height: 150px; }
+.m-emoji { font-size: 64px; line-height: 1.1; }
+.m-note { color: var(--muted); font-weight: 600; font-size: 14px; max-width: 300px; margin: 0; }
+.pop { animation: popIn .35s cubic-bezier(.3, 1.6, .5, 1); }
+.m-big { font-size: 104px; font-weight: 900; color: var(--pink-d); line-height: 1; }
+.m-of { color: var(--muted); font-weight: 800; font-size: 18px; }
+.m-ring { width: 150px; height: 150px; border-radius: 50%; display: grid; place-items: center; box-shadow: var(--shadow);
+  background: conic-gradient(var(--pink) calc(var(--p) * 1turn), #fff 0); transition: background .3s; }
+.m-ring span { width: 118px; height: 118px; border-radius: 50%; background: #FFF6FB; display: grid; place-items: center; font-size: 48px; font-weight: 900; color: var(--pink-d); }
+.m-sign { font-size: 38px; font-weight: 900; padding: 22px 28px; border-radius: 28px; color: #fff; box-shadow: var(--shadow); animation: popIn .3s cubic-bezier(.3, 1.6, .5, 1); }
+.m-sign.go { background: #3CBF6B; }
+.m-sign.stop { background: #4D9BFF; }
+.m-slots { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.m-slot { width: 90px; height: 104px; border-radius: 24px; background: #fff; box-shadow: var(--shadow); border: 3px dashed #FFB3D6;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.m-slot span { font-size: 40px; }
+.m-slot small { font-size: 12.5px; font-weight: 800; color: var(--muted); }
+.m-slot.on { border: 3px solid #3CBF6B; animation: popIn .35s cubic-bezier(.3, 1.6, .5, 1); }
+.m-pal { position: absolute; left: 0; right: 0; bottom: 0; max-height: 72%; overflow-y: auto; z-index: 3; background: #fff; border-radius: 26px 26px 0 0;
+  padding: 14px 12px calc(env(safe-area-inset-bottom) + 14px); box-shadow: 0 -8px 30px #a03c7833; animation: mSlide .3s ease-out; }
+@keyframes mSlide { from { transform: translateY(100%); } }
+.m-pal h3 { margin: 0 0 10px; font-size: 17px; }
+.m-pal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.m-pal-it { background: #F4ECF7; border-radius: 16px; padding: 8px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.m-pal-it span { font-size: 30px; }
+.m-pal-it b { font-size: 13px; }
+.m-pal-it small { font-size: 11px; color: var(--muted); font-weight: 600; }
+.m-pal-it.sel { background: #FFD6EA; box-shadow: inset 0 0 0 3px var(--pink); }
+.m-pal-it.wrong { animation: shake .4s; opacity: .5; }
+.m-pal .m-btns { margin: 12px auto 0; }
+.m-btns { display: flex; flex-direction: column; gap: 8px; width: min(100%, 340px); }
+.m-btns .btn { width: 100%; }
+.m-btns .btn:disabled { opacity: .6; }
+.m-btns .btn.ready { animation: pulse 1.2s ease-in-out infinite; }
+/* Lucky does the moves */
+.m-lucky.mv-hop { animation: mvHop .45s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes mvHop { 40% { translate: 0 -18%; } }
+.m-lucky.mv-star { animation: mvStar .6s ease-out; }
+.m-lucky.mv-star .ear-l { animation: earUpL .6s ease-out; }
+.m-lucky.mv-star .ear-r { animation: earUpR .6s ease-out; }
+@keyframes mvStar { 40% { scale: 1.22 .9; translate: 0 -10%; } }
+.m-lucky.mv-squat { animation: mvSquat 2s ease-in-out; }
+@keyframes mvSquat { 50% { scale: 1.08 .8; translate: 0 10%; } }
+.m-lucky.mv-punch { animation: mvPunch .4s ease-out; }
+@keyframes mvPunch { 40% { rotate: 10deg; translate: 6% 0; } }
+.m-lucky.mv-frog { animation: mvFrog 1s ease-in-out; }
+@keyframes mvFrog { 20% { scale: 1.1 .85; translate: 0 6%; } 55% { translate: 0 -30%; scale: .95 1.1; } }
+.m-lucky.mv-run { animation: mvRun .3s ease-in-out; }
+@keyframes mvRun { 50% { translate: 0 -8%; } }
+.m-lucky.ps-oneleg { animation: balance 1.4s ease-in-out infinite; }
+.m-lucky.ps-plane { rotate: 12deg; animation: balance 1.6s ease-in-out infinite; }
+.m-lucky.ps-stretch { scale: .95 1.1; translate: 0 -5%; transition: scale .6s, translate .6s; }
+.m-lucky.ps-statue { filter: grayscale(1) contrast(.9); }
+.m-lucky.ps-sip::after { content: "🥛"; position: absolute; right: 2%; bottom: 14%; font-size: 36px; }
+.m-lucky.ps-sneak { animation: sneakStep 1s ease-in-out infinite; }
+@keyframes sneakStep { 25% { translate: -4% -2%; rotate: -4deg; } 75% { translate: 4% -2%; rotate: 4deg; } }
+.m-lucky.ps-frozen { filter: hue-rotate(160deg) saturate(.6) brightness(1.1); }
+.m-lucky.ps-frozen::after { content: "❄️"; position: absolute; right: 4%; top: 4%; font-size: 28px; }
+.m-lucky.ps-dance { animation: dance .55s ease-in-out infinite; }
+.m-lucky.ps-listen .head { animation: listenTilt 3s ease-in-out infinite; }
+/* dojo */
+.m-pick { width: 100%; display: flex; align-items: center; gap: 12px; text-align: left; background: #fff; border-radius: 18px; padding: 10px 12px; margin-top: 8px; box-shadow: 0 3px 0 #E6D6EA, var(--shadow); }
+.m-pick:active { transform: scale(.98); }
+.mp-text { display: flex; flex-direction: column; gap: 3px; }
+.mp-skill { font-size: 12px; font-weight: 800; color: var(--pink-d); }
+.skills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 8px; }
+.skill { display: flex; flex-direction: column; align-items: center; background: #F4ECF7; border-radius: 14px; padding: 8px 4px; }
+.skill span { font-size: 24px; filter: grayscale(1); opacity: .5; }
+.skill.on { background: #fff; box-shadow: var(--shadow); }
+.skill.on span { filter: none; opacity: 1; }
+.skill b { font-size: 18px; }
+.skill small { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+.ninja-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 6px 2px; background: #FFF6E4; border-radius: 14px; margin-top: 8px; }
+.stamp-mini { flex: none; min-width: 56px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.stamp-mini span { width: 44px; height: 44px; border-radius: 50%; border: 3px solid #E23D5B; display: grid; place-items: center; font-size: 22px; transform: rotate(-8deg); background: #FFF0F2; }
+.stamp-mini small { font-size: 12px; }
+.stamp-card .scroll-paper { width: 180px; height: 120px; margin: 0 auto 8px; border-radius: 12px; background: linear-gradient(#FFF6E4, #F7E3C0); box-shadow: inset 0 0 0 3px #E9CFA0; display: grid; place-items: center; }
+.stamp-card .stamp { width: 84px; height: 84px; border-radius: 50%; border: 5px solid #E23D5B; display: grid; place-items: center; font-size: 40px; color: #E23D5B; background: #FFF0F2cc;
+  animation: stampIn .5s cubic-bezier(.5, 1.8, .5, 1) .35s backwards; transform: rotate(-10deg); }
+@keyframes stampIn { from { transform: scale(2.4) rotate(-30deg); opacity: 0; } }
+.stamp-card .skill-up { font-weight: 800; color: var(--pink-d); }
+.stamp-card .dots { justify-content: center; margin: 6px 0 12px; }

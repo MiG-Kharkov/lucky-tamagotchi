@@ -5,6 +5,7 @@ import { synth, apiKey } from './tts.mjs';
 import { STR, LUCKY, DOG, CHATS, PRANKS, RIDDLES, PHRASES } from '../js/i18n.js';
 import { clipId, speechText, VOICES } from '../js/voicekey.js';
 import { REPLY, ASKS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from '../js/dialogs.js';
+import { MISSIONS, PALETTES } from '../js/missions.js';
 
 const OUT = new URL('../audio/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
@@ -30,6 +31,9 @@ walk('dog', DOG);
 for (const chat of CHATS) for (const [who, ru, en] of chat) addPair(who, [ru, en]);
 for (const pr of PRANKS) for (const [who, ru, en] of pr.lines) addPair(who, [ru, en]);
 for (const p of PHRASES) addPair('lucky', p);
+// Ninja missions: the mission itself and the words for what she found, saw or made
+for (const m of MISSIONS) addPair('lucky', m.text);
+for (const list of Object.values(PALETTES)) for (const it of list) addPair('lucky', it.w);
 for (const k of ['washHint', 'noGames', 'tooTired']) addPair('lucky', [STR.ru[k], STR.en[k]]);
 // Lucky's questions: only Lucky's lines are voiced; answer choices are text
 walk('lucky', REPLY);

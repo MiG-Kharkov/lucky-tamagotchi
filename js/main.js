@@ -1,5 +1,7 @@
 import * as st from './state.js';
-import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, MISSIONS, CARE, DEEDS, PHRASES, BELTS } from './i18n.js';
+import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, CARE, DEEDS, PHRASES, BELTS } from './i18n.js';
+import { MISSIONS, SKILLS } from './missions.js';
+import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
@@ -7,6 +9,7 @@ import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, openGame } from './game.js';
+import { createAntics, gestures } from './antics.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -34,7 +37,7 @@ const ui = {
   tray: $('#tray'), choices: $('#choices'), editTools: $('#editTools'), sheetWrap: $('#sheetWrap'), sheet: $('#sheet'), overlay: $('#overlay'), modal: $('#modal'), toast: $('#toast'),
 };
 
-let mode = 'main'; // main | wash | game | sleep | edit
+let mode = 'main'; // main | wash | game | mission | sleep | edit
 let tempFace = null, tempFaceUntil = 0;
 let shownFace = '', shownOutfit = '';
 let dogHere = false;
@@ -83,7 +86,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   if (document.hidden) return 0;
   if (ask && !forAsk) return 0; // don't interrupt Lucky's or the frog's question
   if ((auto || chain) && !userActive() && !(ambient && windowActive())) return 0;
-  if ((auto || chain) && mode === 'game') return 0;
+  if ((auto || chain) && (mode === 'game' || mode === 'mission')) return 0;
   const now = Date.now();
   if (auto && (now < busyUntil || chainQ.length)) { pending = { pair, who, at: now }; return 0; }
   if (!chain) stopChain();
@@ -222,6 +225,20 @@ function hop(elm, cls = 'hop', maxMs = 4000) {
   elm.addEventListener('animationend', onEnd);
   timers[cls] = setTimeout(off, maxMs); // safety net in case the animation never ran
 }
+
+// Scene antics: the worlds' details, decorations, Tali and Lucky's props (antics.js)
+const antics = createAntics({
+  ui,
+  ok: () => mode === 'main' && !sheetOpen && !modalOpen,
+  free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
+  world: () => S.bg,
+  say: (list, who = 'lucky') => say(fresh(list), who),
+  hop, setTemp, floatFx, fxAt, luckyPoint, sceneXY,
+  hearts: heartsBurst,
+  reward: () => { st.boost(S, 'fun', 2); award(addH(1, 'world', 10)); renderStats(); },
+  boost: (k, n) => { st.boost(S, k, n); renderStats(); },
+  stat,
+});
 
 function confetti() {
   const colors = ['#FF5FA2', '#FFD23F', '#8B6CFF', '#4CD37B', '#6FD3FF', '#FF9F43'];
@@ -402,20 +419,13 @@ function renderDecor() {
   ui.editTools.hidden = !(mode === 'edit' && editSel >= 0);
 }
 
-// Tapping an item outside Decorate mode: a small animation
+// Tapping an item outside Decorate mode: it answers, and Lucky often joins in (antics.js)
 const LAYERS = [ui.decor, ui.decorFront];
 const onLayers = (ev, fn) => LAYERS.forEach((l) => l.addEventListener(ev, fn));
-
-onLayers('click', (e) => {
-  const el = e.target.closest('.pl');
-  if (!el || mode !== 'main') return;
+LAYERS.forEach((l) => gestures(l, (t) => (mode === 'main' ? t.closest('.pl') : null), (kind, el, p) => {
   const it = layout()[el.dataset.i];
-  if (!it) return;
-  if (it.id === 'ball') { sfx.pop(); hop(el, 'bounce'); return; }
-  if (it.id === 'lantern') { sfx.note(392); hop(el, 'swingfast'); return; }
-  sfx.tap();
-  hop(el, 'wiggle');
-});
+  if (it) antics.decor(kind, el, it, p);
+}));
 
 // Dragging in Decorate mode
 let drag = null;
@@ -606,7 +616,13 @@ function renderLucky(force = false) {
   if (!force && face === shownFace && look === shownOutfit) return;
   shownFace = face;
   shownOutfit = look;
-  ui.lucky.innerHTML = luckyArt({ face, wear: S.wear });
+  // the picture is redrawn, the props layer on top of it (sunglasses, umbrella…) stays
+  if (!ui.luckyArt) {
+    ui.lucky.innerHTML = '<div class="l-art"></div><svg class="l-props" viewBox="0 0 200 210" aria-hidden="true"></svg>';
+    ui.luckyArt = ui.lucky.firstChild;
+    ui.props = ui.lucky.lastChild;
+  }
+  ui.luckyArt.innerHTML = luckyArt({ face, wear: S.wear });
 }
 
 const STAT_ICONS = { hunger: '🥕', fun: '💗', clean: '🫧', energy: '⚡' };
@@ -653,6 +669,8 @@ function buildActions() {
 
 function renderBg() {
   ui.bg.innerHTML = art.scene(S.bg);
+  shownSky = null;
+  applyNinjaLook();
 }
 
 function goPlace(id) {
@@ -809,47 +827,117 @@ window.addEventListener('pointercancel', () => { washDown = false; });
 
 // ---------- taps ----------
 
-let tapCount = 0, lastTapAt = 0, pressTimer = 0, pressed = false, tapTimes = [], earTimes = [];
+let tapCount = 0, tapTimes = [], earTimes = [], tickledAt = 0;
+const partOf = (t) => (t.closest('.nose') ? 'nose' : t.closest('.ear') ? 'ear' : t.closest('.feet') ? 'feet'
+  : t.closest('.tummy') ? 'tummy' : t.closest('.head') ? 'head' : 'body');
 
-// Long press: a hug
-ui.lucky.addEventListener('pointerdown', () => {
+// Taps on Lucky: what happens depends on where and how (tap, double tap, long press, stroke)
+gestures(ui.lucky, (t) => (mode === 'main' ? ui.lucky : null), (kind, _el, p) => {
   if (mode !== 'main') return;
-  pressed = false;
-  clearTimeout(pressTimer);
-  pressTimer = setTimeout(() => { pressed = true; hug(); }, 650);
-});
-['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => ui.lucky.addEventListener(ev, () => clearTimeout(pressTimer)));
-ui.lucky.addEventListener('contextmenu', (e) => e.preventDefault());
+  const part = partOf(p.target);
+  if (kind === 'press') return luckyPress(part, p);
+  if (antics.luckyTap() || ask) return;
+  if (kind === 'tap' && part === 'nose') sneeze();
+  if (kind === 'double' && Date.now() - tickledAt > 200) luckyDouble(part);
+  if (kind === 'long') luckyLong(part);
+  if (kind === 'stroke') stroke(p);
+}, { stroke: true });
+ui.scene.addEventListener('contextmenu', (e) => e.preventDefault()); // long presses are gestures here
 
-ui.lucky.addEventListener('click', (e) => {
-  if (mode !== 'main') return;
-  if (pressed) { pressed = false; return; }
-  if (ask?.touch) { touchAnswer(e); return; }
-  if (ask) { sfx.pop(); hop(ui.lucky); heartsBurst(...sceneXY(e), 2); return; }
-  const now = Date.now();
-  const [x, y] = sceneXY(e);
-  if (e.target.closest('.nose')) { sneeze(); return; }
-  if (e.target.closest('.ear')) { ears(e.target.closest('.ear')); return; }
+function luckyPress(part, p) {
+  if (antics.luckyTap()) return; // found him hiding
+  if (ask?.touch) { if (!p.second) touchAnswer(p); return; }
+  if (ask) { sfx.pop(); hop(ui.lucky); heartsBurst(...sceneXY(p), 2); return; }
+  if (part === 'ear') { ears(); return; }
+  if (part === 'nose') return; // a tap sneezes, a double tap boops
   // Many quick taps: tickling
+  const now = Date.now();
   tapTimes.push(now);
   while (tapTimes.length && now - tapTimes[0] > 3000) tapTimes.shift();
-  if (tapTimes.length >= 6) { tapTimes = []; tickle(); return; }
-  // Double tap: a binky jump
-  if (now - lastTapAt < 350) { lastTapAt = 0; binky(); return; }
-  lastTapAt = now;
+  if (tapTimes.length >= 6) { tapTimes = []; tickledAt = now; tickle(); return; }
+  if (p.second) return; // the second tap of a double tap
+  if (part === 'feet') { setTemp('laugh', 900); hop(ui.lucky, 'paws', 600); sfx.tap(); antics.line('paws', 0.5, 15000); st.boost(S, 'fun', 2); renderStats(); return; }
+  pet(part, p);
+}
+
+function pet(part, p) {
+  const [x, y] = sceneXY(p);
   // Sulks when he badly needs something (except joy: petting is exactly what helps)
   const need = st.lowestNeed(S.pet);
   if (tier() === 'low' && LUCKY.sulk[need] && S.pet[need] < 30 && Math.random() < 0.35) { sulk(need); return; }
   sfx.pop();
-  hop(ui.lucky);
+  setTemp(part === 'head' ? 'happy' : 'laugh', 1100);
+  if (part === 'head') hop(ui.lucky, 'pat', 600);
+  else if (part === 'tummy') hop(ui.lucky, 'jiggle', 700);
+  else hop(ui.lucky);
   heartsBurst(x, y - 20);
   st.boost(S, 'fun', 3);
-  setTemp('laugh', 1100);
   tapCount++;
   if (tapCount % 3 === 0) award(addH(1, 'pet', 8));
-  if (tapCount % 2 === 1) say(fresh(byTier(LUCKY.tapLow, LUCKY.tap, LUCKY.tapMax)));
+  if (tapCount % 2 === 1) {
+    const special = part === 'head' ? antics.line('pat', 0.5, 20000) : part === 'tummy' ? antics.line('giggle', 0.7, 20000) : 0;
+    if (!special) say(fresh(byTier(LUCKY.tapLow, LUCKY.tap, LUCKY.tapMax)));
+  }
   renderStats();
-});
+}
+
+function luckyDouble(part) {
+  if (part === 'ear') return; // ear taps count towards the helicopter
+  if (part === 'nose') { setTemp('laugh', 1000); hop(ui.lucky, 'boop', 800); sfx.squeak(); antics.line('boop', 0.9); return; }
+  if (part === 'tummy') { setTemp('laugh', 1200); hop(ui.lucky, 'drum', 1000); sfx.drum(); antics.line('drum', 0.9); st.boost(S, 'fun', 2); renderStats(); return; }
+  if (part === 'feet') { thump(); return; }
+  binky();
+}
+
+function luckyLong(part) {
+  if (part === 'ear') {
+    setTemp('happy', 2500);
+    hop(ui.lucky, 'melt');
+    sfx.purr();
+    heartsBurst(...luckyPoint(0.25, 0.35), 4);
+    st.boost(S, 'fun', 4);
+    award(addH(1, 'pet', 8));
+    antics.line('earRub', 1, 10000);
+  } else if (part === 'nose') {
+    setTemp('happy', 1500);
+    hop(ui.lucky, 'kiss');
+    sfx.kiss();
+    floatFx(...luckyPoint(0.5, 0.5), '💗');
+    antics.line('kiss', 1, 10000);
+  } else if (part === 'tummy') {
+    setTemp('laugh', 2200);
+    hop(ui.lucky, 'roll');
+    sfx.happy();
+    heartsBurst(...luckyPoint(0.5, 0.7), 5);
+    st.boost(S, 'fun', 4);
+    antics.line('tummyRub', 1, 20000);
+  } else if (part === 'feet') thump();
+  else { hug(); return; }
+  renderStats();
+}
+
+// Two quick thumps: that's how bunnies warn each other
+function thump() {
+  setTemp('ok', 900);
+  hop(ui.lucky, 'thump');
+  sfx.thump();
+  const [x, y] = luckyPoint(0.5, 0.95);
+  fxAt(x, y, ['💨'], 3, 'spark');
+  antics.line('thump', 0.9);
+}
+
+// Stroking Lucky with a finger: he purrs (bunnies really do, by gently grinding their teeth)
+function stroke(p) {
+  setTemp('happy', 1800);
+  hop(ui.lucky, 'purr');
+  sfx.purr();
+  const [x, y] = sceneXY(p);
+  heartsBurst(x, y, 3);
+  st.boost(S, 'fun', 3);
+  stat('strokes');
+  antics.line('purr', 0.9, 10000);
+  renderStats();
+}
 
 function sulk(need) {
   sfx.note(196);
@@ -881,7 +969,7 @@ function binky(silent = false) {
   stat('binkies');
 }
 
-function ears(ear) {
+function ears() {
   const now = Date.now();
   earTimes.push(now);
   while (earTimes.length && now - earTimes[0] > 2500) earTimes.shift();
@@ -959,38 +1047,7 @@ function fxAt(x, y, list, n, cls) {
   for (let i = 0; i < n; i++) setTimeout(() => floatFx(x + Math.random() * 60 - 30, y + Math.random() * 20, pick(list), cls), i * 70);
 }
 
-ui.bg.addEventListener('click', (e) => {
-  if (mode !== 'main') return;
-  const t = e.target.closest('[data-tap]');
-  if (!t) return;
-  const [x, y] = sceneXY(e);
-  hop(t, 'tapped');
-  switch (t.dataset.tap) {
-    case 'sun': sfx.sparkle(); fxAt(x, y, ['✨', '☀️'], 5, 'spark'); react('sun', LUCKY.sun, 0.6); break;
-    case 'cloud': sfx.bubble(); fxAt(x, y + 20, ['💧'], 8, 'drop'); react('rain', LUCKY.rain, 0.6); break;
-    case 'tree': sfx.bubble(); fxAt(x, y, ['🌸'], 8, 'drop petal-fx'); react('petals', LUCKY.petals, 0.6); break;
-    case 'flower': sfx.pop(); floatFx(x, y - 10, '🦋', 'fly-up'); react('flowers', LUCKY.flowers, 0.4); break;
-    case 'gong': sfx.gong(); floatFx(x, y, '', 'ripple'); react('gong', LUCKY.gong, 0.7); break;
-    case 'fuji': sfx.sparkle(); fxAt(x, y, ['❄️', '✨'], 5, 'spark'); break;
-    case 'lolly': sfx.sparkle(); fxAt(x, y, ['🍬', '✨', '🍭'], 5, 'spark'); react('candy', LUCKY.candy, 0.5); break;
-    case 'palm': sfx.pop(); floatFx(x, y, '🥥', 'drop'); react('palm', LUCKY.worldTap.palm, 0.7); break;
-    case 'shell': sfx.sparkle(); fxAt(x, y, ['✨', '🌊'], 4, 'spark'); react('shell', LUCKY.worldTap.shell, 0.6); break;
-    case 'crab': sfx.tap(); react('crab', LUCKY.worldTap.crab, 0.7); break;
-    case 'pine': sfx.bubble(); fxAt(x, y, ['❄️'], 8, 'drop'); react('pine', LUCKY.worldTap.pine, 0.6); break;
-    case 'snowman': sfx.pop(); fxAt(x, y, ['❄️', '⛄'], 4, 'spark'); react('snowman', LUCKY.worldTap.snowman, 0.7); break;
-    case 'ice': sfx.sparkle(); fxAt(x, y, ['✨', '❄️'], 5, 'spark'); break;
-    case 'planet': sfx.whirr(); fxAt(x, y, ['✨', '⭐'], 4, 'spark'); react('planet', LUCKY.worldTap.planet, 0.7); break;
-    case 'crater': sfx.pop(); floatFx(x, y, '🪨', 'spark'); break;
-    case 'star': sfx.note(pick([988, 1175, 1319])); floatFx(x, y, '⭐', 'spark'); break;
-    case 'gold': sfx.sparkle(); fxAt(x, y, ['🪙', '✨', '🪙'], 7, 'spark'); react('gold', LUCKY.worldTap.gold, 0.8); break;
-    case 'sheep': sfx.baa(); react('sheep', LUCKY.worldTap.sheep, 0.7); break;
-    case 'clover': sfx.pop(); floatFx(x, y, '☘️', 'fly-up'); react('clover', LUCKY.worldTap.clover, 0.5); break;
-    case 'castle': sfx.sparkle(); fxAt(x, y, ['✨', '🏰'], 3, 'spark'); break;
-    case 'pagoda': sfx.gong(); floatFx(x, y, '', 'ripple'); react('pagoda', LUCKY.worldTap.pagoda, 0.7); break;
-    case 'bamboo': sfx.bubble(); react('bamboo', LUCKY.worldTap.bamboo, 0.6); break;
-    case 'lamp': sfx.note(523); fxAt(x, y, ['✨'], 3, 'spark'); break;
-  }
-});
+// Tappable details of the worlds live in antics.js
 
 // Now and then a butterfly flies by; it can be caught
 let nextVisitorAt = Date.now() + 70e3;
@@ -1008,7 +1065,7 @@ function maybeVisitor(now) {
     fxAt(x, y, ['✨', '💖'], 6, 'spark');
     award(addH(1, 'bug', 5));
     stat('bugs');
-    say(fresh(LUCKY.butterfly));
+    if (!antics.catchBug()) say(fresh(LUCKY.butterfly));
   };
   ui.scene.appendChild(b);
   setTimeout(() => b.remove(), 11000);
@@ -1098,6 +1155,7 @@ function choicesHtml(opts) {
 
 // A question: the line stays until the child answers; choices are buttons under the bubble
 function askQ(q, who, opts, onPick, { compact = false } = {}) {
+  antics.end(); // Lucky walks back to his place above the choices
   say(q, who, { hold: true, forAsk: true });
   ui.choices.innerHTML = choicesHtml(opts);
   ui.choices.className = 'choices' + (compact ? ' compact' : '');
@@ -1245,6 +1303,7 @@ function showFrog(force = false) {
 }
 
 function frogLeave() {
+  antics.thinking(false);
   const f = ui.scene.querySelector('.frog');
   if (!f) return;
   clearTimeout(f.timer);
@@ -1257,6 +1316,7 @@ function frogRiddle(f) {
   f.onclick = null;
   const r = fresh(FROG.riddles);
   ask = { frog: true };
+  antics.thinking(true);
   f.classList.add('asking');
   hop(f, 'jump');
   sfx.croak();
@@ -1371,6 +1431,8 @@ function startGame(game) {
   if (S.pet.energy < 22) return say(P('tooTired'));
   if (S.pet.hunger < 25) { setTemp('sad', 1500); return say(fresh(LUCKY.gameRefuse)); }
   cancelAsk();
+  antics.end();
+  antics.clearProps();
   mode = 'game';
   ui.overlay.className = 'overlay show game-ov';
   openGame(ui.overlay, game, {
@@ -1423,13 +1485,26 @@ function taskFlow(root, key, seconds, onDone) {
   btn.onclick = () => { sfx.tap(); taskEnds[key] = Date.now() + (turbo() ? 2 : seconds) * 1000; run(); };
 }
 
+// Two missions to choose from each day, for different skills
+function todaysMissions() {
+  const a = MISSIONS[st.missionIndex(S, MISSIONS.length)];
+  const h = st.hash(st.today(S).date + 'm2');
+  for (let i = 0; i < MISSIONS.length; i++) {
+    const b = MISSIONS[(h + i) % MISSIONS.length];
+    if (b.skill !== a.skill) return [a, b];
+  }
+  return [a];
+}
+
+const skillName = (k) => `${SKILLS[k].emoji} ${L(SKILLS[k].name)}`;
+
 function openDojo() {
   const T0 = st.today(S);
   const b = BELTS[S.belt];
   const master = S.belt >= BELTS.length - 1;
-  const m = MISSIONS[st.missionIndex(S, MISSIONS.length)];
   const careList = S.settings.realPet ? CARE : DEEDS;
   const c = careList[st.careIndex(S, careList.length)];
+  const scroll = S.ninja.scroll.slice(-8).reverse();
   const html = `
     <div class="belt-box">${art.belt(b.color, 120)}
       <div><div class="muted">${tr('belt')}</div><div class="belt-name">${L(b.name)}</div>
@@ -1438,11 +1513,18 @@ function openDojo() {
     <div class="card mission">
       <div class="card-title">🥷 ${tr('mission')}</div>
       ${T0.missionDone ? `<p class="done-note">✅ ${tr('missionFinished')}</p>` : `
-        <div class="task"><span class="t-emoji">${m[2]}</span>${bi(m)}</div>
-        <p class="muted">${tr('missionReal')}</p>
-        <div class="row"><button class="btn pink go">${tr('missionStart')}</button>
-        ${T0.missionSwap < 1 ? `<button class="btn ghost swap">${tr('missionSwap')}</button>` : ''}</div>`}
+        <p class="muted">${tr('chooseMission')}</p>
+        ${todaysMissions().map((m) => `<button class="m-pick" data-id="${m.id}"><span class="t-emoji">${m.emoji}</span>
+          <span class="mp-text">${bi(m.text)}<small class="mp-skill">${skillName(m.skill)}</small></span></button>`).join('')}`}
     </div>
+    <div class="card skills-card">
+      <div class="card-title">⭐ ${tr('skills')}</div>
+      <div class="skills">${Object.keys(SKILLS).map((k) => `<div class="skill ${S.ninja.skills[k] ? 'on' : ''}"><span>${SKILLS[k].emoji}</span><b>${S.ninja.skills[k] || 0}</b><small>${L(SKILLS[k].name)}</small></div>`).join('')}</div>
+    </div>
+    ${scroll.length ? `<div class="card scroll-card"><div class="card-title">📜 ${tr('scroll')}</div><div class="ninja-scroll">${scroll.map((x) => {
+      const mm = MISSIONS.find((y) => y.id === x.id);
+      return `<div class="stamp-mini"><span>${mm?.emoji || '🥷'}</span>${x.r ? `<small>${x.r}</small>` : ''}</div>`;
+    }).join('')}</div></div>` : ''}
     <div class="card care">
       <div class="card-title">💗 ${S.settings.realPet ? tr('care') : tr('deed')}</div>
       ${T0.careDone ? `<p class="done-note">✅ ${tr('careDone')}</p>` : `
@@ -1451,40 +1533,79 @@ function openDojo() {
     </div>
     <div class="row"><button class="btn ghost breath-go">${tr('breathBtn')}</button></div>`;
   openSheet(tr('dojoTitle'), html, (root) => {
-    const mc = root.querySelector('.mission'), cc = root.querySelector('.care');
-    if (!T0.missionDone) {
-      taskFlow(mc, 'mission', 20, missionComplete);
-      const sw = mc.querySelector('.swap');
-      if (sw) sw.onclick = () => { T0.missionSwap++; delete taskEnds.mission; sfx.tap(); openDojo(); };
-    }
+    root.querySelectorAll('.m-pick').forEach((btn) => {
+      btn.onclick = () => { sfx.tap(); closeSheet(); startMission(MISSIONS.find((m) => m.id === btn.dataset.id)); };
+    });
+    const cc = root.querySelector('.care');
     if (!T0.careDone) taskFlow(cc, 'care', 15, careComplete);
     root.querySelector('.breath-go').onclick = () => { sfx.tap(); closeSheet(); breathe(); };
   });
 }
 
-function missionComplete() {
+// A mission runs full screen (ninja.js); Lucky stays awake until it's over
+function startMission(m) {
+  cancelAsk();
+  antics.end();
+  silence();
+  mode = 'mission';
+  ui.overlay.className = 'overlay show game-ov';
+  openMission(ui.overlay, m, {
+    lang: S.lang, translate: S.settings.translate, fast: turbo(), tr,
+    luckyArt: (face) => luckyArt({ face, wear: S.wear }),
+    onClose: closeGame,
+    onDone: (result) => { closeGame(); missionComplete(m, result); },
+  });
+}
+
+function missionComplete(m, result = {}) {
   const T0 = st.today(S);
+  if (T0.missionDone) return;
   T0.missionDone = true;
   stat('missions');
-  sfx.happy();
+  const N = S.ninja;
+  N.skills[m.skill] = (N.skills[m.skill] || 0) + 1;
+  N.scroll.push({ d: T0.date, id: m.id, r: result.found || '' });
+  while (N.scroll.length > 30) N.scroll.shift();
+  if (result.mask) N.mask = { d: T0.date, c: result.mask };
+  if (result.cloud) N.cloud = { d: T0.date, e: result.cloud };
+  applyNinjaLook();
   confetti();
   const res = addH(10, 'mission', 10);
   let beltUp = false;
   if (S.belt < BELTS.length - 1) {
     S.beltSteps++;
-    if (S.beltSteps >= 3) {
-      beltUp = true;
-      S.beltSteps = 0;
-      S.belt++;
-      const b = BELTS[S.belt];
-      showModal({ art: art.belt(b.color, 160), title: tr('newBelt'), text: L(b.name) });
-      sfx.levelup();
-    }
+    if (S.beltSteps >= 3) { beltUp = true; S.beltSteps = 0; S.belt++; }
+  }
+  const master = S.belt >= BELTS.length - 1;
+  // a stamp on the ninja scroll, then the new belt if there is one
+  showModal({ cls: '', custom: (host, done) => {
+    host.innerHTML = `<div class="modal-card stamp-card"><div class="scroll-paper"><div class="stamp">${m.emoji}</div></div>
+      <h2>${tr('stampTitle')}</h2><p class="skill-up">${tr('skillUp', { x: skillName(m.skill) })}</p>
+      ${master && !beltUp ? '' : `<div class="dots">${[0, 1, 2].map((i) => `<i class="${beltUp || i < S.beltSteps ? 'on' : ''}"></i>`).join('')}</div>`}
+      <div class="m-btns"><button class="btn pink">${tr('hooray')}</button></div></div>`;
+    setTimeout(() => sfx.stamp(), 450);
+    host.querySelector('button').onclick = () => { sfx.tap(); done(); };
+  } });
+  if (beltUp) {
+    const b = BELTS[S.belt];
+    showModal({ art: art.belt(b.color, 160), title: tr('newBelt'), text: L(b.name) });
+    sfx.levelup();
   }
   award(res);
   st.save(S);
-  openDojo();
-  say(fresh(beltUp ? LUCKY.belt : LUCKY.missionCheer));
+  renderTop();
+  say(fresh(beltUp ? LUCKY.belt : master ? LUCKY.sensei.stampMaster : LUCKY.sensei.stamp));
+}
+
+// Today's ninja look: the mask she drew and the animal cloud she saw
+const todayIs = (x) => x && x.d === st.today(S).date;
+const ninjaSky = () => (todayIs(S.ninja.cloud) ? S.ninja.cloud.e : null);
+let shownSky = null, shownMask = null;
+function applyNinjaLook() {
+  const mask = todayIs(S.ninja.mask) ? S.ninja.mask.c : null;
+  if (mask !== shownMask && ui.props) { shownMask = mask; antics.setSticky('eyes', mask ? 'mask' : null, mask); }
+  const sky = ninjaSky();
+  if (sky !== shownSky) { shownSky = sky; antics.sky(sky); }
 }
 
 function careComplete() {
@@ -1641,12 +1762,6 @@ function dogArrive() {
     ${S.dog.played ? '' : `<button class="pill together">🐾 ${tr('playTogether')}</button>`}`;
   const body = ui.dog.querySelector('.dog-body');
   hop(body, 'enter', 1500);
-  body.onclick = () => {
-    if (mode !== 'main') return;
-    sfx.bark();
-    hop(body);
-    say(fresh(DOG.tap), 'dog');
-  };
   const gift = ui.dog.querySelector('.gift');
   if (gift) gift.onclick = () => {
     if (mode !== 'main') return;
@@ -1680,6 +1795,12 @@ function dogArrive() {
     else if (userActive()) talk([['dog', ...fresh(DOG.arrive)], ['lucky', ...fresh(tier() === 'low' ? LUCKY.dogSad : LUCKY.dogHappy)]]);
   }, 700);
 }
+
+// Tali: tap - he barks, double tap - spins after his tail, long press - belly rub
+gestures(ui.dog, (t) => (mode === 'main' ? t.closest('.dog-body') : null), (kind, body, p) => {
+  if (kind === 'press') { if (!p.second) { sfx.bark(); hop(body); say(fresh(DOG.tap), 'dog'); } return; }
+  antics.dog(kind, body);
+});
 
 function dogLeave(silent = false) {
   if (!dogHere) return;
@@ -1729,7 +1850,7 @@ function renderSleep(force = false) {
       <p>${night ? tr('nightSub', { time }) : done ? tr('dayDoneSub', { time }) : tr('napSub', { time })}</p>
       ${night ? '' : `<p class="rest-note">${tr('restNote')}</p>`}
       <div class="sleep-lucky">${luckyArt({ face: 'sleep', wear: S.wear })}<div class="zzz"><span>z</span><span>z</span><span>Z</span></div></div>
-      ${!night && !S.today.missionDone ? `<div class="card idea"><div class="muted">${tr('napIdea')}</div><div class="task"><span class="t-emoji">${m[2]}</span>${bi(m)}</div></div>` : ''}
+      ${!night && !S.today.missionDone ? `<div class="card idea"><div class="muted">${tr('napIdea')}</div><div class="task"><span class="t-emoji">${m.emoji}</span>${bi(m.text)}</div></div>` : ''}
     </div>`;
   ui.overlay.querySelector('.sleep-lucky').onclick = (e) => {
     toast('🤫 ' + tr('shh'), 2000);
@@ -1755,6 +1876,8 @@ function renderSleep(force = false) {
 }
 
 function enterSleep() {
+  antics.end();
+  antics.clearProps();
   if (mode === 'edit') finishEdit(true);
   if (mode === 'wash') finishWash();
   cancelAsk();
@@ -2076,7 +2199,7 @@ function loop() {
     asleep = turbo() ? now < S.session.napUntil : (st.isAsleep(S, now) || dayDone(T0));
   }
 
-  if (asleep && mode !== 'game') {
+  if (asleep && mode !== 'game' && mode !== 'mission') {
     if (mode !== 'sleep') enterSleep(); else renderSleep();
   } else if (!asleep && mode === 'sleep') exitSleep();
 
@@ -2094,6 +2217,7 @@ function loop() {
   moodEvents(now, T0);
   needCues(now);
   if (tick % 10 === 0) checkBadges();
+  if (tick % 60 === 0) applyNinjaLook();
   maybeVisitor(now);
   maybeSurprise(now, T0);
   maybeMood(T0);
@@ -2148,14 +2272,6 @@ window.addEventListener('orientationchange', redrawAfterRotate);
 window.addEventListener('resize', redrawAfterRotate);
 
 ['touchend', 'click', 'pointerup'].forEach((ev) => document.addEventListener(ev, unlockAudio, { passive: true, capture: true }));
-// iOS stays silent until the first tap, so replay the greeting that was on screen
-let replayed = false;
-const replayGreeting = () => {
-  if (replayed) return;
-  replayed = true;
-  if (lastSaid && Date.now() - lastSaid.at < 8000 && ui.bubble.classList.contains('show')) speak(lastSaid.main, S.lang, lastSaid.who);
-};
-['touchend', 'click'].forEach((ev) => document.addEventListener(ev, replayGreeting, { once: true, capture: true }));
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 
 // ---------- start ----------
@@ -2199,6 +2315,7 @@ function start() {
   renderBg();
   renderDecor();
   renderLucky(true);
+  applyNinjaLook();
   $('#beltChip').onclick = () => {
     if (mode !== 'main') return;
     sfx.tap();
@@ -2230,6 +2347,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); } };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus };
 
 start();

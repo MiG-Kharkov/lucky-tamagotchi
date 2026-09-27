@@ -48,7 +48,23 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
 - **Living scene:** sun, clouds (rain), trees (petals), flowers (butterflies), gong, palm, crab, sheep, pot of gold…
   Butterflies fly by; a daily surprise present.
-- **Gestures:** long press = hug, double tap = binky, ear tap, nose = sneeze, three ear taps = helicopter, many taps = tickle.
+- **Gestures on Lucky** depend on where and how:
+
+  | | Tap | Double tap | Long press |
+  |---|---|---|---|
+  | Head / body | pat, hop | binky | hug |
+  | Tummy | giggle | drum | tummy rub |
+  | Feet | paw wiggle | thump (a real bunny warning) | thump |
+  | Nose | sneeze | boop | bunny kiss |
+  | Ears | wiggle (3 taps = helicopter) | | ear massage |
+
+  Stroking him with a finger makes him purr (bunnies really purr by grinding their teeth). Six quick taps tickle him.
+- **Scene antics:** every tappable thing answers a tap, a double tap and a long press, and Lucky often joins in:
+  sunglasses from the sun, a rain cloud that soaks him (he shakes dry), an umbrella, a rainbow, sniffing flowers,
+  a flower behind his ear, hide and seek behind a tree, running from the crab, a coconut on the head, a snowball
+  for the snowman, a space helmet, an Irish jig for the gold… Decorations join in too (the ball, the house, the rocket).
+  Props are drawn on a separate layer over Lucky, so they don't reset his animations. Each line has its own cooldown,
+  so he comments without chattering.
 
 ## Actions and games
 
@@ -57,13 +73,31 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
 | 🎈 Play | Carrot Rain, Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
-| 🥷 Dojo | Daily real-world ninja mission, caring for a real bunny, ninja breathing |
+| 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
 | ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky |
 | 💬 Phrase of the day | A conversational phrase and a 3-question quiz |
 | 🌙 Put to bed | Voluntary end of the session, with a bonus |
 
 Once a day Lucky asks how the child feels; if sad or cross, he offers ninja breathing.
+
+## Ninja missions
+
+The doing happens in the real room; the phone is only the sensei. Each day offers two missions for different skills,
+one of them counts. Lucky reads the mission out loud and guides it:
+
+| Kind | Game element |
+|---|---|
+| Count (hops, star jumps, squats, punches) | Lucky counts out loud on the beat and does the move too |
+| Hold (heron, tree pose, statue) | A ring timer while Lucky counts the seconds |
+| Ninja sneak | Move on *Sneak!*, freeze on *Freeze!* at random moments (the phone can lie on the table) |
+| Freeze dance | Music plays and stops at random; everyone freezes |
+| Hunt (3 pink things, something red/blue/yellow, things that start with B) | Tap a circle for each find and pick it from a grid of English words. Items that don't fit (a spoon for B) get a gentle "try another" |
+| Look (a cloud like an animal, count the birds, listen with eyes closed) | The "I'm back" button wakes up after some real time; the animal cloud then floats in Lucky's sky for the day |
+| Make (a ninja mask, a paper star or plane, a drawing) | After real time, tell Lucky the colour; he wears the mask you drew for the rest of the day |
+
+Rewards: a stamp on the ninja scroll, +1 in one of six skills (speed, balance, stealth, sharp eyes, creativity, calm)
+and a step towards the next belt (3 stamps per belt).
 
 ## Progress
 

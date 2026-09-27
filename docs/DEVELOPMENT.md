@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,
@@ -32,13 +32,16 @@ Offline mode needs https, so this is only for quick checks.
 |---|---|
 | `index.html` | The page, Content-Security-Policy, layout skeleton |
 | `css/style.css` | All styles and animations |
-| `js/main.js` | Game logic and UI: speech rules, care actions, questions, visitors, decorate mode, collection, parents' area, main loop |
+| `js/main.js` | Game logic and UI: speech rules, care actions, taps on Lucky, questions, visitors, decorate mode, dojo, collection, parents' area, main loop |
+| `js/antics.js` | Gestures (tap / double / long / stroke) and the scene antics: what every thing does and how Lucky joins in, props |
+| `js/ninja.js` | The ninja mission screen: counting, holds, sneak and freeze dance, hunts, look and make |
+| `js/missions.js` | Mission list, skills and the pick grids (with English words) |
 | `js/state.js` | Saved state, stat decay, daily limits, levels, mood tiers, parent password storage, Turbo snapshot |
 | `js/i18n.js` | All texts as `[ru, en]` pairs: UI strings, Lucky's lines, jokes, missions, phrases, talk-game dialogues |
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |
 | `js/wardrobe.js` | 28 outfit items (SVG layers per slot) |
 | `js/content.js` | Worlds, decorations, sticker albums, badges |
-| `js/art.js` | SVG art: Lucky, Tali, 8 worlds + night, decorations, belts, icon |
+| `js/art.js` | SVG art: Lucky, Tali, 8 worlds + night, decorations, belts, icon, Lucky's props |
 | `js/game.js` | Mini-games and their shared shell |
 | `js/sound.js` | Web Audio effects, voice clip playback, built-in voice fallback, iOS audio unlock |
 | `js/voicekey.js` | Clip ids (shared with the generator) and voice settings |
@@ -108,5 +111,7 @@ Tali is **Orus**, the frog is **Charon**. About 1250 MP3 files, ~15 MB. If a lin
 
 There is no test framework in the repo. During development the game was checked with Playwright scripts
 (iPhone emulation, muted audio) covering care actions, questions, the frog, Turbo, password recovery,
-limits and voice clip coverage. When changing speech or audio code, check on a real iPhone:
-first-tap audio unlock, silent switch, returning after a call, and offline mode.
+limits, voice clip coverage, every gesture on every scene thing and every mission kind (with Playwright's fake clock).
+When changing speech or audio code, check on a real iPhone: first-tap audio unlock, silent switch,
+switching to another app and back (the sound must come back on the next tap), returning after a call, and offline mode.
+In Turbo mode the waits inside missions are 2 seconds, which is handy for checking them by hand.
