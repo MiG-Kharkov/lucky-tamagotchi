@@ -1,4 +1,4 @@
-// Общий ключ записи для игры и для скрипта генерации: кто + язык + текст без эмодзи.
+// Shared clip key for the game and the generator script: who + language + text without emoji.
 
 export function speechText(s) {
   return s.replace(/\p{Extended_Pictographic}|️|‍/gu, '').replace(/^[\s…]+/, '').replace(/\s+/g, ' ').trim();
@@ -11,7 +11,7 @@ export function clipId(who, lang, text) {
   return (h >>> 0).toString(16).padStart(8, '0');
 }
 
-// Голоса Google Chirp 3 HD и ускорение при проигрывании (делает голос выше)
+// Google Chirp 3 HD voices and playback speed-up (makes the voice higher)
 export const VOICES = {
   lucky: { voice: 'Fenrir', rate: 1.1 },
   dog: { voice: 'Orus', rate: 1.25 },

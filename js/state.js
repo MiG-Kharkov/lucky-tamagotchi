@@ -1,21 +1,21 @@
-// Состояние игры: хранение, медленное убывание показателей, дневные лимиты, уровни.
+// Game state: storage, slow stat decay, daily limits, levels.
 
 const KEY = 'lucky-tamagotchi-v1';
 const SNAP = 'lucky-turbo-snapshot-v1';
-let wiped = false; // после сброса больше ничего не сохраняем (иначе pagehide запишет старое)
+let wiped = false; // after a reset nothing is saved any more (otherwise pagehide would write the old state back)
 const H = 3600e3;
 export const FLOOR = 15;
 export const MAX = 100;
 
-// Изменение показателей в час
-// Подобрано симуляцией дня: у заботливой игры Лаки грустит ~10% времени (в основном до кормления),
-// счастлив ~70%, в восторге ~18%. У небрежной — чаще грустит, но мягко.
+// Stat change per hour
+// Tuned with a daily simulation: with caring play Lucky is sad ~10% of the time (mostly before feeding),
+// happy ~70%, thrilled ~18%. With careless play he is sad more often, but gently.
 const RATES = {
   awake: { hunger: -6, fun: -5, clean: -3.5, energy: -3.5 },
   sleep: { hunger: -2, fun: -1.2, clean: -0.8, energy: 15 },
 };
 
-// Состояние настроения: low (грустит/капризничает), ok, happy, max (восторг)
+// Mood tier: low (sad/sulky), ok, happy, max (thrilled)
 export function moodTier(p) {
   const min = Math.min(p.hunger, p.fun, p.clean, p.energy);
   const care = Math.min(p.hunger, p.fun, p.clean);
@@ -26,7 +26,7 @@ export function moodTier(p) {
   return 'ok';
 }
 
-// Чего не хватает больше всего
+// The most unmet need
 export function lowestNeed(p) {
   return ['hunger', 'clean', 'energy', 'fun'].reduce((a, b) => (p[b] < p[a] ? b : a));
 }
@@ -81,17 +81,17 @@ export function load() {
       const saved = JSON.parse(raw);
       saved.v ??= 1;
       const S = merge(fresh(), saved);
-      // v2: отбой по умолчанию перенесён с 21:00 на 22:00
+      // v2: default bedtime moved from 21:00 to 22:00
       if (S.v < 2) { if (S.settings.bedtime === '21:00') S.settings.bedtime = '22:00'; S.v = 2; }
       return S;
     }
-  } catch { /* повреждённые данные — начинаем заново */ }
+  } catch { /* corrupted data: start over */ }
   return fresh();
 }
 
 export function save(S) {
   if (wiped) return;
-  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* приватный режим */ }
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch { /* private mode */ }
 }
 
 export function wipe() {
@@ -99,9 +99,9 @@ export function wipe() {
   try { localStorage.removeItem(KEY); localStorage.removeItem(SNAP); } catch { /* ignore */ }
 }
 
-// Пароль родителя: только хеш и только на этом устройстве (не стирается при «Начать заново»)
+// Parent password: hash only, on this device only (kept by Start over)
 const PARENT = 'lucky-parent-v1';
-// { hash — пароль, rec — код восстановления } — только хеши, только на этом устройстве
+// { hash: password, rec: recovery code }, hashes only, on this device only
 export function parentData() {
   try {
     const raw = localStorage.getItem(PARENT);
@@ -112,7 +112,7 @@ export function parentData() {
 }
 export function setParentData(d) { try { localStorage.setItem(PARENT, JSON.stringify(d)); } catch { /* ignore */ } }
 
-// Турбо-режим: перед включением запоминаем прогресс, при выключении возвращаем его
+// Turbo mode: save progress before switching on, restore it when switching off
 export function snapshot(S) {
   try { localStorage.setItem(SNAP, JSON.stringify({ ...S, turbo: false })); } catch { /* ignore */ }
 }
@@ -123,7 +123,7 @@ export function restoreSnapshot() {
     if (!raw) return false;
     localStorage.setItem(KEY, raw);
     localStorage.removeItem(SNAP);
-    wiped = true; // текущее (турбо) состояние больше не сохраняем
+    wiped = true; // stop saving the current (turbo) state
     return true;
   } catch { return false; }
 }
@@ -163,7 +163,7 @@ export function nextWake(t, st) {
   return r.getTime();
 }
 
-// Ночь можно отменить до утра кнопкой родителя «Разбудить Лаки» (wakeUntil)
+// A parent can cancel the night until the morning with Wake Lucky (wakeUntil)
 export const isAsleep = (S, now) => (isNight(now, S.settings) && now >= (S.session.wakeUntil || 0)) || now < S.session.napUntil;
 
 export function applyDecay(S, now) {
@@ -187,11 +187,11 @@ const blankDay = (k) => ({ date: k, treats: 0, games: 0, hearts: {}, missionSwap
 
 export function today(S, now = Date.now()) {
   const k = dayKey(now);
-  if (S.today && S.today.date === k && !S.today.filled) S.today = { ...blankDay(k), ...S.today, filled: true }; // старые сохранения
+  if (S.today && S.today.date === k && !S.today.filled) S.today = { ...blankDay(k), ...S.today, filled: true }; // old saves
   if (!S.today || S.today.date !== k) {
     S.today = { ...blankDay(k), filled: true };
     if (!S.days.includes(k)) S.days.push(k);
-    // храним статистику времени только за 2 недели
+    // keep time stats for 2 weeks only
     const keys = Object.keys(S.playedMs).sort();
     while (keys.length > 14) delete S.playedMs[keys.shift()];
     const vk = Object.keys(S.viewMs).sort();
@@ -202,7 +202,7 @@ export function today(S, now = Date.now()) {
 
 export const levelNeed = (l) => 25 + l * 10;
 
-// Выдаёт сердечки с дневным лимитом на категорию. Возвращает новые уровни.
+// Grants hearts with a daily cap per category. Returns the new levels.
 export function addHearts(S, n, cat, cap) {
   const T = today(S);
   const got = T.hearts[cat] || 0;
@@ -214,7 +214,7 @@ export function addHearts(S, n, cat, cap) {
   return { give, ups };
 }
 
-// Окно визита собачки: примерно 2 дня из 3, 3 часа в случайное время 10:00–18:00, начиная со 2-го дня.
+// Dog visit window: about 2 days in 3, 3 hours at a random time between 10:00 and 18:00, from day 2.
 export function dogVisitKey(S, now) {
   if (now < S.dog.forceUntil) return 'force-' + S.dog.forceUntil;
   if (S.days.length < 2 || isNight(now, S.settings)) return null;

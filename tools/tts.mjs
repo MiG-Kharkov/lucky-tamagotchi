@@ -1,5 +1,5 @@
-// Генерация озвучки через Google Cloud Text-to-Speech (Chirp 3 HD).
-// Ключ берётся из .env.local (GOOGLE_TTS_KEY) и никуда не выводится.
+// Voice clip generation with Google Cloud Text-to-Speech (Chirp 3 HD).
+// The key is read from .env.local (GOOGLE_TTS_KEY) and never printed.
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -8,7 +8,7 @@ const ROOT = path.dirname(path.dirname(new URL(import.meta.url).pathname));
 export function apiKey() {
   const env = fs.readFileSync(path.join(ROOT, '.env.local'), 'utf8');
   const m = env.match(/GOOGLE_TTS_KEY=(\S+)/);
-  if (!m) throw new Error('В .env.local нет GOOGLE_TTS_KEY');
+  if (!m) throw new Error('GOOGLE_TTS_KEY is missing in .env.local');
   return m[1];
 }
 

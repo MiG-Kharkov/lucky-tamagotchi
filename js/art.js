@@ -1,6 +1,6 @@
 import { wearLayers, WEAR_BY_ID } from './wardrobe.js';
 
-// SVG-графика: Лаки (рыжий вислоухий кролик), Тали (чихуахуа), фоны, пояс.
+// SVG art: Lucky (ginger lop-eared bunny), Tali (chihuahua), scenes, belts.
 
 let uidN = 0;
 const uid = () => 'a' + (++uidN);
@@ -45,7 +45,7 @@ function luckyMouth(face) {
   }
 }
 
-// wear — { head, face, neck, body }; outfit (одна вещь) — для совместимости
+// wear is { head, face, neck, body }; outfit (a single item) is kept for old saves
 export function lucky({ face = 'ok', wear = null, outfit = null, belt = '#FF4F9A' } = {}) {
   const u = uid();
   if (!wear) wear = outfit && WEAR_BY_ID[outfit] ? { [WEAR_BY_ID[outfit].slot]: outfit } : {};
@@ -170,7 +170,7 @@ ${[[40, 470, '#fff'], [120, 520, '#FFE66D'], [300, 490, '#fff'], [360, 540, '#C7
 <path d="M0 530 Q200 470 400 540 V700 H0Z" fill="#2E3265"/>
 </svg>`;
   }
-  // сад
+  // garden
   const fl = [[30, 470, '#FF7AB8'], [70, 500, '#fff'], [120, 470, '#FF5FA2'], [300, 480, '#FFD23F'], [350, 505, '#FF7AB8'], [380, 470, '#fff'],
     [20, 560, '#FF5FA2'], [90, 590, '#FFD23F'], [330, 580, '#FF5FA2'], [380, 610, '#fff'], [60, 640, '#FF7AB8'], [350, 650, '#B78CFF']]
     .map(([x, y, c], i) => flower(x, y, c, 1 + (i % 3) * .25)).join('');
@@ -191,7 +191,7 @@ ${fl}
 }
 
 
-// ---------- новые миры ----------
+// ---------- more worlds ----------
 const svgOpen = '<svg viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">';
 const snow = (n, cls = 'snow') => Array.from({ length: n }, (_, i) => `<circle class="${cls} p${i % 10}" cx="${(i * 47) % 400}" cy="-10" r="${2 + (i % 3)}" fill="#fff"/>`).join('');
 const stars = (n) => Array.from({ length: n }, (_, i) => { const x = (i * 83) % 400, y = 20 + ((i * 61) % 380); return `<g data-tap="star"><circle cx="${x}" cy="${y}" r="12" fill="transparent"/><circle class="twinkle t${i % 3}" cx="${x}" cy="${y}" r="${1 + (i % 3) * .8}" fill="#fff"/></g>`; }).join('');
@@ -301,7 +301,7 @@ export function icon() {
 </svg>`;
 }
 
-// Украшения дома Лаки (отдельные картинки поверх сцены)
+// Decorations for Lucky's home (separate pictures placed on the scene)
 export function decor(id) {
   switch (id) {
     case 'bowl':

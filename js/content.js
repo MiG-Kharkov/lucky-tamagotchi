@@ -1,6 +1,6 @@
-// Миры, украшения, наклейки-альбомы и значки. Названия — пары [ru, en].
+// Worlds, decorations, sticker albums and badges. Names are [ru, en] pairs.
 
-// Миры открываются по уровням. props — предметы этого мира для «Украсить» (эмодзи, доступны после открытия мира)
+// Worlds unlock by level. props are the world's items for Decorate (emoji, available once the world is unlocked)
 export const PLACES = [
   { id: 'garden', level: 1, name: ['Сад', 'Garden'], props: ['🌷', '🌼', '🍄', '🌲', '🪵', '🎈'] },
   { id: 'dojo', level: 4, name: ['Сакура-додзё', 'Sakura dojo'], props: ['🎋', '🏮', '🪷'] },
@@ -12,7 +12,7 @@ export const PLACES = [
   { id: 'castle', level: 22, name: ['Замок ниндзя', 'Ninja castle'], props: ['🏯', '⛩️', '🎐'] },
 ];
 
-// Украшения-картинки (SVG в art.decor)
+// Picture decorations (SVG in art.decor)
 export const DECOR = [
   { id: 'bowl', level: 5, name: ['Миска с сеном', 'Hay bowl'] },
   { id: 'hutch', level: 9, name: ['Домик Лаки', "Lucky's house"] },
@@ -27,7 +27,7 @@ export const DECOR = [
   { id: 'pond', level: 27, name: ['Пруд лягушки', "Frog's pond"] },
 ];
 
-// Наклейки: 6 альбомов по 10. За полный альбом — особая вещь
+// Stickers: 6 albums of 10. A complete album gives a special item
 export const ALBUMS = [
   { id: 'garden', name: ['Сад', 'Garden'], reward: 'lei', stickers: ['🌸', '🌻', '🌷', '🦋', '🐞', '🐝', '🍀', '🐣', '🌈', '🪁'] },
   { id: 'sweets', name: ['Сладости', 'Sweets'], reward: 'chefHat', stickers: ['🍓', '🧁', '🍩', '🍭', '🍬', '🍪', '🎂', '🍦', '🫐', '🎀'] },
@@ -38,7 +38,7 @@ export const ALBUMS = [
 ];
 export const STICKERS = ALBUMS.flatMap((a) => a.stickers);
 
-// Значки-достижения: stat — счётчик в S.stats (или особый: days, level, belt, stickers, albums)
+// Achievement badges: stat is a counter in S.stats (or a derived one: days, level, belt, stickers, albums)
 export const BADGES = [
   ['feed1', '🥕', ['Первый обед', 'First lunch'], 'feeds', 1],
   ['feed50', '🌾', ['Шеф-повар', 'Master chef'], 'feeds', 50],

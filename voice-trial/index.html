@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Выбор голосов</title>
+  <title>Voice trial</title>
   <style>
     :root { --pink: #FF5FA2; --pink-d: #E23D86; --purple: #8B6CFF; --ink: #4A2B4F; --muted: #9A7C9E; font-family: ui-rounded, -apple-system, system-ui, sans-serif; color: var(--ink); }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -26,13 +26,13 @@
   </style>
 </head>
 <body>
-  <h1>🎧 Выбор голосов</h1>
-  <p class="note">Послушай варианты и напиши, какой голос нравится для Лаки и какой для Тали, и какую высоту выбрать. Если звука нет, проверь переключатель беззвучного режима сбоку на iPhone.</p>
+  <h1>🎧 Voice trial</h1>
+  <p class="note">Listen to the options and pick a voice for Lucky and for Tali, and a pitch. No sound? Check the silent switch on the side of the iPhone.</p>
   <div id="root"></div>
 <script>
 const CH = {
-  lucky: { title: '🐰 Лаки', pitch: 1.1 },
-  dog: { title: '🐶 Тали', pitch: 1.25 },
+  lucky: { title: '🐰 Lucky', pitch: 1.1 },
+  dog: { title: '🐶 Tali', pitch: 1.25 },
 };
 const PITCHES = [1, 1.1, 1.2, 1.3, 1.4];
 let ctx, current;
@@ -60,11 +60,11 @@ fetch('list.json').then((r) => r.json()).then((list) => {
     const voices = [...new Set(list.filter((x) => x.who === who).map((x) => x.voice))];
     const sec = document.createElement('section');
     sec.innerHTML = `<h2>${CH[who].title}</h2>
-      <div class="pitch"><span>Высота:</span>${PITCHES.map((p) => `<button data-p="${p}" class="${p === CH[who].pitch ? 'on' : ''}">${p === 1 ? 'обычная' : '×' + p}</button>`).join('')}</div>
-      ${voices.map((v, i) => `<div class="card"><h3>Вариант ${'ABCD'[i]} <small>${v}</small></h3>
+      <div class="pitch"><span>Pitch:</span>${PITCHES.map((p) => `<button data-p="${p}" class="${p === CH[who].pitch ? 'on' : ''}">${p === 1 ? 'normal' : '×' + p}</button>`).join('')}</div>
+      ${voices.map((v, i) => `<div class="card"><h3>Option ${'ABCD'[i]} <small>${v}</small></h3>
         ${['ru', 'en'].map((lang) => `<div class="row"><span class="flag">${lang.toUpperCase()}</span>
           ${list.filter((x) => x.who === who && x.voice === v && x.lang === lang).map((x) => `<button class="play" data-f="${x.file}">▶︎ ${x.text}</button>`).join('')}</div>`).join('')}
-        <div class="row"><button class="all" data-v="${v}">▶︎ Всё подряд</button></div></div>`).join('')}`;
+        <div class="row"><button class="all" data-v="${v}">▶︎ Play all</button></div></div>`).join('')}`;
     root.appendChild(sec);
     sec.querySelectorAll('.pitch button').forEach((b) => b.onclick = () => {
       CH[who].pitch = Number(b.dataset.p);

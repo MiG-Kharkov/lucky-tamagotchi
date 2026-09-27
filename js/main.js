@@ -2,6 +2,7 @@ import * as st from './state.js';
 import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, MISSIONS, CARE, DEEDS, PHRASES, BELTS } from './i18n.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
+import { VERSION, BUILD } from './version.js';
 import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
@@ -10,21 +11,21 @@ import { GAMES, openGame } from './game.js';
 const $ = (s, r = document) => r.querySelector(s);
 
 let S = st.load();
-// ?mute — для автотестов: без звука и голоса (настройки не трогаем)
+// ?mute is for automated tests: no sound or voice (settings are not changed)
 const MUTE = new URLSearchParams(location.search).has('mute');
 const tr = (k, v) => T(S.lang, k, v);
 const L = (pair) => say2(pair, S.lang);
 const other = () => (S.lang === 'ru' ? 'en' : 'ru');
-const P = (key, v) => [T('ru', key, v), T('en', key, v)]; // UI-строка как пара для реплик
-// Имена фиксированы: они вшиты в записи голосов
+const P = (key, v) => [T('ru', key, v), T('en', key, v)]; // A UI string as a [ru, en] pair for speech
+// Names are fixed: they are baked into the voice clips
 const dogName = (lang = S.lang) => T(lang, 'dogDefault');
 const idx = () => (S.lang === 'en' ? 1 : 0);
-// Турбо-режим (для родителя): всё без ограничений, прогресс до турбо сохранён отдельно
+// Turbo mode (for parents): no limits; progress from before Turbo is saved separately
 const turbo = () => !!S.turbo;
-// Дневной потолок активной игры: после него Лаки отдыхает до утра
+// Daily cap on active play: after it Lucky rests until the morning
 const dayDone = (T0 = S.today) => !turbo() && S.settings.dailyMax > 0 && (S.playedMs[T0?.date] || 0) >= S.settings.dailyMax * 60e3;
 const addH = (n, cat, cap) => st.addHearts(S, turbo() ? n * 5 : n, cat, turbo() ? Infinity : cap);
-// Лаки с повязкой цвета текущего пояса
+// Lucky with a headband in the current belt colour
 const luckyArt = (o) => art.lucky({ ...o, belt: BELTS[S.belt].color });
 
 const ui = {
@@ -40,18 +41,18 @@ let dogHere = false;
 let lastSpeech = 0, bubbleTimer = 0, tick = 0, sleepKey = '';
 let sheetOpen = false;
 
-// ---------- настроение ----------
+// ---------- mood ----------
 
 const tier = () => st.moodTier(S.pet);
-// Реплика по настроению: для грустного и восторженного — свои варианты
+// Mood-based line: sad and thrilled moods have their own lists
 const byTier = (low, normal, max) => { const t = tier(); return t === 'low' ? low : t === 'max' ? max : normal; };
 
-// ---------- речь ----------
+// ---------- speech ----------
 
 const kidName = (lang) => T(lang, 'kidDefault');
 const fill = (txt, lang) => txt.replaceAll('{dog}', dogName(lang)).replaceAll('{name}', kidName(lang));
 
-// Не повторяем недавние реплики
+// Don't repeat recent lines
 const recent = [];
 function fresh(list) {
   const pool = list.filter((x) => !recent.includes(x));
@@ -63,24 +64,24 @@ function fresh(list) {
 
 let chainQ = [], chainTimer = 0;
 let lastSaid = null;
-let busyUntil = 0;   // до этого момента звучит текущая реплика
-let pending = null;  // одна отложенная автоматическая реплика
+let busyUntil = 0;   // the current line plays until this moment
+let pending = null;  // one postponed automatic line
 function stopChain() { chainQ = []; clearTimeout(chainTimer); }
 
 function speechMs(text) { return Math.max(3200, text.length * 85); }
 
-// Сам Лаки говорит, только если окно на экране, в фокусе и Лиза касалась экрана в последнюю минуту.
-// На касания он отвечает всегда, пока окно видно.
+// Lucky speaks on his own only if the window is visible, focused and the child touched the screen in the last minute.
+// He always answers taps while the window is visible.
 const ACTIVE_MS = 60e3;
 let lastInput = Date.now();
 const windowActive = () => !document.hidden && document.hasFocus();
 const userActive = () => windowActive() && Date.now() - lastInput < ACTIVE_MS;
 
-// Реплика: текст на основном языке, перевод мелко, озвучка вслух.
-// Говорим только в активном окне и по одной: автоматическая реплика ждёт, пока закончится текущая.
+// A line: main-language text, small translation, spoken out loud.
+// Speak only in an active window, one line at a time: automatic lines wait for the current one.
 function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false } = {}) {
   if (document.hidden) return 0;
-  if (ask && !forAsk) return 0; // не перебиваем вопрос Лаки или лягушки
+  if (ask && !forAsk) return 0; // don't interrupt Lucky's or the frog's question
   if ((auto || chain) && !userActive() && !(ambient && windowActive())) return 0;
   if ((auto || chain) && mode === 'game') return 0;
   const now = Date.now();
@@ -90,7 +91,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   const sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
   ui.bubble.className = 'bubble show b-' + who;
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
-  // Сама реплика звучит сразу; касание облачка озвучивает перевод
+  // The line plays right away; tapping the bubble plays the translation
   ui.bubble.onclick = (e) => {
     e.stopPropagation();
     if (sub) speak(sub, other(), who); else speak(main, S.lang, who);
@@ -110,7 +111,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
 
 const sayAuto = (pair, who = 'lucky') => say(pair, who, { auto: true });
 
-// Отложенная реплика звучит, когда освободится «эфир»; устаревшие выбрасываем
+// A postponed line plays when nothing else is speaking; stale ones are dropped
 function flushPending(now) {
   if (!pending || ask || now < busyUntil || chainQ.length || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
   const p = pending;
@@ -127,7 +128,7 @@ function silence() {
   ui.bubble.classList.remove('show');
 }
 
-// Сценка: реплики по очереди, следующая — когда закончилась предыдущая
+// A scene: lines in turn, each starts when the previous one ends
 function talk(lines) {
   stopChain();
   chainQ = [...lines];
@@ -151,7 +152,7 @@ function react(kind, list, chance = 1) {
   say(fresh(list));
 }
 
-// Проделки Тали: сценка + смешное действие
+// Tali's pranks: a scene plus a funny action
 function prank(p) {
   const dogEl = ui.dog.querySelector('.dog-body');
   if (p.fx === 'steal' && dogEl) {
@@ -181,7 +182,7 @@ function toast(html, ms = 3500) {
   toast.t = setTimeout(() => ui.toast.classList.remove('show'), ms);
 }
 
-// ---------- эффекты ----------
+// ---------- effects ----------
 
 function sceneXY(e) {
   const r = ui.scene.getBoundingClientRect();
@@ -208,18 +209,18 @@ function luckyPoint(fx = 0.5, fy = 0.5) {
   return [l.left - s.left + l.width * fx, l.top - s.top + l.height * fy];
 }
 
-// Разовый эффект: класс снимается, когда анимация самого элемента закончилась
-// (иначе вложенные бесконечные анимации, например уши-вертолёт, крутились бы вечно).
+// One-off effect: the class is removed when the element's own animation ends
+// (otherwise nested infinite animations, like the helicopter ears, would run forever).
 function hop(elm, cls = 'hop', maxMs = 4000) {
   elm.classList.remove(cls);
-  void elm.getBoundingClientRect(); // перезапуск анимации, работает и для SVG
+  void elm.getBoundingClientRect(); // restart the animation (works for SVG too)
   elm.classList.add(cls);
   const timers = (elm._fx ||= {});
   clearTimeout(timers[cls]);
   const off = () => { clearTimeout(timers[cls]); elm.classList.remove(cls); elm.removeEventListener('animationend', onEnd); };
   const onEnd = (e) => { if (e.target === elm) off(); };
   elm.addEventListener('animationend', onEnd);
-  timers[cls] = setTimeout(off, maxMs); // страховка, если анимация не запустилась
+  timers[cls] = setTimeout(off, maxMs); // safety net in case the animation never ran
 }
 
 function confetti() {
@@ -242,7 +243,7 @@ function setTemp(face, ms) {
   renderLucky();
 }
 
-// ---------- модальные окна ----------
+// ---------- modals ----------
 
 const modalQ = [];
 let modalOpen = false;
@@ -274,7 +275,7 @@ function award(res) {
   renderTop();
 }
 
-// Что приносит уровень: наряд, место, украшение; если ничего — наклейка или бонус
+// What a level brings: an outfit, a place or a decoration; otherwise a sticker or bonus
 function levelRewards(lvl) {
   const out = [
     ...WEAR.filter((x) => x.level === lvl).map((x) => ({ kind: 'outfit', ...x })),
@@ -302,7 +303,7 @@ function rewardArt(r) {
 
 const REWARD_LABEL = { outfit: 'rvOutfit', place: 'rvPlace', decor: 'rvDecor', sticker: 'rvSticker', hearts: 'rvHearts' };
 
-// Красивое открытие подарка за уровень
+// The level-up present reveal
 function revealLevel(host, lvl, done) {
   revealGift(host, { title: tr('levelUp', { n: lvl }), rewards: levelRewards(lvl), next: nextRewardHint(lvl), line: LUCKY.levelUp }, done);
 }
@@ -313,7 +314,7 @@ function wearIt(w) {
   renderLucky(true);
 }
 
-// Открытие подарка: уровень, сюрприз, альбом, подарок Тали
+// Present reveal: level-up, daily surprise, album prize, Tali's gift
 function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, done) {
   const main = rewards[0];
   rewards.filter((r) => r.kind === 'decor').forEach((r) => placeNewDecor(r.id));
@@ -362,7 +363,7 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
   };
 }
 
-// Расстановка на сцене: для каждого места свой список предметов (координаты в % сцены)
+// Scene layout: each place has its own item list (coordinates in % of the scene)
 const DECOR_W = { rainbow: 72, lantern: 12, hutch: 31, bowl: 18, ball: 13, tent: 30, snowman: 15, igloo: 30, rocket: 15, castle: 34, pond: 32 };
 const DECOR_POS = { rainbow: [50, 14], lantern: [88, 11], hutch: [17, 60], bowl: [86, 90], ball: [10, 91],
   tent: [82, 58], snowman: [88, 68], igloo: [18, 62], rocket: [86, 50], castle: [20, 54], pond: [74, 90] };
@@ -379,13 +380,13 @@ function layout() {
   return S.layout[S.bg];
 }
 
-// Новое украшение сразу ставим в текущее место
+// A new decoration is placed in the current world right away
 function placeNewDecor(id) {
   const items = layout();
   if (!items.some((it) => it.id === id)) items.push({ k: 'decor', id, x: DECOR_POS[id][0], y: DECOR_POS[id][1], s: 1, f: 0 });
 }
 
-// Что стоит ниже этой линии — ближе к зрителю, перед Лаки
+// Items below this line are closer to the viewer, in front of Lucky
 const FRONT_Y = 80;
 
 function renderDecor() {
@@ -401,7 +402,7 @@ function renderDecor() {
   ui.editTools.hidden = !(mode === 'edit' && editSel >= 0);
 }
 
-// Касание предмета вне режима украшения: маленькая анимация
+// Tapping an item outside Decorate mode: a small animation
 const LAYERS = [ui.decor, ui.decorFront];
 const onLayers = (ev, fn) => LAYERS.forEach((l) => l.addEventListener(ev, fn));
 
@@ -416,7 +417,7 @@ onLayers('click', (e) => {
   hop(el, 'wiggle');
 });
 
-// Перетаскивание в режиме украшения
+// Dragging in Decorate mode
 let drag = null;
 onLayers('pointerdown', (e) => {
   if (mode !== 'edit' || drag) return;
@@ -440,10 +441,10 @@ onLayers('pointermove', (e) => {
 });
 const endDrag = (e) => {
   if (!drag || (e && e.pointerId !== drag.id)) return;
-  // выбранный предмет — поверх остальных
+  // the selected item goes on top
   const items = layout();
   if (drag.i !== items.length - 1) { items.push(items.splice(drag.i, 1)[0]); editSel = items.length - 1; }
-  renderDecor(); // предмет мог перейти вперёд или назад
+  renderDecor(); // the item may have moved to the front or back layer
   if (drag.moved) sfx.tap();
   drag = null;
   st.save(S);
@@ -520,11 +521,11 @@ function finishEdit(silent = false) {
   award(addH(3, 'decor', 3));
 }
 
-// Вещь доступна: открыта уровнем или получена в подарок / за альбом
+// An item is available if unlocked by level or received as a present / album prize
 const ownsWear = (w) => (w.level && S.level >= w.level) || S.owned.includes(w.id);
 const albumReward = (id) => ALBUMS.find((a) => a.reward === id);
 
-// Счётчики для значков
+// Counters for badges
 function stat(key, n = 1) {
   S.stats[key] = (S.stats[key] || 0) + n;
   checkBadges();
@@ -547,7 +548,7 @@ function checkBadges() {
   for (const [id, e, name, key, goal] of BADGES) {
     if (S.badges.includes(id) || statValue(key) < goal) continue;
     S.badges.push(id);
-    // значки показываем по очереди, не пачкой
+    // show badges one at a time, not all at once
     const at = Math.max(Date.now(), badgeToastAt + 3600);
     badgeToastAt = at;
     setTimeout(() => { sfx.sparkle(); toast(`<b>${e} ${tr('newBadge')}</b><br>${L(name)}`, 3400); }, at - Date.now());
@@ -564,7 +565,7 @@ function giveSticker() {
   return s;
 }
 
-// Полный альбом — особая вещь в подарок
+// A complete album gives a special item
 function checkAlbums() {
   for (const a of ALBUMS) {
     if (S.albumsDone.includes(a.id) || !a.stickers.every((x) => S.stickers.includes(x))) continue;
@@ -575,7 +576,7 @@ function checkAlbums() {
   }
 }
 
-// Подарок: наклейка (обычный), вещь (редкий) или особая вещь (золотой)
+// Present: a sticker (common), an item (rare) or a special item (gold)
 function rollGift(rareChance, goldChance) {
   const r = Math.random();
   const missing = (rar) => WEAR.filter((w) => w.rarity === rar && !albumReward(w.id) && !S.owned.includes(w.id));
@@ -586,7 +587,7 @@ function rollGift(rareChance, goldChance) {
   return s ? { kind: 'sticker', id: s, name: P('rvSticker') } : { kind: 'hearts', id: '💖', name: P('rvHearts') };
 }
 
-// ---------- отрисовка ----------
+// ---------- rendering ----------
 
 function moodFace() {
   if (tempFace && Date.now() < tempFaceUntil) return tempFace;
@@ -667,7 +668,7 @@ function applyLang() {
   if (mode === 'sleep') renderSleep(true);
 }
 
-// ---------- шторка ----------
+// ---------- bottom sheet ----------
 
 function openSheet(title, html, mount) {
   cancelAsk();
@@ -681,16 +682,16 @@ function openSheet(title, html, mount) {
 function closeSheet() {
   ui.sheetWrap.classList.remove('show');
   sheetOpen = false;
-  // содержимое убираем после анимации закрытия, чтобы спрятанные сцены не тратили батарею
+  // clear the content after the closing animation so hidden scenes don't drain the battery
   setTimeout(() => { if (!sheetOpen) ui.sheet.innerHTML = ''; }, 400);
 }
 
 ui.sheetWrap.addEventListener('click', (e) => { if (e.target === ui.sheetWrap) closeSheet(); });
 
-// Текст на основном языке и перевод мелко
+// Main-language text with a small translation
 const bi = (pair) => `<div class="bi"><div class="bi-main">${L(pair)}</div>${S.settings.translate ? `<div class="bi-sub">${say2(pair, other())}</div>` : ''}</div>`;
 
-// ---------- кормление ----------
+// ---------- feeding ----------
 
 function openFeed() {
   const T0 = st.today(S);
@@ -737,7 +738,7 @@ function feed(f) {
     stat('feeds');
     const ms = say(fresh(hungerBefore < 30 ? LUCKY.feedStarving : hungerBefore > 80 ? LUCKY.feedNearlyFull
       : Math.random() < 0.6 && LUCKY.food[f.id] ? LUCKY.food[f.id] : LUCKY.eat));
-    // Ел слишком быстро — икота
+    // Ate too fast: hiccups
     if (quick || Math.random() < 0.12) setTimeout(hiccups, ms + 300);
     award(addH(2, 'feed', 10));
     renderStats();
@@ -745,7 +746,7 @@ function feed(f) {
   };
 }
 
-// ---------- мытьё ----------
+// ---------- washing ----------
 
 let washGain = 0, washIdle = 0, washDown = false, washLast = 0, cleanBefore = 100;
 
@@ -803,11 +804,11 @@ ui.scene.addEventListener('pointermove', washMove);
 window.addEventListener('pointerup', () => { washDown = false; });
 window.addEventListener('pointercancel', () => { washDown = false; });
 
-// ---------- касания ----------
+// ---------- taps ----------
 
 let tapCount = 0, lastTapAt = 0, pressTimer = 0, pressed = false, tapTimes = [], earTimes = [];
 
-// Долгое нажатие — обнимашки
+// Long press: a hug
 ui.lucky.addEventListener('pointerdown', () => {
   if (mode !== 'main') return;
   pressed = false;
@@ -826,14 +827,14 @@ ui.lucky.addEventListener('click', (e) => {
   const [x, y] = sceneXY(e);
   if (e.target.closest('.nose')) { sneeze(); return; }
   if (e.target.closest('.ear')) { ears(e.target.closest('.ear')); return; }
-  // Много быстрых касаний — щекотка
+  // Many quick taps: tickling
   tapTimes.push(now);
   while (tapTimes.length && now - tapTimes[0] > 3000) tapTimes.shift();
   if (tapTimes.length >= 6) { tapTimes = []; tickle(); return; }
-  // Двойное касание — прыжок «бинки»
+  // Double tap: a binky jump
   if (now - lastTapAt < 350) { lastTapAt = 0; binky(); return; }
   lastTapAt = now;
-  // Капризничает, если ему очень чего-то не хватает (кроме радости — гладить как раз помогает)
+  // Sulks when he badly needs something (except joy: petting is exactly what helps)
   const need = st.lowestNeed(S.pet);
   if (tier() === 'low' && LUCKY.sulk[need] && S.pet[need] < 30 && Math.random() < 0.35) { sulk(need); return; }
   sfx.pop();
@@ -881,7 +882,7 @@ function ears(ear) {
   const now = Date.now();
   earTimes.push(now);
   while (earTimes.length && now - earTimes[0] > 2500) earTimes.shift();
-  // Три быстрых касания ушка — уши-вертолёт
+  // Three quick ear taps: helicopter ears
   if (earTimes.length >= 3) { earTimes = []; helicopter(); return; }
   sfx.tap();
   ui.lucky.querySelectorAll('.ear').forEach((x) => hop(x, 'wiggle'));
@@ -905,8 +906,10 @@ function sneeze() {
 
 function helicopter() {
   sfx.whirr();
-  hop(ui.lucky, 'heli');
+  // Face first, then the effect: Safari doesn't start CSS animations on SVG parts that are
+  // re-rendered after the class was added, so the ears would stay still on iPhone.
   setTemp('laugh', 2400);
+  hop(ui.lucky, 'heli');
   say(fresh(LUCKY.heli));
 }
 
@@ -924,14 +927,14 @@ function tickle() {
   renderStats();
 }
 
-// Когда счастлив, Лаки иногда ловит свой хвостик
+// When happy, Lucky sometimes chases his tail
 function chaseTail() {
   hop(ui.lucky, 'chase');
   setTemp('laugh', 2200);
   sayAuto(fresh(LUCKY.tail));
 }
 
-// Подсказки о нуждах: мушки у грязного, урчание у голодного
+// Need cues: flies when dirty, a rumbling tummy when hungry
 let nextRumbleAt = 0;
 function needCues(now) {
   const dirty = mode === 'main' && S.pet.clean < 30;
@@ -947,7 +950,7 @@ function needCues(now) {
   }
 }
 
-// ---------- сцена: живые мелочи ----------
+// ---------- scene: tappable details ----------
 
 function fxAt(x, y, list, n, cls) {
   for (let i = 0; i < n; i++) setTimeout(() => floatFx(x + Math.random() * 60 - 30, y + Math.random() * 20, pick(list), cls), i * 70);
@@ -986,7 +989,7 @@ ui.bg.addEventListener('click', (e) => {
   }
 });
 
-// Иногда пролетает бабочка — её можно поймать
+// Now and then a butterfly flies by; it can be caught
 let nextVisitorAt = Date.now() + 70e3;
 function maybeVisitor(now) {
   if (now < nextVisitorAt || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
@@ -1008,7 +1011,7 @@ function maybeVisitor(now) {
   setTimeout(() => b.remove(), 11000);
 }
 
-// Сюрприз дня: подарок появляется после минуты игры
+// Daily surprise: a present appears after a minute of play
 function maybeSurprise(now, T0) {
   if (T0.surprise || ask || mode !== 'main' || sheetOpen || modalOpen || !userActive() || S.session.activeMs < 60e3 || ui.scene.querySelector('.surprise')) return;
   const b = document.createElement('button');
@@ -1030,7 +1033,7 @@ function maybeSurprise(now, T0) {
   sayAuto(fresh(LUCKY.surprise));
 }
 
-// ---------- дела дня: понятная точка «на сегодня всё» ----------
+// ---------- today's plan: a clear 'that's all for today' ----------
 
 const PLAN = [
   ['feed', '🥕', (T0) => (T0.hearts.feed || 0) > 0, () => openFeed()],
@@ -1067,8 +1070,8 @@ function openPlan() {
   }));
 }
 
-// ---------- вопросы Лаки с вариантами ответа ----------
-// Реплики Лаки озвучены, ответы Лизы — только текст (английский, мелко перевод).
+// ---------- Lucky's questions with answer choices ----------
+// Lucky's lines are voiced; the child's answers are text only (English with a small translation).
 
 const ASK_EVERY = 4 * 60e3;
 const ASK_WEIGHTS = { guess: 3, pref: 2, wyr: 2, quiz: 2, mood: 1.5, touch: 1.5, story: 1 };
@@ -1090,13 +1093,13 @@ function choicesHtml(opts) {
   return opts.map((o, i) => `<button class="choice" data-i="${i}"><b>${fill(o[1], 'en')}</b>${S.settings.translate ? `<small>${noEmoji(fill(o[0], 'ru'))}</small>` : ''}</button>`).join('');
 }
 
-// Вопрос: реплика висит, пока Лиза не ответит; варианты — кнопки под облачком
+// A question: the line stays until the child answers; choices are buttons under the bubble
 function askQ(q, who, opts, onPick, { compact = false } = {}) {
   say(q, who, { hold: true, forAsk: true });
   ui.choices.innerHTML = choicesHtml(opts);
   ui.choices.className = 'choices' + (compact ? ' compact' : '');
   ui.choices.hidden = false;
-  // Лаки поднимается над вариантами ответа, чтобы его было видно
+  // Lucky moves up above the choices so he stays visible
   ui.scene.style.setProperty('--choicesH', ui.choices.offsetHeight + 'px');
   ui.scene.classList.add('asking');
   ui.choices.querySelectorAll('.choice').forEach((b) => {
@@ -1108,7 +1111,7 @@ function askQ(q, who, opts, onPick, { compact = false } = {}) {
     };
   });
   clearTimeout(askTimer);
-  askTimer = setTimeout(cancelAsk, 35000); // не ответила — тихо убираем, без упрёков
+  askTimer = setTimeout(cancelAsk, 35000); // no answer: quietly remove it, no nagging
 }
 
 function hideChoices() {
@@ -1126,7 +1129,7 @@ function cancelAsk() {
   ui.bubble.classList.remove('show');
 }
 
-// Ответ Лаки; wrong — вариант остаётся, можно выбрать другой
+// Lucky's reply; on a wrong guess the question stays and another choice can be picked
 function answer(pair, who = 'lucky', { end = true, reward = true } = {}) {
   const ms = say(pair, who, { forAsk: true });
   if (!end) return ms;
@@ -1142,7 +1145,7 @@ function markWrong(btn) {
   btn.classList.add('wrong');
 }
 
-// Что сейчас правда: тот же порядок, что и у мордочки (сначала усталость)
+// What is true right now, in the same order as the face (tiredness first)
 const FEEL = { hunger: 'hungry', clean: 'mucky', fun: 'sad' };
 function feelings() {
   const p = S.pet;
@@ -1175,7 +1178,7 @@ function startAsk(a) {
     });
   } else if (a.kind === 'mood') {
     const truth = feelings(), actual = truth[0];
-    // неправильные варианты — только то, что сейчас точно не про Лаки
+    // wrong options are only feelings that are definitely not true now
     const keys = shuffle([actual, ...shuffle(Object.keys(MOOD_OPTS).filter((k) => !truth.includes(k))).slice(0, 2)]);
     askQ(a.q, 'lucky', keys.map((k) => MOOD_OPTS[k]), (i) => {
       const ok = truth.includes(keys[i]);
@@ -1201,7 +1204,7 @@ function storyNode(id) {
   askQ(n.say, 'lucky', opts, (i) => { hideChoices(); storyNode(n.opts[i][1]); });
 }
 
-// Касание Лаки в ответ на «нажми на мои ушки»
+// Tapping Lucky in answer to 'tap my ears'
 function touchAnswer(e) {
   const part = e.target.closest('.nose') ? 'nose' : e.target.closest('.ear') ? 'ears' : e.target.closest('.head') ? 'head' : 'body';
   if (part === ask.touch) {
@@ -1217,7 +1220,7 @@ function touchAnswer(e) {
   }
 }
 
-// ---------- лягушка-загадушка ----------
+// ---------- riddle frog ----------
 
 function showFrog(force = false) {
   if (ui.scene.querySelector('.frog')) return;
@@ -1234,7 +1237,7 @@ function showFrog(force = false) {
     if (mode !== 'main' || ask) return;
     frogRiddle(f);
   };
-  // не подошли — лягушка сама упрыгает
+  // if nobody comes, the frog hops away by herself
   f.timer = setTimeout(() => { if (!ask?.frog) frogLeave(); }, force ? 120e3 : 60e3);
 }
 
@@ -1281,7 +1284,7 @@ function maybeFrog(now, T0) {
   showFrog();
 }
 
-// ---------- настроение и ниндзя-дыхание ----------
+// ---------- mood check-in and ninja breathing ----------
 
 const MOODS = [['happy', '😊'], ['calm', '😌'], ['tired', '😴'], ['sad', '😢'], ['angry', '😠']];
 
@@ -1336,7 +1339,7 @@ function breathe() {
   } });
 }
 
-// ---------- игра ----------
+// ---------- mini-games ----------
 
 const GAME_COOLDOWN = 15 * 60e3;
 
@@ -1392,9 +1395,9 @@ function startGame(game) {
   });
 }
 
-// ---------- додзё ----------
+// ---------- dojo ----------
 
-const taskEnds = {}; // когда станет доступна кнопка «Я сделала!» (переживает перерисовку шторки)
+const taskEnds = {}; // when the 'I did it!' button becomes available (survives sheet re-renders)
 
 function taskFlow(root, key, seconds, onDone) {
   const btn = root.querySelector('.go');
@@ -1494,12 +1497,12 @@ function careComplete() {
   openDojo();
 }
 
-// ---------- коллекция ----------
+// ---------- collection ----------
 
 const SLOT_ICON = { head: '🎩', face: '👓', neck: '🧣', body: '🦸' };
 let wardSlot = 'head';
 
-// Как получить закрытую вещь
+// How to get a locked item
 function wearLock(w) {
   if (w.level) return `🔒 ${tr('unlockAt', { n: w.level })}`;
   const al = albumReward(w.id);
@@ -1535,7 +1538,7 @@ function collectionBody(tab) {
         <div class="stickers">${a.stickers.map((x) => `<div class="stk ${S.stickers.includes(x) ? 'on' : ''}">${S.stickers.includes(x) ? x : '?'}</div>`).join('')}</div></div>`;
     }).join('')}`;
   }
-  // значки
+  // badges
   return `<p class="muted center">${tr('badgesOf', { n: S.badges.length, m: BADGES.length })}</p><div class="badges">${BADGES.map(([id, e, name, key, goal]) => {
     const got = S.badges.includes(id), v = Math.min(goal, statValue(key));
     return `<div class="badge ${got ? 'on' : ''}"><div class="b-emoji">${e}</div><b>${L(name)}</b>${got ? '' : `<div class="b-bar"><i style="width:${Math.round((v / goal) * 100)}%"></i></div><small>${v}/${goal}</small>`}</div>`;
@@ -1573,7 +1576,7 @@ function openCollection(tab = 'outfits') {
   });
 }
 
-// ---------- фраза дня и викторина ----------
+// ---------- phrase of the day and quiz ----------
 
 function openPhrase() {
   const T0 = st.today(S);
@@ -1624,7 +1627,7 @@ function quizStep(box) {
   });
 }
 
-// ---------- собачка ----------
+// ---------- the dog ----------
 
 function dogArrive() {
   dogHere = true;
@@ -1686,7 +1689,7 @@ function dogLeave(silent = false) {
 
 const DOG_STAY = 7 * 60e3;
 
-// Визит: собачка приходит один раз за окно визита, гостит ~7 минут и уходит
+// A visit: the dog comes once per visit window, stays ~7 minutes and leaves
 function updateDog(now, asleep) {
   const key = asleep ? null : st.dogVisitKey(S, now);
   const d = S.dog;
@@ -1697,7 +1700,7 @@ function updateDog(now, asleep) {
   } else if (dogHere) dogLeave(asleep);
 }
 
-// ---------- сон ----------
+// ---------- sleep ----------
 
 function fmtTime(t) {
   return new Date(t).toLocaleTimeString(S.lang === 'ru' ? 'ru-RU' : 'en-IE', { hour: '2-digit', minute: '2-digit' });
@@ -1794,10 +1797,10 @@ function askBed() {
   });
 }
 
-// ---------- родителям ----------
+// ---------- parents ----------
 
-// Родительский раздел под паролем. Пароль задаётся на каждом устройстве при первом входе,
-// хранится только его хеш и только на этом телефоне — в коде игры пароля нет.
+// Password-protected parents' area. The password is created on each device on first use;
+// only its hash is stored, only on that phone. There is no password in the code.
 let adminUntil = 0;
 const pwHash = (v) => st.hash(v.trim().toLowerCase());
 
@@ -1819,7 +1822,7 @@ function pwCard(host, text, fields, onOk, done) {
   host.querySelector('.pw-cancel').onclick = () => { sfx.tap(); done(); };
 }
 
-// Код восстановления: 8 символов без похожих букв и цифр (O/0, I/1)
+// Recovery code: 8 characters without look-alikes (O/0, I/1)
 function recoveryCode() {
   const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const r = crypto.getRandomValues ? crypto.getRandomValues(new Uint32Array(8)) : Array.from({ length: 8 }, () => Math.random() * 1e9);
@@ -1832,7 +1835,7 @@ function fmtDateTime(t) {
   return new Date(t).toLocaleString(S.lang === 'ru' ? 'ru-RU' : 'en-IE', { weekday: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
-// Новый пароль → показать код восстановления
+// New password, then show the recovery code
 function createPassword(host, done, note = '') {
   pwCard(host, (note ? note + '<br>' : '') + tr('pwNew'), ['•••••', tr('pwRepeat')], ([a, b], err) => {
     if (a.trim().length < 4) return err(tr('pwShort'));
@@ -1846,8 +1849,8 @@ function createPassword(host, done, note = '') {
   }, done);
 }
 
-// Забыли пароль: сбросить можно только кодом восстановления, который есть у родителя.
-// Без кода — никак (иначе ребёнок мог бы забрать настройки себе); последнее средство описано в README.
+// Forgot the password: it can only be reset with the parent's recovery code.
+// No code, no reset (otherwise a child could take over the settings); the last resort is described in the README.
 function forgotPassword(host, done) {
   pwCard(host, tr('pwRecEnter'), ['XXXX-XXXX'], ([code], err) => {
     if (recHash(code) !== st.parentData().rec) return err(tr('pwRecBad'));
@@ -1883,7 +1886,7 @@ function askPassword() {
   } });
 }
 
-// Подтверждение действия родителя
+// Confirm a parent action
 function confirmBox(title, text, yes, onYes) {
   showModal({ art: '<div class="big-emoji">⚠️</div>', title, text, buttons: [{ label: yes, onClick: onYes }, { label: tr('pwCancel') }] });
 }
@@ -1912,7 +1915,7 @@ function resetAll() {
   });
 }
 
-// Инструменты турбо-режима: быстро показать и проверить любую функцию
+// Turbo tools: quickly show and test any feature
 const TURBO_TOOLS = [
   ['level', '⬆️', () => { closeSheet(); S.hearts = st.levelNeed(S.level) - 1; award(st.addHearts(S, 1, 'turbo', Infinity)); }],
   ['full', '💯', () => { Object.assign(S.pet, { hunger: 100, fun: 100, clean: 100, energy: 100 }); renderStats(); }],
@@ -1957,7 +1960,8 @@ function openParent() {
       <button class="btn pink invite">🐶 ${tr('inviteDog')}</button>
     </div>
     <p class="muted">${tr('installHint')}</p>
-    <div class="row"><button class="btn ghost danger reset">${tr('resetAll')}</button></div>`;
+    <div class="row"><button class="btn ghost danger reset">${tr('resetAll')}</button></div>
+    <p class="muted center app-version">Lucky v${VERSION} · build ${BUILD}</p>`;
   openSheet('⚙️ ' + tr('parent'), html, (root) => {
     root.querySelectorAll('select').forEach((x) => {
       x.onchange = () => { s[x.dataset.k] = /Min$|PerDay$|Max$/.test(x.dataset.k) ? Number(x.value) : x.value; st.save(S); loop(); };
@@ -1969,7 +1973,7 @@ function openParent() {
       S.session.napUntil = 0;
       S.session.activeMs = 0;
       S.session.warned = false;
-      // Ночью — будим до утра (только эту ночь); следующей ночью Лаки снова уснёт по расписанию
+      // At night: wake him until the morning (this night only); next night Lucky sleeps on schedule
       if (st.isNight(Date.now(), s)) { S.session.wakeUntil = st.nextWake(Date.now(), s); toast('⏰ ' + tr('wokeByParent', { time: fmtTime(S.session.wakeUntil) }), 3500); }
       st.save(S);
       closeSheet();
@@ -1991,9 +1995,9 @@ function openParent() {
   });
 }
 
-// ---------- болтовня ----------
+// ---------- chatter ----------
 
-// Когда Лиза просто смотрит: редкие спокойные реплики, в основном по настроению
+// When the child is just watching: rare calm lines, mostly mood-based
 function ambientTalk() {
   const list = Math.random() < 0.6 ? LUCKY.tier[tier()] : LUCKY[pick(['idle', 'facts', 'ninja', 'compliments'])];
   say(fresh(list), 'lucky', { auto: true, ambient: true });
@@ -2002,7 +2006,7 @@ function ambientTalk() {
 const IDLE_BAG = [['idle', 3], ['questions', 2], ['jokes', 2], ['facts', 2], ['ninja', 1], ['compliments', 1], ['outside', 2], ['phraseHint', 0.6], ['riddle', 1.5], ['realPet', 1]];
 const NEED_LINES = { hunger: 'hungry', energy: 'tired', fun: 'bored', clean: 'dirty' };
 
-// Выбор реплики: чаще про то, чего не хватает, и по настроению, иногда общие темы и редкие фразы
+// Line choice: mostly about unmet needs and mood, sometimes general topics and rare lines
 function idleTalk() {
   const p = S.pet, t = tier();
   if (Math.random() < 0.03) return sayAuto(fresh(LUCKY.rare));
@@ -2020,7 +2024,7 @@ function idleTalk() {
   sayAuto(fresh(LUCKY[kind]));
 }
 
-// Смена настроения: радуемся выздоровлению и полному восторгу; в восторге сам делает бинки
+// Mood changes: celebrate recovering and being thrilled; when thrilled he binkies on his own
 let prevTier = null, recoveredAt = 0, nextBinkyAt = 0, nextTailAt = Date.now() + 120e3;
 function moodEvents(now, T0) {
   const t = tier();
@@ -2033,7 +2037,7 @@ function moodEvents(now, T0) {
   prevTier = t;
 }
 
-// ---------- главный цикл ----------
+// ---------- main loop ----------
 
 function loop() {
   const now = Date.now();
@@ -2043,7 +2047,7 @@ function loop() {
 
   const dt = Math.max(0, Math.min(now - (S.session.lastAt || now), 5000));
   if (!document.hidden) S.viewMs[T0.date] = (S.viewMs[T0.date] || 0) + dt;
-  // Сессия тратится только когда Лиза действует; просто смотреть на Лаки можно сколько угодно
+  // Session time is used only while the child is active; just watching Lucky is free
   if (S.session.activeMs > 0 && now - (S.session.activeAt || now) > restGap()) { S.session.activeMs = 0; S.session.warned = false; }
   if (!document.hidden && !asleep && userActive()) {
     S.session.activeAt = now;
@@ -2098,8 +2102,8 @@ function loop() {
   if (++tick % 5 === 0) st.save(S);
 }
 
-// Возвращает, сколько не было игрока. Большой перерыв тоже считается отдыхом.
-// Большой перерыв без действий тоже считается отдыхом
+// Returns how long the player was away. A long break also counts as rest.
+// A long break without activity also counts as rest
 const restGap = () => Math.min(20, S.settings.napMin) * 60e3;
 
 function resume() {
@@ -2125,7 +2129,7 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', () => st.save(S));
 
 ['touchend', 'click', 'pointerup'].forEach((ev) => document.addEventListener(ev, unlockAudio, { passive: true, capture: true }));
-// iOS молчит до первого касания — повторяем вслух приветствие, которое было на экране
+// iOS stays silent until the first tap, so replay the greeting that was on screen
 let replayed = false;
 const replayGreeting = () => {
   if (replayed) return;
@@ -2135,7 +2139,7 @@ const replayGreeting = () => {
 ['touchend', 'click'].forEach((ev) => document.addEventListener(ev, replayGreeting, { once: true, capture: true }));
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 
-// ---------- старт ----------
+// ---------- start ----------
 
 function greetList(gap) {
   if (gap > 3 * 3600e3 && Math.random() < 0.6) return LUCKY.welcomeBack;
@@ -2154,20 +2158,20 @@ function greet(gap) {
 function start() {
   if (S.dog.visitKey && S.dog.stayUntil) S.dog.doneKey = S.dog.visitKey;
   S.dog.forceUntil = 0;
-  // Старые сохранения: одна вещь → слот гардероба
+  // Old saves: a single outfit becomes a wardrobe slot
   const old = WEAR_BY_ID[S.outfit];
   if (old && !Object.values(S.wear).some(Boolean)) S.wear = { [old.slot]: old.id };
   if (old && !ownsWear(old)) S.owned.push(old.id);
   S.outfit = null;
   if (!S.badgesSeeded) {
-    // Первый запуск с новой версией: открытые миры считаем посещёнными, уже заработанные значки — без пачки уведомлений
+    // First launch of this version: unlocked worlds count as visited, already earned badges are granted silently
     for (const pl of PLACES) if (S.level >= pl.level && !S.worldsSeen.includes(pl.id)) S.worldsSeen.push(pl.id);
     for (const [id, , , key, goal] of BADGES) if (!S.badges.includes(id) && statValue(key) >= goal) S.badges.push(id);
     for (const a of ALBUMS) if (!S.albumsDone.includes(a.id) && a.stickers.every((x) => S.stickers.includes(x))) { S.albumsDone.push(a.id); if (!S.owned.includes(a.reward)) S.owned.push(a.reward); }
     S.badgesSeeded = true;
   }
   if (!S.worldsSeen.includes(S.bg)) S.worldsSeen.push(S.bg);
-  // Интерфейс и речь Лаки всегда на английском, русский — перевод мелко и озвучка по касанию
+  // The UI and Lucky's speech are always English; Russian is the small translation, spoken on tap
   S.lang = 'en';
   setSound(S.settings.sound && !MUTE);
   setVoice(S.settings.voice && !MUTE);
@@ -2196,8 +2200,8 @@ function start() {
   if (mode === 'main') greet(gap);
 }
 
-// Офлайн-кеш только на настоящем https-хостинге. При локальной разработке убираем старый кеш,
-// чтобы браузер не смешивал старые и новые файлы.
+// Offline cache only on real https hosting. In local development remove any old cache
+// so the browser doesn't mix old and new files.
 if ('serviceWorker' in navigator) {
   if (location.protocol === 'https:') navigator.serviceWorker.register('./sw.js').catch(() => {});
   else {

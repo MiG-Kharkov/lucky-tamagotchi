@@ -1,4 +1,4 @@
-// Пробные записи голосов: node tools/voice-trial.mjs
+// Voice trial clips: node tools/voice-trial.mjs
 import fs from 'node:fs';
 import { synth, apiKey } from './tts.mjs';
 
@@ -27,7 +27,7 @@ for (const who of Object.keys(VOICES)) {
       }
     }
   }
-  console.log(who, 'готово');
+  console.log(who, 'done');
 }
 fs.writeFileSync(OUT + 'list.json', JSON.stringify(list, null, 1));
-console.log('файлов:', list.length);
+console.log('files:', list.length);

@@ -1,7 +1,7 @@
-// Вопросы Лаки с вариантами ответа. Всё — пары [ru, en].
-// Реплики Лаки и лягушки озвучены; варианты ответа Лизы — только текст, поэтому их можно тасовать сколько угодно.
+// Lucky's questions with answer choices. Everything is a [ru, en] pair.
+// Lucky's and the frog's lines are voiced; the child's answer choices are text only, so they can be shuffled freely.
 
-// Общие ответы Лаки
+// Lucky's generic replies
 export const REPLY = {
   like: [['Отличный выбор!', 'Great choice!'], ['О, мне тоже нравится!', 'Ooh, I like that too!'], ['Классно! Запомню.', "Cool! I'll remember that."], ['Интересно! Ты у меня особенная.', "Interesting! You're so special."]],
   right: [['Правильно! Ты такая умная!', "That's right! You're so clever!"], ['Да! Угадала!', 'Yes! You guessed it!'], ['Точно! Молодец!', 'Exactly! Well done!']],
@@ -10,7 +10,7 @@ export const REPLY = {
 };
 
 export const ASKS = [
-  // ---------- что тебе больше нравится ----------
+  // ---------- what do you like ----------
   { id: 'colour', kind: 'pref', q: ['Какой твой любимый цвет?', "What's your favourite colour?"], show: 3,
     opts: [['Розовый', 'Pink'], ['Голубой', 'Blue'], ['Фиолетовый', 'Purple'], ['Зелёный', 'Green'], ['Жёлтый', 'Yellow'], ['Красный', 'Red']],
     special: { Pink: ['Розовый! Мой любимый тоже! Ну, после рыжего.', 'Pink! My favourite too! Well, after ginger.'] } },
@@ -29,7 +29,7 @@ export const ASKS = [
   { id: 'school', kind: 'pref', q: ['Что было лучше всего в школе сегодня?', 'What was the best thing at school today?'], show: 3,
     opts: [['Перемена', 'Break time'], ['Рисование', 'Art'], ['Математика', 'Maths'], ['Мои друзья', 'My friends'], ['Урок ирландского', 'Irish class'], ['Физкультура', 'PE']] },
 
-  // ---------- что лучше (смешные дилеммы) ----------
+  // ---------- would you rather (silly dilemmas) ----------
   { id: 'wyr-fly', kind: 'wyr', q: ['Что лучше: летать как птица или плавать как рыба?', 'Would you rather fly like a bird or swim like a fish?'],
     opts: [['Летать', 'Fly'], ['Плавать', 'Swim']],
     replies: [['Полетели! Только держи меня крепче.', "Let's fly! Just hold on to me tight."], ['Буль-буль! Я буду кролик-водолаз.', "Glug-glug! I'll be a diving bunny."]] },
@@ -49,7 +49,7 @@ export const ASKS = [
     opts: [['Как мышка', 'Tiny'], ['Как слон', 'Big']],
     replies: [['Тогда ты сможешь спать у меня в ушке!', 'Then you could nap in my ear!'], ['Ого! Я буду кататься у тебя на хоботе!', "Wow! I'll ride on your trunk!"]] },
 
-  // ---------- угадай, о чём я думаю ----------
+  // ---------- guess what I'm thinking of ----------
   { id: 'g-carrot', kind: 'guess', q: ['Угадай, о чём я думаю! Оно оранжевое и хрустит.', "Guess what I'm thinking of! It's orange and crunchy."],
     right: ['Морковка', 'A carrot'], wrong: [['Яблоко', 'An apple'], ['Мяч', 'A ball'], ['Луна', 'The moon'], ['Ботинок', 'A shoe']] },
   { id: 'g-moon', kind: 'guess', q: ['Угадай! Оно светит ночью в небе.', 'Guess! It shines in the sky at night.'],
@@ -65,7 +65,7 @@ export const ASKS = [
   { id: 'g-grass', kind: 'guess', q: ['Угадай! Она зелёная, и кролики её обожают.', 'Guess! It is green and bunnies love it.'],
     right: ['Трава', 'Grass'], wrong: [['Лягушка', 'A frog'], ['Дракон', 'A dragon'], ['Машина', 'A car']] },
 
-  // ---------- а ты знаешь? ----------
+  // ---------- do you know? ----------
   { id: 'k-hay', kind: 'quiz', q: ['Знаешь, что кролики едят больше всего?', 'Do you know what bunnies eat the most?'],
     right: ['Сено', 'Hay'], wrong: [['Шоколад', 'Chocolate'], ['Пиццу', 'Pizza'], ['Чипсы', 'Crisps']],
     ok: ['Да! Сено — это самое главное!', 'Yes! Hay is the most important!'], no: ['Ха-ха, нет! Больше всего кролики едят сено.', 'Ha-ha, no! Bunnies eat hay the most.'] },
@@ -82,15 +82,15 @@ export const ASKS = [
     right: ['Прыгают бинки', 'A binky jump'], wrong: [['Лают', 'They bark'], ['Поют оперу', 'They sing opera'], ['Спят', 'They sleep']],
     ok: ['Да, бинки! Смотри!', 'Yes, a binky! Watch!'], no: ['Ха-ха, нет! Кролики прыгают бинки.', 'Ha-ha, no! Bunnies do a binky jump.'], binky: true },
 
-  // ---------- угадай моё настроение ----------
+  // ---------- guess my mood ----------
   { id: 'mood', kind: 'mood', q: ['Угадай, какое у меня сейчас настроение?', 'Can you guess how I feel right now?'] },
 
-  // ---------- нажми на меня ----------
+  // ---------- tap me ----------
   { id: 't-ears', kind: 'touch', target: 'ears', q: ['Можешь нажать на мои ушки?', 'Can you tap my ears?'] },
   { id: 't-nose', kind: 'touch', target: 'nose', q: ['Где мой носик? Нажми на него!', 'Where is my nose? Tap it!'] },
   { id: 't-tummy', kind: 'touch', target: 'body', q: ['Пощекочи мне животик!', 'Tickle my tummy!'] },
 
-  // ---------- приключения ----------
+  // ---------- adventures ----------
   { id: 'story-adventure', kind: 'story', start: 'a0' },
   { id: 'story-party', kind: 'story', start: 'p0' },
 ];
@@ -117,7 +117,7 @@ export const TOUCH_REPLY = {
   nose: [['Апчхи! Это мой носик!', "Achoo! That's my nose!"]],
 };
 
-// Истории с выбором пути
+// Choose-your-path stories
 export const STORY = {
   a0: { say: ['Пойдём в приключение! Куда отправимся?', "Let's go on an adventure! Where shall we go?"],
     opts: [[['В лес', 'The forest'], 'f1'], [['На море', 'The seaside'], 'b1'], [['В космос', 'Space'], 's1']] },
@@ -140,7 +140,7 @@ export const STORY = {
   p3: { say: ['Включай! Смотри, как я танцую ниндзя-диско!', "Turn it on! Watch me do the ninja disco!"] },
 };
 
-// Лягушка-загадушка — редкая гостья со своим голосом
+// The riddle frog: a rare visitor with her own voice
 export const FROG = {
   hello: [['Ква! Я лягушка-загадушка. Отгадаешь мою загадку?', "Ribbit! I'm the riddle frog. Can you solve my riddle?"]],
   right: [['Ква-ква! Правильно! Ты умница!', 'Ribbit-ribbit! Correct! Clever you!'], ['Ква! Угадала! Вот это голова!', 'Ribbit! You got it! What a clever girl!']],

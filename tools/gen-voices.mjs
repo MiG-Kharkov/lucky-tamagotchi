@@ -1,5 +1,5 @@
-// Озвучка всех реплик: node tools/gen-voices.mjs
-// Уже озвученные фразы пропускаются, поэтому после правки текстов переозвучивается только новое.
+// Record voice clips for all lines: node tools/gen-voices.mjs
+// Lines that already have a clip are skipped, so after editing texts only new lines are recorded.
 import fs from 'node:fs';
 import { synth, apiKey } from './tts.mjs';
 import { STR, LUCKY, DOG, CHATS, PRANKS, RIDDLES, PHRASES } from '../js/i18n.js';
@@ -31,7 +31,7 @@ for (const chat of CHATS) for (const [who, ru, en] of chat) addPair(who, [ru, en
 for (const pr of PRANKS) for (const [who, ru, en] of pr.lines) addPair(who, [ru, en]);
 for (const p of PHRASES) addPair('lucky', p);
 for (const k of ['washHint', 'noGames', 'tooTired']) addPair('lucky', [STR.ru[k], STR.en[k]]);
-// Вопросы Лаки: озвучены только реплики Лаки, варианты ответа — текст
+// Lucky's questions: only Lucky's lines are voiced; answer choices are text
 walk('lucky', REPLY);
 walk('lucky', MOOD_REPLY);
 walk('lucky', TOUCH_REPLY);
@@ -46,7 +46,7 @@ walk('frog', { hello: FROG.hello, right: FROG.right, wrong: FROG.wrong, bye: FRO
 for (const r of FROG.riddles) addPair('frog', r.q);
 
 const todo = [...lines].filter(([id]) => !fs.existsSync(`${OUT}${id}.mp3`));
-console.log(`фраз: ${lines.size}, озвучить: ${todo.length}`);
+console.log(`lines: ${lines.size}, to record: ${todo.length}`);
 
 const key = apiKey();
 let done = 0, failed = 0;
@@ -57,14 +57,14 @@ async function worker() {
       fs.writeFileSync(`${OUT}${id}.mp3`, await synth(l.text, l.lang, VOICES[l.who].voice, {}, key));
     } catch (e) {
       failed++;
-      console.log('ошибка:', l.who, l.lang, l.text, '→', e.message);
+      console.log('error:', l.who, l.lang, l.text, '→', e.message);
     }
     if (++done % 50 === 0) console.log(`…${done}`);
   }
 }
 await Promise.all([worker(), worker(), worker()]);
 
-// Убираем записи фраз, которых больше нет в игре
+// Remove clips for lines that are no longer in the game
 let removed = 0;
 for (const f of fs.readdirSync(OUT)) {
   if (f.endsWith('.mp3') && !lines.has(f.slice(0, -4))) { fs.unlinkSync(OUT + f); removed++; }
@@ -72,4 +72,4 @@ for (const f of fs.readdirSync(OUT)) {
 
 const ids = [...lines.keys()].filter((id) => fs.existsSync(`${OUT}${id}.mp3`)).sort();
 fs.writeFileSync(`${OUT}manifest.json`, JSON.stringify(ids));
-console.log(`готово: ${ids.length} записей, ошибок: ${failed}, удалено старых: ${removed}`);
+console.log(`done: ${ids.length} clips, errors: ${failed}, removed: ${removed}`);

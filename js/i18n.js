@@ -1,6 +1,6 @@
 import { CONFIG } from './config.js';
 
-// Все тексты игры. Списки — пары [ru, en] (иногда с emoji третьим элементом).
+// All game texts. Lists are [ru, en] pairs (sometimes with an emoji as the third element).
 
 export const STR = {
   ru: {
@@ -254,7 +254,7 @@ export function T(lang, key, vars = {}) {
 export const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const say2 = (pair, lang) => pair[lang === 'en' ? 1 : 0];
 
-// Реплики Лаки. {name} — имя ребёнка, {dog} — имя собачки. Лаки и Тали — мальчики, Лиза — девочка.
+// Lucky's lines. {name} is the child's name, {dog} the dog's name. Lucky and Tali are boys; the child is a girl (Russian grammar).
 export const LUCKY = {
   greet: [
     ['Привет, {name}! Я так рад тебя видеть!', "Hi, {name}! I'm so happy to see you!"],
@@ -507,14 +507,14 @@ export const LUCKY = {
     ['Теперь я модный ниндзя!', "Now I'm a stylish ninja!"],
   ],
   place: [['Какое красивое место!', 'What a beautiful place!'], ['Мне здесь нравится!', 'I like it here!']],
-  // ---------- юмор ----------
+  // ---------- humour ----------
   sneeze: [['Апчхи! Ой, простите!', 'Achoo! Oops, excuse me!'], ['Апчхи! Кто-то щекочет мне носик!', "Achoo! Someone's tickling my nose!"], ['Апчхи! Будь здоров, Лаки! Спасибо, Лаки!', 'Achoo! Bless you, Lucky! Thank you, Lucky!']],
   hiccup: [['Ик! Ой… ик! Слишком быстро ел.', 'Hic! Oops… hic! I ate too fast.'], ['Ик! Ик! Кто-нибудь, напугайте меня!', 'Hic! Hic! Somebody give me a fright!']],
   heli: [['Я вертолёт! Вжжж!', "I'm a helicopter! Whirr!"], ['Ушки-пропеллеры, полетели!', 'Propeller ears, lift off!']],
   tickle: [['Ха-ха-ха! Хватит, щекотно!', 'Ha-ha-ha! Stop, it tickles!'], ['Хи-хи-хи! Сдаюсь, сдаюсь!', 'Tee-hee! I give up, I give up!'], ['Ой, я катаюсь от смеха!', "Oh, I'm rolling with laughter!"]],
   tail: [['Где мой хвостик? Он всё время убегает!', "Where's my tail? It keeps running away!"], ['Сейчас поймаю! Ой, опять убежал.', "I'll catch it! Oops, it got away again."]],
   albumDone: [['Альбом собран! Смотри, какой подарок!', 'The album is complete! Look at this present!']],
-  // ---------- гардероб ----------
+  // ---------- wardrobe ----------
   wearSay: {
     headband: [['Кия! Настоящий ниндзя!', 'Hi-yah! A real ninja!']],
     bow: [['Бантик! Я такой нарядный.', 'A bow! I look so smart.']],
@@ -545,7 +545,7 @@ export const LUCKY = {
     fairy: [['Я фея! Сейчас наколдую морковку!', "I'm a fairy! I'll magic up a carrot!"]],
     dragon: [['Р-р-р! Я маленький розовый дракон!', "Rawr! I'm a little pink dragon!"]],
   },
-  // ---------- миры ----------
+  // ---------- worlds ----------
   arrive: {
     beach: [['Ура, море! Пахнет солью и солнцем.', 'Hooray, the seaside! It smells of salt and sunshine.']],
     winter: [['Брр, как холодно! Хорошо, что у меня шубка.', "Brr, it's cold! Good thing I have my fur coat."]],
@@ -567,7 +567,7 @@ export const LUCKY = {
     pagoda: [['Дзынь! Колокол замка.', 'Ding! The castle bell.']],
     bamboo: [['Бамбук качается, как ниндзя.', 'The bamboo sways like a ninja.']],
   },
-  // ---------- состояния настроения ----------
+  // ---------- mood tiers ----------
   tier: {
     low: [
       ['Мне сегодня как-то грустно…', 'I feel a bit sad today…'],
@@ -741,7 +741,7 @@ export const LUCKY = {
   breathDone: [['Молодец! Ты спокойная, как настоящий ниндзя.', "Well done! You're calm like a true ninja."]],
 };
 
-// Загадки: вопрос, пауза, ответ
+// Riddles: question, pause, answer
 export const RIDDLES = [
   [['Загадка! Кто прыгает, любит морковку и носит ниндзя-повязку?', 'Riddle! Who hops, loves carrots and wears a ninja headband?'], ['Это я, Лаки!', "It's me, Lucky!"]],
   [['Загадка: что можно поймать, но нельзя бросить?', "Riddle: what can you catch but can't throw?"], ['Простуду! Поэтому одевайся тепло.', 'A cold! So wrap up warm.']],
@@ -751,7 +751,7 @@ export const RIDDLES = [
   [['Загадка: что идёт вверх и вниз, но не двигается?', "Riddle: what goes up and down but doesn't move?"], ['Лестница!', 'The stairs!']],
 ];
 
-// Реплики собачки
+// The dog's lines
 export const DOG = {
   arrive: [
     ['Гав! Привет, Лаки!', 'Woof! Hi, Lucky!'],
@@ -776,7 +776,7 @@ export const DOG = {
   bye: [['Мне пора домой. Пока!', 'Time to go home. Bye!'], ['Пока-пока! Я ещё приду!', "Bye-bye! I'll come back!"], ['Я побежал домой, но ещё вернусь!', "I'm running home, but I'll be back!"]],
 };
 
-// Проделки Тали: сценка и смешное действие
+// Tali's pranks: a scene plus a funny action
 export const PRANKS = [
   { fx: 'steal', lines: [['dog', 'Хи-хи, морковка моя!', 'Tee-hee, the carrot is mine!'], ['lucky', 'Эй, {dog}! Отдай мою морковку!', 'Hey, {dog}! Give me back my carrot!'], ['dog', 'Ладно-ладно, держи!', 'OK, OK, here you go!']] },
   { fx: 'sneeze', lines: [['dog', 'Апчхи! Ой, я чихнул тебе на ушки!', 'Achoo! Oops, I sneezed on your ears!'], ['lucky', 'Фу-у! Ну ничего, я их помою.', "Ew! Never mind, I'll wash them."]] },
@@ -784,7 +784,7 @@ export const PRANKS = [
   { fx: 'steal', lines: [['dog', 'Смотри, я нашёл твой мячик!', 'Look, I found your ball!'], ['lucky', 'Это не мячик, это моя морковка!', "That's not a ball, it's my carrot!"]] },
 ];
 
-// Сценки Лаки и собачки: [кто, ru, en]
+// Lucky and the dog chatting: [who, ru, en]
 export const CHATS = [
   [['dog', 'Лаки, ты сегодня такой счастливый!', 'Lucky, you look so happy today!'], ['lucky', 'Это потому что {name} обо мне заботится!', 'That is because {name} takes care of me!']],
   [['lucky', '{dog}, а ты умеешь делать бинки?', '{dog}, can you do a binky?'], ['dog', 'Нет, зато я умею крутиться за хвостом!', 'No, but I can chase my tail!'], ['lucky', 'Давай вместе: прыг и кружок!', "Let's do it together: a hop and a spin!"]],
@@ -812,7 +812,7 @@ export const FOODS = [
     fact: ['Клубника — редкое лакомство, только маленький кусочек!', 'A strawberry is a rare treat — just a tiny bite!'] },
 ];
 
-// Ниндзя-задания: [ru, en, emoji]
+// Ninja missions: [ru, en, emoji]
 export const MISSIONS = [
   ['Сделай 10 кроличьих прыжков!', 'Do 10 bunny hops!', '🐰'],
   ['Постой на одной ноге, пока считаешь до 15, как цапля.', 'Stand on one leg and count to 15, like a heron.', '🦩'],
@@ -830,7 +830,7 @@ export const MISSIONS = [
   ['Выпей стакан воды — ниндзя заботятся о себе.', 'Drink a glass of water — ninjas take care of themselves.', '💧'],
 ];
 
-// Забота о настоящем кролике
+// Caring for a real bunny
 export const CARE = [
   ['Проверь, есть ли у настоящего Лаки свежая вода.', 'Check that real Lucky has fresh water.', '💧'],
   ['Положи настоящему Лаки свежего сена.', 'Give real Lucky some fresh hay.', '🌾'],
@@ -841,7 +841,7 @@ export const CARE = [
   ['Посиди рядом с Лаки и понаблюдай, что он делает.', 'Sit next to Lucky and watch what he does.', '👀'],
 ];
 
-// Добрые дела (если настоящего кролика нет)
+// Good deeds (if there is no real bunny)
 export const DEEDS = [
   ['Помоги накрыть на стол.', 'Help set the table.', '🍽️'],
   ['Полей цветы дома.', 'Water the plants at home.', '🪴'],
@@ -850,7 +850,7 @@ export const DEEDS = [
   ['Нарисуй открытку для друга.', 'Draw a card for a friend.', '💌'],
 ];
 
-// Фразы дня: [ru, en, emoji, ирландский (необязательно)]
+// Phrases of the day: [ru, en, emoji, Irish (optional)]
 export const PHRASES = [
   ['Привет!', 'Hello!', '👋', 'Dia duit!'],
   ['Как тебя зовут?', 'What\'s your name?', '🙂'],
@@ -899,7 +899,7 @@ export const PHRASES = [
   ['Я люблю рисовать и танцевать.', 'I like drawing and dancing.', '💃'],
 ];
 
-// Мини-диалоги для игры «Разговор с Лаки»: [вопрос, ответ, тема]. Ответы одной темы не ставим в неправильные варианты.
+// Mini-dialogues for Chat with Lucky: [question, answer, topic]. Answers from the same topic are never used as wrong options.
 export const DIALOGS = [
   ["What's your name?", 'My name is Lucky.', 'name'],
   ['How old are you?', "I'm ten years old.", 'age'],
@@ -933,5 +933,5 @@ export const BELTS = [
 
 
 
-// Предметы для украшения, доступные с первого дня
+// Decorate items available from day one
 

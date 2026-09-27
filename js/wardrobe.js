@@ -1,6 +1,6 @@
-// Гардероб Лаки: 4 слота, вещи можно сочетать. Координаты — как у Лаки (viewBox 0 0 200 210):
-// голова — центр (100,90), глаза (80,90) и (120,90), нос (100,104), подбородок ~137, тело — центр (100,152).
-// Слои: back (за телом), body (поверх тела), under (под глазами), over (поверх лица), neck, head (на голове).
+// Lucky's wardrobe: 4 slots, items can be combined. Coordinates match Lucky (viewBox 0 0 200 210):
+// head centre (100,90), eyes (80,90) and (120,90), nose (100,104), chin ~137, body centre (100,152).
+// Layers: back (behind the body), body (over the body), under (below the eyes), over (over the face), neck, head (on top).
 
 export const SLOTS = ['head', 'face', 'neck', 'body'];
 
@@ -21,9 +21,9 @@ const star5 = (cx, cy, r, fill) => {
 const heart = (cx, cy, s, fill, extra = '') => `<path transform="translate(${cx} ${cy}) scale(${s})" d="M0 6 C-10 -2 -8 -12 0 -7 C8 -12 10 -2 0 6Z" fill="${fill}" ${extra}/>`;
 const flowerDot = (x, y, c) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map((a) => `<circle cy="-5" r="4.6" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="3.4" fill="#FFF3A8"/></g>`;
 
-// rarity: common — за уровни, rare — в подарках, gold — редкие подарки и альбомы
+// rarity: common from levels, rare from presents, gold from rare presents and albums
 export const WEAR = [
-  // ---------- голова ----------
+  // ---------- head ----------
   { id: 'headband', slot: 'head', level: 2, name: ['Ниндзя-повязка', 'Ninja headband'],
     art: (belt) => {
       const white = belt === '#FFFFFF';
@@ -69,7 +69,7 @@ export const WEAR = [
       <path d="M93 42 l14 -5 M95 29 l11 -4 M97 16 l7 -3" stroke="#FF8CC6" stroke-width="2" stroke-linecap="round"/>
       ${flowerDot(80, 54, '#B78CFF')}${flowerDot(120, 54, '#FFD23F')}` }) },
 
-  // ---------- лицо ----------
+  // ---------- face ----------
   { id: 'glasses', slot: 'face', level: 6, name: ['Очки-звёздочки', 'Star glasses'],
     art: () => ({ over: `${[80, 120].map((cx) => `<path d="M${cx} 72 l5.3 11 12 1.6 -8.8 8.4 2.2 12 -10.7 -5.8 -10.7 5.8 2.2 -12 -8.8 -8.4 12 -1.6z" fill="#FF9BD0" fill-opacity=".35" stroke="#FF3E8E" stroke-width="3.2" stroke-linejoin="round"/>`).join('')}
       <path d="M92 86 q8 -5 16 0" stroke="#FF3E8E" stroke-width="3" fill="none"/>` }) },
@@ -91,7 +91,7 @@ export const WEAR = [
     art: () => ({ over: `<path d="M52 70 L150 100" stroke="#222" stroke-width="3.5"/><ellipse cx="120" cy="90" rx="15" ry="13" fill="#222"/>
       <path d="M113 86 l5 4 -5 4 M127 86 l-5 4 5 4" stroke="#fff" stroke-width="1.8" fill="none" opacity=".8"/>` }) },
 
-  // ---------- шея ----------
+  // ---------- neck ----------
   { id: 'scarf', slot: 'neck', level: 12, name: ['Ниндзя-шарф', 'Ninja scarf'],
     art: () => ({ neck: `<path d="M58 128 Q100 150 142 128 L144 142 Q100 164 56 142Z" fill="#FF5FA2"/>
       <path d="M58 133 Q100 155 142 133" stroke="#FFD1E6" stroke-width="3" fill="none" stroke-dasharray="6 7"/>
@@ -109,7 +109,7 @@ export const WEAR = [
     art: () => ({ neck: `<path d="M84 130 L100 158 L116 130" stroke="#4D9BFF" stroke-width="8" fill="none" stroke-linejoin="round"/>
       <circle cx="100" cy="164" r="12" fill="#FFD23F" stroke="#E6A800" stroke-width="3"/>${star5(100, 164.5, 7, '#fff')}` }) },
 
-  // ---------- костюм ----------
+  // ---------- costume ----------
   { id: 'cape', slot: 'body', level: 20, name: ['Плащ героя', 'Hero cape'],
     art: () => ({ back: `<path d="M60 126 Q30 178 38 202 L162 202 Q170 178 140 126Z" fill="#E23D86"/><path d="M60 126 Q44 170 52 200" stroke="#FF7AB8" stroke-width="3" fill="none" opacity=".7"/>`,
       neck: `<path d="M64 130 Q100 146 136 130" stroke="#E23D86" stroke-width="7" fill="none" stroke-linecap="round"/><circle cx="100" cy="140" r="7" fill="#FFD23F" stroke="#E6A800" stroke-width="2"/>` }) },
@@ -132,7 +132,7 @@ export const WEAR = [
 
 export const WEAR_BY_ID = Object.fromEntries(WEAR.map((w) => [w.id, w]));
 
-// Собрать слои одежды для рисунка Лаки
+// Build the clothing layers for Lucky's drawing
 export function wearLayers(wear = {}, belt = '#FF4F9A') {
   const out = { back: '', body: '', under: '', over: '', neck: '', head: '' };
   for (const slot of SLOTS) {

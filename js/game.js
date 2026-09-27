@@ -1,5 +1,5 @@
-// Мини-игры. Общая оболочка: стартовый экран с «Назад», ✕ во время игры, экран итога.
-// Каждая игра — run(ctx) → { stop(): score, cleanup() }. Проиграть нельзя, только набрать меньше очков.
+// Mini-games. Shared shell: start screen with Back, ✕ during play, result screen.
+// Each game is run(ctx) → { stop(): score, cleanup() }. You can't lose, only score less.
 
 import { PHRASES, DIALOGS } from './i18n.js';
 import { speak } from './sound.js';
@@ -46,14 +46,14 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, onCancel,
   card.querySelector('.g-cancel').onclick = () => { sfx.tap(); onCancel(); };
   host.querySelector('.g-exit').onclick = () => {
     sfx.tap();
-    if (!inst) return onCancel();          // ещё не начали — попытка не тратится
+    if (!inst) return onCancel();          // not started yet: the attempt is not used up
     if (ended) return onEnd(final);
     ended = true;
-    onEnd(inst.stop());                    // вышли посреди игры — засчитываем набранное
+    onEnd(inst.stop());                    // left mid-game: count the score so far
   };
 }
 
-// ---------- Морковный дождь ----------
+// ---------- Carrot Rain ----------
 
 const DROPS = [{ e: '🥕', pts: 1, w: 55 }, { e: '🍓', pts: 2, w: 20 }, { e: '💗', pts: 1, w: 15 }, { e: '🌟', pts: 3, w: 10 }];
 const DROPS_W = DROPS.reduce((s, i) => s + i.w, 0);
@@ -166,7 +166,7 @@ function runCatch(ctx) {
   return { cleanup, stop: () => { cleanup(); return score; } };
 }
 
-// ---------- Ниндзя-память ----------
+// ---------- Ninja Memory ----------
 
 function runMemory(ctx) {
   const { stage, sfx } = ctx;
@@ -205,7 +205,7 @@ function runMemory(ctx) {
   return { cleanup, stop: () => { cleanup(); return found * 2; } };
 }
 
-// ---------- Повтори за Лаки ----------
+// ---------- Copy Lucky ----------
 
 function runSimon(ctx) {
   const { stage, sfx } = ctx;
@@ -266,12 +266,12 @@ function runSimon(ctx) {
   return { cleanup, stop: () => { cleanup(); return best * 3; } };
 }
 
-// ---------- Разговор с Лаки ----------
-// Лаки задаёт вопрос вслух на втором языке, Лиза выбирает ответ из трёх.
+// ---------- Chat with Lucky ----------
+// Lucky asks a question out loud, the child picks one of three answers.
 
 function runTalk(ctx) {
   const { stage, sfx, tr } = ctx;
-  // Вопросы всегда по-английски, подсказка — по-русски
+  // Questions are always in English, the hint is in Russian
   const target = 1;
   const hintIdx = 0;
   const tLang = 'en';

@@ -31,7 +31,9 @@ jobs:
           mkdir _site
           cp -r index.html manifest.webmanifest sw.js css js icons audio _site/
           sed -i "s/const CACHE = 'lucky-v[0-9]*';/const CACHE = 'lucky-${GITHUB_SHA::8}';/" _site/sw.js
+          sed -i "s/export const BUILD = 'dev';/export const BUILD = '${GITHUB_SHA::7}';/" _site/js/version.js
           grep -q "lucky-${GITHUB_SHA::8}" _site/sw.js
+          grep -q "${GITHUB_SHA::7}" _site/js/version.js
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

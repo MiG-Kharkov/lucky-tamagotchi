@@ -1,4 +1,4 @@
-// Звуки (WebAudio), готовые записи голосов (Google Chirp 3 HD) и запасной встроенный голос.
+// Sound effects (Web Audio), pre-recorded voice clips (Google Chirp 3 HD) and the built-in fallback voice.
 
 import { clipId, VOICES } from './voicekey.js';
 
@@ -15,23 +15,23 @@ export function stopSpeech() {
   try { speechSynthesis.cancel(); } catch { /* ignore */ }
 }
 
-// Голос слышен и в беззвучном режиме iPhone: просим iOS режим «воспроизведение» как можно раньше
+// Keep the voice audible in iPhone silent mode: ask iOS for the 'playback' session as early as possible
 try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch { /* ignore */ }
 
 function audioCtx() {
   if (!ctx) {
-    try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* нет Web Audio */ }
+    try { ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch { /* no Web Audio */ }
   }
   return ctx;
 }
 
-// Запасной способ для старых iOS: беззвучная дорожка через обычный <audio> переводит звук страницы
-// в режим «воспроизведение», и Web Audio перестаёт зависеть от переключателя беззвучного режима.
+// Fallback for older iOS: a silent track in a regular <audio> element switches the page
+// to the 'playback' session, so Web Audio no longer depends on the silent switch.
 const IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 let silentEl = null;
 function silentTrack() {
   if (silentEl) return silentEl;
-  const rate = 8000, n = rate / 2; // полсекунды тишины, WAV 8 кГц
+  const rate = 8000, n = rate / 2; // half a second of silence, 8 kHz WAV
   const buf = new ArrayBuffer(44 + n * 2), v = new DataView(buf);
   const w = (o, str) => [...str].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
   w(0, 'RIFF'); v.setUint32(4, 36 + n * 2, true); w(8, 'WAVE'); w(12, 'fmt ');
@@ -46,8 +46,8 @@ function silentTrack() {
 }
 document.addEventListener('visibilitychange', () => { if (document.hidden && silentEl) silentEl.pause(); });
 
-// iOS разрешает звук только в жесте пользователя (touchend/click), а после звонка
-// или Siri контекст бывает «interrupted» — поэтому возобновляем при каждом касании.
+// iOS allows audio only inside a user gesture (touchend/click), and after a call
+// or Siri the context can be 'interrupted', so resume it on every tap.
 export function unlockAudio() {
   const c = audioCtx();
   if (c && c.state !== 'running') c.resume().catch(() => {});
@@ -101,11 +101,11 @@ export const sfx = {
 
 const stripEmoji = (s) => s.replace(/\p{Extended_Pictographic}|️|‍/gu, '').trim();
 
-// ---------- запасной встроенный голос ----------
+// ---------- built-in fallback voice ----------
 
 const VOICE_PREF = { en: ['en-IE', 'en-GB', 'en-US', 'en'], ru: ['ru-RU', 'ru'] };
 const FALLBACK_LANG = { en: 'en-GB', ru: 'ru-RU' };
-// «Шуточные» голоса iOS нам не подходят
+// Skip the novelty iOS voices
 const NOVELTY = /Albert|Bad News|Bahh|Bells|Boing|Bubbles|Cellos|Good News|Jester|Organ|Superstar|Trinoids|Whisper|Wobble|Zarvox|Eddy|Flo|Grandma|Grandpa|Reed|Rocko|Sandy|Shelley/i;
 const langOf = (v) => v.lang.replace('_', '-');
 
@@ -132,30 +132,30 @@ function speakSystem(text, lang, who, seq) {
     u.lang = v ? langOf(v) : FALLBACK_LANG[lang];
     [u.pitch, u.rate] = SYS_VOICE[who] || SYS_VOICE.lucky;
     const go = () => { if (seq === speechSeq && !document.hidden) speechSynthesis.speak(u); };
-    // iOS иногда теряет фразу, сказанную сразу после cancel()
+    // iOS sometimes drops an utterance spoken right after cancel()
     if (busy) setTimeout(go, 120); else go();
-  } catch { /* озвучка недоступна */ }
+  } catch { /* speech unavailable */ }
 }
 
-// ---------- готовые записи ----------
+// ---------- pre-recorded clips ----------
 
-let clips = null;          // Set id записей из audio/manifest.json
+let clips = null;          // Set of clip ids from audio/manifest.json
 const manifest = fetch('audio/manifest.json').then((r) => (r.ok ? r.json() : [])).catch(() => [])
   .then((ids) => { clips = new Set(ids); });
-const buffers = new Map(); // id → Promise<AudioBuffer>, не больше MAX_BUFFERS
+const buffers = new Map(); // id → Promise<AudioBuffer>, at most MAX_BUFFERS
 const MAX_BUFFERS = 40;
 let clipSrc = null;
-let speechSeq = 0;         // номер последней реплики: устаревшие загрузки не проигрываем
+let speechSeq = 0;         // number of the latest line: stale loads are not played
 
 function stopClip() {
-  if (clipSrc) { try { clipSrc.stop(); } catch { /* уже остановлен */ } clipSrc = null; }
+  if (clipSrc) { try { clipSrc.stop(); } catch { /* already stopped */ } clipSrc = null; }
 }
 
 function loadClip(id) {
   if (buffers.has(id)) {
     const p = buffers.get(id);
     buffers.delete(id);
-    buffers.set(id, p); // свежий — в конец очереди
+    buffers.set(id, p); // most recent goes to the end of the queue
     return p;
   }
   const p = fetch(`audio/${id}.mp3`)
@@ -185,7 +185,7 @@ async function playClip(id, who, seq) {
   clipSrc = src;
 }
 
-// Реплика: сначала готовая запись, иначе встроенный голос.
+// A line: a pre-recorded clip first, otherwise the built-in voice.
 export async function speak(text, lang, who = 'lucky') {
   if (!voiceOn || document.hidden) return;
   const seq = ++speechSeq;
@@ -196,14 +196,14 @@ export async function speak(text, lang, who = 'lucky') {
   if (c && clips?.has(clipId(who, lang, text))) {
     try { speechSynthesis.cancel(); } catch { /* ignore */ }
     try { await playClip(clipId(who, lang, text), who, seq); return; } catch (e) {
-      // Звук ещё не разрешён (не было касания) — молчим, фраза повторится на первом касании
+      // Audio not allowed yet (no tap so far): stay silent, the line replays on the first tap
       if (e.message === 'audio locked') return;
     }
   }
   speakSystem(text, lang, who, seq);
 }
 
-// Диагностика звука для родительского раздела
+// Sound diagnostics for the parents' area
 export function soundStatus() {
   return {
     webAudio: ctx ? ctx.state : 'not created',

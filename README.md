@@ -15,6 +15,7 @@
   <img alt="Works offline" src="https://img.shields.io/badge/Works-offline-8B6CFF?style=for-the-badge">
   <img alt="No tracking" src="https://img.shields.io/badge/Tracking-none-3BAA66?style=for-the-badge">
   <a href="LICENSE.md"><img alt="License: PolyForm Noncommercial" src="https://img.shields.io/badge/License-Noncommercial-FFB400?style=for-the-badge"></a>
+  <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/github/v/tag/MiG-Kharkov/lucky-tamagotchi?label=version&style=for-the-badge&color=4D9BFF"></a>
 </p>
 
 <p align="center">
@@ -206,7 +207,7 @@ static files, and all progress stays in the phone's local storage.
 - Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (~1250 clips, ~15 MB)
 - A service worker for offline play (code network-first, voice clips cached once)
 - Deployed to GitHub Pages by [GitHub Actions](.github/workflows/pages.yml). The cache version is set from the commit automatically
-- Developer notes in Russian: [`docs/DEVELOPMENT.ru.md`](docs/DEVELOPMENT.ru.md), game design: [`docs/DESIGN.ru.md`](docs/DESIGN.ru.md)
+- Developer notes: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · game design: [`docs/DESIGN.md`](docs/DESIGN.md) · what's new: [`CHANGELOG.md`](CHANGELOG.md)
 
 ---
 
