@@ -66,14 +66,15 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🥕 **Care** | Feed (with real bunny facts), wash with bubbles, cuddle, tuck into bed |
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
-| 🎮 **Mini-games** | Carrot Rain · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (English Q&A) |
+| 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (English Q&A) |
 | 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 28 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings… mix and match |
 | 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle |
 | 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, and Lucky joins in with sunglasses, umbrellas, space helmets and more |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them |
-| 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 35 badges and Tali's joke book |
+| 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 37 badges, and an English tab with jokes, tongue twisters and sayings |
 | 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks |
+| 🎭 **Fun English** | Lucky acts out English sayings literally ("it's raining cats and dogs": cats and dogs fall from the sky), then explains what they mean, with the Russian saying for the same thing. Tali asks for tongue twisters, and Lucky says them slowly, faster and super fast. Everything goes into the English tab of the collection |
 | 🐶 **Tali's jokes** | Over 100 kids' jokes, knock-knock jokes included. Lucky laughs, does something that fits and comments. Puns are explained in the translation, and heard jokes go into a joke book to retell at school |
 | 🌬️ **Feelings** | A daily *"How are you feeling?"* check-in and a guided ninja-breathing exercise |
 

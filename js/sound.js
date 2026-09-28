@@ -196,6 +196,8 @@ export const sfx = {
   freeze: () => { tone(1200, 0.15, { type: 'square', vol: 0.05 }); tone(600, 0.3, { type: 'square', vol: 0.05, delay: 0.15 }); },
   go: () => { tone(600, 0.1, { type: 'triangle', vol: 0.08 }); tone(900, 0.2, { type: 'triangle', vol: 0.08, delay: 0.1 }); },
   tick: () => tone(1000, 0.04, { type: 'square', vol: 0.03 }),
+  gallop: () => { for (let i = 0; i < 8; i++) { const d = Math.floor(i / 2) * 0.28 + (i % 2) * 0.1; tone(i % 2 ? 520 : 440, 0.05, { type: 'square', vol: 0.04, delay: d }); noise(0.04, { vol: 0.05, delay: d, type: 'lowpass', freq: 1200 }); } },
+  buzz: () => { tone(210, 1.1, { type: 'sawtooth', vol: 0.025, slide: 1.1 }); tone(214, 1.1, { type: 'sawtooth', vol: 0.02, delay: 0.05 }); },
   // ba-dum-tss after a punchline
   rimshot: () => { tone(200, 0.1, { vol: 0.13, slide: 0.7 }); tone(150, 0.12, { vol: 0.13, slide: 0.7, delay: 0.13 }); noise(0.6, { vol: 0.06, type: 'highpass', freq: 6000, delay: 0.27 }); },
 };
@@ -242,7 +244,7 @@ function voiceFor(lang) {
 
 const SYS_VOICE = { lucky: [1.35, 0.92], dog: [1.8, 1.05], frog: [0.7, 0.95] };
 
-function speakSystem(text, lang, who, seq) {
+function speakSystem(text, lang, who, seq, speed = 1) {
   if (!('speechSynthesis' in window)) return;
   try {
     const busy = speechSynthesis.speaking || speechSynthesis.pending;
@@ -252,6 +254,7 @@ function speakSystem(text, lang, who, seq) {
     if (v) u.voice = v;
     u.lang = v ? langOf(v) : FALLBACK_LANG[lang];
     [u.pitch, u.rate] = SYS_VOICE[who] || SYS_VOICE.lucky;
+    u.rate = Math.min(2, u.rate * speed);
     const go = () => { if (seq === speechSeq && !document.hidden) speechSynthesis.speak(u); };
     // iOS sometimes drops an utterance spoken right after cancel()
     if (busy) setTimeout(go, 120); else go();
@@ -272,7 +275,7 @@ let missed = null;         // the last line that couldn't play because audio was
 function replayMissed() {
   const m = missed;
   missed = null;
-  if (m && m.seq === speechSeq && Date.now() - m.at < 8000 && !document.hidden) speak(m.text, m.lang, m.who);
+  if (m && m.seq === speechSeq && Date.now() - m.at < 8000 && !document.hidden) speak(m.text, m.lang, m.who, m.speed);
 }
 
 function stopClip() {
@@ -297,7 +300,7 @@ function loadClip(id) {
 
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-async function playClip(id, who, seq) {
+async function playClip(id, who, seq, speed = 1) {
   if (ctx.state !== 'running') {
     await Promise.race([ctx.resume().catch(() => {}), wait(300)]);
     if (ctx.state !== 'running') throw new Error('audio locked');
@@ -307,14 +310,15 @@ async function playClip(id, who, seq) {
   stopClip();
   const src = ctx.createBufferSource();
   src.buffer = buf;
-  src.playbackRate.value = VOICES[who]?.rate || 1;
+  src.playbackRate.value = (VOICES[who]?.rate || 1) * speed;
   src.connect(ctx.destination);
   src.start();
   clipSrc = src;
 }
 
 // A line: a pre-recorded clip first, otherwise the built-in voice.
-export async function speak(text, lang, who = 'lucky') {
+// speed plays the same clip faster or slower (tongue twisters); faster also sounds higher.
+export async function speak(text, lang, who = 'lucky', speed = 1) {
   if (!voiceOn || document.hidden) return;
   const seq = ++speechSeq;
   stopClip();
@@ -323,12 +327,12 @@ export async function speak(text, lang, who = 'lucky') {
   const c = audioCtx();
   if (c && clips?.has(clipId(who, lang, text))) {
     try { speechSynthesis.cancel(); } catch { /* ignore */ }
-    try { await playClip(clipId(who, lang, text), who, seq); return; } catch (e) {
+    try { await playClip(clipId(who, lang, text), who, seq, speed); return; } catch (e) {
       // Audio not allowed yet (no tap so far): stay silent, the line replays on the next tap
-      if (e.message === 'audio locked') { missed = { text, lang, who, seq, at: Date.now() }; return; }
+      if (e.message === 'audio locked') { missed = { text, lang, who, seq, speed, at: Date.now() }; return; }
     }
   }
-  speakSystem(text, lang, who, seq);
+  speakSystem(text, lang, who, seq, speed);
 }
 
 // Load clips in advance (counting in missions must be on the beat)

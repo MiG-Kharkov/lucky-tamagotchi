@@ -13,7 +13,7 @@ export const GAMES = [
   { id: 'talk', emoji: '🗣️', energy: 5, great: 12, run: runTalk },
 ];
 
-export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, onCancel, onEnd }) {
+export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, onCancel, onEnd }) {
   host.innerHTML = `<div class="game g-${game.id}">
     <div class="game-stage"></div>
     <div class="game-hud"><button class="g-exit" aria-label="close">✕</button><span class="g-info" hidden></span></div>
@@ -28,7 +28,7 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, onCancel,
   let inst = null, ended = false, final = 0;
 
   const ctx = {
-    stage, sfx, lang, tr, svgOk, svgHappy,
+    stage, sfx, lang, tr, svgOk, svgHappy, svgSad,
     info: (html) => { info.hidden = false; info.innerHTML = html; },
     end: (score, msg) => {
       if (ended) return;
@@ -55,7 +55,8 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, onCancel,
 
 // ---------- Carrot Rain ----------
 
-const DROPS = [{ e: '🥕', pts: 1, w: 55 }, { e: '🍓', pts: 2, w: 20 }, { e: '💗', pts: 1, w: 15 }, { e: '🌟', pts: 3, w: 10 }];
+// Pizza is not for bunnies: catching it takes a point away
+const DROPS = [{ e: '🥕', pts: 1, w: 55 }, { e: '🍓', pts: 2, w: 20 }, { e: '💗', pts: 1, w: 15 }, { e: '🌟', pts: 3, w: 10 }, { e: '🍕', pts: -1, w: 16 }];
 const DROPS_W = DROPS.reduce((s, i) => s + i.w, 0);
 const CATCH_SECONDS = 30;
 
@@ -76,7 +77,7 @@ function runCatch(ctx) {
   stage.innerHTML = '<canvas></canvas>';
   const canvas = stage.querySelector('canvas');
   const g = canvas.getContext('2d');
-  const imgOk = svgImage(ctx.svgOk), imgHappy = svgImage(ctx.svgHappy);
+  const imgOk = svgImage(ctx.svgOk), imgHappy = svgImage(ctx.svgHappy), imgYuck = svgImage(ctx.svgSad);
   let W = 0, H = 0;
   function resize() {
     const dpr = Math.min(window.devicePixelRatio || 1, 3);
@@ -90,7 +91,7 @@ function runCatch(ctx) {
 
   const lw = () => Math.min(W * 0.3, 140);
   let lx = W / 2, target = W / 2, items = [], pops = [];
-  let score = 0, t = 0, spawnIn = 0, happyFor = 0, raf = 0, last = performance.now();
+  let score = 0, t = 0, spawnIn = 0, happyFor = 0, yuckFor = 0, raf = 0, last = performance.now();
   const setTarget = (e) => { target = e.clientX - stage.getBoundingClientRect().left; };
   canvas.addEventListener('pointerdown', setTarget);
   canvas.addEventListener('pointermove', setTarget);
@@ -124,10 +125,18 @@ function runCatch(ctx) {
       it.rot += dt;
       if (!it.done && it.y > top + w * 0.15 && it.y < top + w * 0.7 && Math.abs(it.x - lx) < w * 0.45) {
         it.done = true;
-        score += it.pts;
-        happyFor = 0.35;
-        pops.push({ x: it.x, y: top, life: 0.8, txt: '+' + it.pts });
-        sfx.catch();
+        if (it.pts < 0) {
+          score = Math.max(0, score + it.pts);
+          yuckFor = 0.6;
+          happyFor = 0;
+          pops.push({ x: it.x, y: top, life: 0.9, txt: '−1', bad: true });
+          sfx.bonk();
+        } else {
+          score += it.pts;
+          happyFor = 0.35;
+          pops.push({ x: it.x, y: top, life: 0.8, txt: '+' + it.pts });
+          sfx.catch();
+        }
       }
       if (it.done) continue;
       g.save();
@@ -142,15 +151,17 @@ function runCatch(ctx) {
     items = items.filter((i) => !i.done && i.y < H + 50);
 
     happyFor -= dt;
-    const img = happyFor > 0 ? imgHappy : imgOk;
-    if (img.complete) g.drawImage(img, lx - w / 2, top, w, w * 1.05);
+    yuckFor -= dt;
+    const img = yuckFor > 0 ? imgYuck : happyFor > 0 ? imgHappy : imgOk;
+    const shake = yuckFor > 0 ? Math.sin(t * 60) * 6 : 0; // yuck, pizza!
+    if (img.complete) g.drawImage(img, lx - w / 2 + shake, top, w, w * 1.05);
 
     for (const p of pops) {
       p.life -= dt;
       p.y -= 60 * dt;
       g.globalAlpha = Math.max(0, p.life / 0.8);
       g.font = 'bold 26px ui-rounded, system-ui';
-      g.fillStyle = '#FF3E8E';
+      g.fillStyle = p.bad ? '#7A5A86' : '#FF3E8E';
       g.textAlign = 'center';
       g.fillText(p.txt, p.x, p.y);
       g.globalAlpha = 1;

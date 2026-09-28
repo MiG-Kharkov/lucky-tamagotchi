@@ -75,4 +75,6 @@ export const BADGES = [
   ['stickers30', '📒', ['Коллекционер', 'Collector'], 'stickers', 30],
   ['album1', '📚', ['Первый альбом', 'First album'], 'albums', 1],
   ['jokes25', '😂', ['Хохотушка', 'Giggle champion'], 'jokes', 25],
+  ['twisters10', '👅', ['Скороговорщица', 'Twister champion'], 'twisters', 10],
+  ['idioms10', '🎭', ['Знаток выражений', 'Saying explorer'], 'idioms', 10],
 ];

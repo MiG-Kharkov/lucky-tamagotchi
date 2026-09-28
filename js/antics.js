@@ -292,6 +292,7 @@ export function createAntics(api) {
       api.fxAt(c.x, c.y + 20, w === 'candy' ? ['🍬', '🍭'] : w === 'winter' ? ['❄️'] : ['💧'], 8, 'drop');
     },
     tap: who((c) => {
+      if (api.world() !== 'candy' && api.world() !== 'winter' && api.idiom?.('cloud', 0.35)) return; // "It's raining cats and dogs!"
       const a = begin('rain'), w = api.world(), [hx, hy] = head();
       if (w === 'candy') {
         for (let i = 0; i < 5; i++) at(a, i * 220, () => { fly(i % 2 ? '🍬' : '🍭', [c.x, c.y], mouth(), 600, { spin: 200, size: 26 }); });
@@ -775,6 +776,7 @@ export function createAntics(api) {
   const sideOf = () => sceneRect().width + 30;
   const JOKE_DO = {
     laugh: [1500, () => { pose('laugh', 1800, 'roll', 1500); }],
+    dizzy: [1600, () => { prop('dizzy', 2600); pose('tired', 2000, 'squash', 700); sfx.bonk(); }],
     sleepy: [1900, () => { api.setTemp('sleep', 2000); sfx.yawn(); api.fxAt(...head(), ['💤'], 3, 'spark'); }],
     specs: [1500, () => { prop('specs', 5000); pose('happy', 1600, 'listen', 1600); }],
     shades: [1300, () => { prop('shades', 6000); pose('happy', 1500, 'proud', 1200); }],
@@ -815,6 +817,123 @@ export function createAntics(api) {
     spin: [1600, () => { pose('laugh', 1500, 'pirouette', 1500); sfx.magic(); }],
   };
 
+  // ---------- idioms acted out literally: [ms the scene takes, what happens] ----------
+  const W = () => sceneRect().width;
+  const ground = () => api.luckyPoint(0.5, 0.97)[1];
+  const IDIOM_SHOW = {
+    catsDogs: [2700, () => {
+      prop('umbrella', 3200);
+      pose('ok', 1500, 'startle', 1100);
+      for (let i = 0; i < 12; i++) setTimeout(() => { const x = 20 + Math.random() * (W() - 40); fly(i % 2 ? '🐶' : '🐱', [x, -30], [x + 20, ground()], 900, { spin: 180, size: 30 }); }, i * 150);
+      sfx.rain();
+    }],
+    butterflies: [2300, () => {
+      pose('ok', 2000, 'drum', 1000);
+      const [x, y] = api.luckyPoint(0.5, 0.75);
+      for (let i = 0; i < 6; i++) setTimeout(() => fly('🦋', [x, y], [x + (Math.random() * 240 - 120), y - 180 - Math.random() * 80], 1300, { arc: 40, size: 26 }), i * 170);
+      sfx.magic();
+    }],
+    horses: [2400, () => {
+      pose('ok', 2000, 'strain', 1800);
+      sfx.gallop();
+      for (let i = 0; i < 3; i++) setTimeout(() => fly('🐎', [W() + 60, ground() - 30 - i * 14], [-80, ground() - 30 - i * 14], 1300, { size: 58 }), i * 280);
+    }],
+    cake: [1900, () => {
+      const at0 = api.luckyPoint(1.0, 0.8);
+      popUp('🍰', ...at0, 900, 40);
+      setTimeout(() => { fly('🍰', at0, mouth(), 450, { size: 32 }); }, 700);
+      setTimeout(() => { api.setTemp('eat', 1400); sfx.crunch(); }, 1150);
+    }],
+    allEars: [1900, () => { pose('happy', 1900, 'bigears', 1900); api.fxAt(...earPt(), ['👂', '✨'], 4, 'spark'); sfx.boing(); }],
+    moon: [2300, () => { popUp('🌙', W() / 2, sceneRect().height * 0.22, 2300, 64); sfx.magic(); pose('laugh', 2100, 'moonjump', 2100); }],
+    bananas: [2400, () => {
+      pose('laugh', 2400, 'zoom', 2300);
+      const [x, y] = head();
+      for (let i = 0; i < 8; i++) setTimeout(() => fly('🍌', [x, y], [Math.random() * W(), Math.random() * sceneRect().height * 0.6], 800, { spin: 360, size: 28 }), i * 120);
+      sfx.whoosh();
+    }],
+    weather: [2600, () => {
+      const [hx, hy] = head();
+      fly('☁️', [hx + 120, hy - 90], [hx, hy - 55], 600, { size: 56, stay: 2000, cls: 'rain-cloud' });
+      setTimeout(() => { api.fxAt(hx, hy - 35, ['💧'], 8, 'drop'); sfx.rain(); }, 600);
+      pose('sad', 2600, 'shiver', 1600);
+    }],
+    hay: [2400, () => {
+      popUp('🌾', ...api.luckyPoint(0.5, 0.92), 2400, 90);
+      pose('laugh', 900, 'bigjump', 1100);
+      setTimeout(() => { api.setTemp('sleep', 1300); sfx.yawn(); api.fxAt(...head(), ['💤'], 3, 'spark'); }, 1100);
+    }],
+    log: [2200, () => {
+      popUp('🪵', ...api.luckyPoint(0.95, 0.9), 2200, 60);
+      api.setTemp('sleep', 1500);
+      api.fxAt(...head(), ['💤', '💤'], 3, 'spark');
+      setTimeout(() => { sfx.yawn(); pose('happy', 800, 'hop'); }, 1500);
+    }],
+    earlyBird: [2700, () => {
+      const [gx, gy] = api.luckyPoint(1.15, 0.97);
+      popUp('🪱', gx, gy - 8, 1500, 26, 'pop-rise');
+      fly('🐦', [-40, 60], [gx, gy - 30], 1000, { arc: 30, size: 34, stay: 400 });
+      setTimeout(() => fly('🐦', [gx, gy - 30], [W() + 40, 30], 1100, { arc: 60, size: 34 }), 1400);
+      pose('ok', 2000, 'listen', 2000);
+      setTimeout(() => sfx.chime(), 1000);
+    }],
+    fish: [2200, () => {
+      popUp('🐟', ...api.luckyPoint(1.1, 0.95), 2200, 40, 'flop');
+      api.fxAt(...api.luckyPoint(1.1, 0.95), ['💦'], 4, 'spark');
+      sfx.splash();
+      pose('ok', 1500, 'startle', 1100);
+    }],
+    catBag: [2100, () => {
+      const at0 = api.luckyPoint(0.95, 0.82);
+      popUp('👜', ...at0, 1800, 44);
+      setTimeout(() => { fly('🐱', at0, [at0[0] + 90, at0[1] - 140], 800, { arc: 80, size: 34 }); sfx.pop(); }, 600);
+      pose('ok', 1600, 'startle', 1100);
+    }],
+    littleBird: [2500, () => {
+      const [ex, ey] = earPt();
+      fly('🐦', [-40, ey - 60], [ex - 10, ey - 18], 900, { arc: 40, size: 30, stay: 1100 });
+      setTimeout(() => fly('🐦', [ex - 10, ey - 18], [-40, 30], 900, { arc: 50, size: 30 }), 2000);
+      setTimeout(() => sfx.chime(), 900);
+      pose('happy', 2300, 'listen', 2300);
+    }],
+    bee: [2300, () => {
+      sfx.buzz();
+      const [x, y] = api.luckyPoint(0.5, 0.4);
+      [[-1, -0.6], [1, -0.2], [-1, 0.3]].forEach(([d, dy], i) => setTimeout(() => fly('🐝', [x - d * 160, y + dy * 100], [x + d * 180, y - dy * 80], 1100, { arc: 60, size: 26 }), i * 350));
+      pose('laugh', 1900, 'jig', 1900);
+    }],
+    cucumber: [2100, () => { prop('cukes', 3500); api.setTemp('happy', 2100); hold2('bask', 2100); sfx.chime(); }],
+    couchPotato: [2600, () => {
+      popUp('🛋️', ...api.luckyPoint(-0.05, 0.85), 2600, 70);
+      popUp('🥔', ...api.luckyPoint(-0.05, 0.72), 2400, 34);
+      api.setTemp('tired', 1400);
+      hold2('bask', 1300);
+      setTimeout(() => { sfx.boing(); pose('laugh', 1200, 'bigjump', 1100); }, 1400);
+    }],
+    pigs: [2500, () => { fly('🐷', [-50, 120], [W() + 50, 70], 2000, { arc: 70, size: 48 }); sfx.magic(); pose('laugh', 2000, 'binky'); }],
+    frogThroat: [1900, () => {
+      pose('ok', 900, 'squash', 700);
+      sfx.croak();
+      fly('🐸', mouth(), [mouth()[0] + 110, ground() - 10], 800, { arc: 70, size: 30, stay: 700 });
+    }],
+    biteOff: [2300, () => {
+      const at0 = api.luckyPoint(1.15, 0.5);
+      fly('🥕', [at0[0] + 60, at0[1] - 40], mouth(), 600, { size: 90 });
+      setTimeout(() => { api.setTemp('eat', 1600); sfx.crunch(); hold2('strain', 1400); }, 600);
+      setTimeout(() => sfx.crunch(), 1200);
+    }],
+    blueMoon: [2300, () => { popUp('🌕', W() / 2, sceneRect().height * 0.22, 2300, 64, 'pop-stay blue-moon'); sfx.magic(); pose('happy', 1800, 'proud', 1200); }],
+    clouds: [2600, () => {
+      const [hx, hy] = head();
+      [[-70, -20], [0, -55], [70, -20]].forEach(([dx, dy], i) => fly('☁️', [hx + dx * 3, hy + dy - 60], [hx + dx, hy + dy], 700, { size: 44, stay: 1500 - i * 100, cls: 'rain-cloud' }));
+      api.setTemp('sleep', 1700);
+      hold2('levitate', 1700);
+      setTimeout(() => { sfx.boing(); pose('ok', 900, 'startle', 1000); }, 1800);
+    }],
+  };
+  // a pose class for a while, outside a scene
+  function hold2(cls, ms) { L.classList.add(cls); setTimeout(() => L.classList.remove(cls), ms); }
+
   // ---------- wiring ----------
   function run(table, kind, el, p) {
     const fn = table?.[kind];
@@ -842,6 +961,21 @@ export function createAntics(api) {
       if (!api.free()) return;
       pose('ok', 1800, 'listen', 1700);
       popUp('🤔', ...api.luckyPoint(0.82, 0.02), 1600, 30);
+    },
+    // an idiom scene; returns how long it takes (0 if Lucky can't take part now)
+    idiomShow(key) {
+      if (!api.free()) return 0;
+      end();
+      const [ms, fn] = IDIOM_SHOW[key] || [0, () => {}];
+      fn();
+      return ms;
+    },
+    // tongue twisters: careful when slow, bouncy when fast, zooming when super fast
+    twistPose(speed) {
+      if (!api.free()) return;
+      if (speed < 1) pose('happy', 2500, 'listen', 2500);
+      else if (speed < 1.5) pose('laugh', 1500, 'hop');
+      else pose('laugh', 2000, 'dance', 2000);
     },
     laughAt(name) {
       if (!api.free()) return 0;

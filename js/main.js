@@ -2,6 +2,7 @@ import * as st from './state.js';
 import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, CARE, DEEDS, PHRASES, BELTS } from './i18n.js';
 import { MISSIONS, SKILLS } from './missions.js';
 import { JOKES, JOKE_BY_ID } from './jokes.js';
+import { IDIOMS, TWISTERS, IDIOM_BY_ID, TWISTER_BY_ID } from './english.js';
 import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
@@ -84,7 +85,7 @@ const userActive = () => windowActive() && Date.now() - lastInput < ACTIVE_MS;
 
 // A line: main-language text, small translation, spoken out loud.
 // Speak only in an active window, one line at a time: automatic lines wait for the current one.
-function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false } = {}) {
+function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false, speed = 1 } = {}) {
   if (document.hidden) return 0;
   if (ask && !forAsk) return 0; // don't interrupt Lucky's or the frog's question
   if ((auto || chain) && !userActive() && !(ambient && windowActive())) return 0;
@@ -105,7 +106,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
     clearTimeout(bubbleTimer);
     bubbleTimer = setTimeout(() => ui.bubble.classList.remove('show'), speechMs(sub || main) + 1500);
   };
-  if (mode !== 'sleep') speak(main, S.lang, who);
+  if (mode !== 'sleep') speak(main, S.lang, who, speed);
   lastSaid = { main, who, at: Date.now() };
   const ms = speechMs(main);
   busyUntil = now + ms;
@@ -251,6 +252,7 @@ const antics = createAntics({
   reward: () => { st.boost(S, 'fun', 2); award(addH(1, 'world', 10)); renderStats(); },
   boost: (k, n) => { st.boost(S, k, n); renderStats(); },
   stat,
+  idiom: (when, chance) => maybeIdiom(when, chance),
 });
 
 function confetti() {
@@ -565,6 +567,8 @@ function statValue(key) {
     case 'stickers': return S.stickers.length;
     case 'albums': return S.albumsDone.length;
     case 'jokes': return S.jokes.heard.length;
+    case 'twisters': return S.twisters.heard.length;
+    case 'idioms': return S.idioms.heard.length;
     case 'worlds': return S.worldsSeen.length;
     default: return S.stats[key] || 0;
   }
@@ -771,7 +775,8 @@ function feed(f) {
     const quick = Date.now() - lastFeedAt < 25000;
     lastFeedAt = Date.now();
     stat('feeds');
-    const ms = say(fresh(hungerBefore < 30 ? LUCKY.feedStarving : hungerBefore > 80 ? LUCKY.feedNearlyFull
+    const bite = f.treat && T0.treats >= 3 && maybeIdiom('treat', 0.5);
+    const ms = bite ? 4000 : say(fresh(hungerBefore < 30 ? LUCKY.feedStarving : hungerBefore > 80 ? LUCKY.feedNearlyFull
       : Math.random() < 0.6 && LUCKY.food[f.id] ? LUCKY.food[f.id] : LUCKY.eat));
     // Ate too fast: hiccups
     if (quick || Math.random() < 0.12) setTimeout(hiccups, ms + 300);
@@ -868,7 +873,7 @@ function luckyPress(part, p) {
   const now = Date.now();
   tapTimes.push(now);
   while (tapTimes.length && now - tapTimes[0] > 3000) tapTimes.shift();
-  if (tapTimes.length >= 6) { tapTimes = []; tickledAt = now; tickle(); return; }
+  if (tapTimes.length >= 6) { tapTimes = []; tickledAt = now; if (!maybeIdiom('fastTaps', 0.3)) tickle(); return; }
   if (p.second) return; // the second tap of a double tap
   if (part === 'feet') { setTemp('laugh', 900); hop(ui.lucky, 'paws', 600); sfx.tap(); antics.line('paws', 0.5, 15000); st.boost(S, 'fun', 2); renderStats(); return; }
   pet(part, p);
@@ -1104,7 +1109,7 @@ function maybeSurprise(now, T0) {
     st.save(S);
   };
   ui.scene.appendChild(b);
-  sayAuto(fresh(LUCKY.surprise));
+  if (!maybeIdiom('surprise', 0.35)) sayAuto(fresh(LUCKY.surprise));
 }
 
 // ---------- today's plan: a clear 'that's all for today' ----------
@@ -1129,7 +1134,7 @@ function checkPlan(T0) {
   st.save(S);
   confetti();
   sfx.levelup();
-  showModal({ art: '<div class="big-emoji">🌟</div>', title: tr('planDone'), text: '+5 💗' });
+  showModal({ art: '<div class="big-emoji">🌟</div>', title: tr('planDone'), text: '+5 💗', buttons: [{ label: tr('hooray'), onClick: () => setTimeout(() => maybeIdiom('planDone', 0.7), 300) }] });
   award(addH(5, 'plan', 5));
   setTimeout(() => say(fresh(LUCKY.planDone)), 400);
 }
@@ -1307,6 +1312,7 @@ function showFrog(force = false) {
   ui.scene.appendChild(f);
   hop(f, 'in', 1200);
   sfx.croak();
+  if (!force) setTimeout(() => { if (!ask) maybeIdiom('frog', 0.5); }, 900);
   f.onclick = (e) => {
     e.stopPropagation();
     if (mode !== 'main' || ask) return;
@@ -1396,7 +1402,8 @@ function breathe() {
       <button class="btn ghost b-stop">${tr('close')}</button></div>`;
     const circle = host.querySelector('.b-circle'), text = host.querySelector('.b-text');
     const timers = [];
-    const stop = () => { timers.forEach(clearTimeout); done(); };
+    let calm = false;
+    const stop = () => { timers.forEach(clearTimeout); done(); if (calm) setTimeout(() => maybeIdiom('calm', 0.6), 400); };
     host.querySelector('.b-stop').onclick = () => { sfx.tap(); stop(); };
     const CYCLES = 3, IN = 4000, OUT = 4000;
     for (let c = 0; c < CYCLES; c++) {
@@ -1411,6 +1418,7 @@ function breathe() {
       sfx.sparkle();
       award(addH(3, 'breath', 3));
       stat('breaths');
+      calm = true;
       host.querySelector('.b-stop').textContent = tr('done');
     }, CYCLES * (IN + OUT)));
   } });
@@ -1453,6 +1461,7 @@ function startGame(game) {
     tr, sfx, lang: S.lang,
     svgOk: luckyArt({ face: 'ok', wear: S.wear }),
     svgHappy: luckyArt({ face: 'laugh', wear: S.wear }),
+    svgSad: luckyArt({ face: 'sad', wear: S.wear }),
     onCancel: closeGame,
     onEnd: (score) => {
       const T0 = st.today(S);
@@ -1466,7 +1475,7 @@ function startGame(game) {
       st.boost(S, 'energy', -game.energy);
       renderStats();
       setTemp('happy', 1500);
-      say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
+      if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
       award(addH(Math.min(10, Math.ceil(score / 3)), 'game', 20));
       toast(tr('gamesLeft', { n: Math.max(0, S.settings.gamesPerDay - T0.games) }));
       st.save(S);
@@ -1648,6 +1657,7 @@ function wearLock(w) {
   return w.rarity === 'gold' ? `✨ ${tr('giftGold')}` : `🎁 ${tr('giftRare')}`;
 }
 
+let bookChip = 'jokes';
 function collectionBody(tab) {
   if (tab === 'outfits') {
     const items = WEAR.filter((w) => w.slot === wardSlot);
@@ -1676,6 +1686,25 @@ function collectionBody(tab) {
         <div class="stickers">${a.stickers.map((x) => `<div class="stk ${S.stickers.includes(x) ? 'on' : ''}">${S.stickers.includes(x) ? x : '?'}</div>`).join('')}</div></div>`;
     }).join('')}`;
   }
+  if (tab === 'english') {
+    const chips = `<div class="slot-chips book-chips">${[['jokes', '😂'], ['twisters', '👅'], ['idioms', '🎭']].map(([k, e]) => `<button class="chip ${bookChip === k ? 'on' : ''}" data-chip="${k}">${e} ${tr(k)}</button>`).join('')}</div>`;
+    if (bookChip === 'twisters') {
+      const heard = S.twisters.heard.map((id) => TWISTER_BY_ID[id]).filter(Boolean).reverse();
+      return `${chips}<p class="muted center">${tr('twistersOf', { n: heard.length, m: TWISTERS.length })}${heard.length ? ' · ' + tr('twisterTap') : ''}</p>
+        ${heard.length ? '' : `<div class="card center jokes-empty">👅 ${tr('twistersEmpty', { dog: dogName() })}</div>`}
+        <div class="joke-list">${heard.map((tw) => `<div class="joke-card twist-card"><b class="jk-a">${fill(L(tw.t), S.lang)}</b>
+          ${S.settings.translate ? `<small class="jk-sub">${fill(say2(tw.t, other()), other())}</small>` : ''}
+          <div class="tw-speeds">${SPEEDS.map(([sp, ic]) => `<button class="tw-speed" data-tw="${tw.id}" data-s="${sp}">${ic}</button>`).join('')}</div></div>`).join('')}</div>`;
+    }
+    if (bookChip === 'idioms') {
+      const heard = S.idioms.heard.map((id) => IDIOM_BY_ID[id]).filter(Boolean).reverse();
+      return `${chips}<p class="muted center">${tr('idiomsOf', { n: heard.length, m: IDIOMS.length })}${heard.length ? ' · ' + tr('idiomTap') : ''}</p>
+        ${heard.length ? '' : `<div class="card center jokes-empty">🎭 ${tr('idiomsEmpty')}</div>`}
+        <div class="joke-list">${heard.map((it) => `<button class="joke-card idiom-card" data-idiom="${it.id}"><span class="id-e">${it.e}</span>
+          <span class="id-txt"><b class="jk-a">${it.idiom}</b><span class="jk-q">${L(it.mean)}</span><small class="jk-sub">${tr('idiomRu')}: ${it.ru}</small></span></button>`).join('')}</div>`;
+    }
+    return chips + collectionBody('jokes');
+  }
   if (tab === 'jokes') {
     const heard = S.jokes.heard.map((id) => JOKE_BY_ID[id]).filter(Boolean).reverse();
     const setup = (j, lang) => fill(j.kk ? [DOG.knock[0], LUCKY.whosThere[0], j.kk, j.who].map((x) => say2(x, lang)).join(' ') : say2(j.q, lang), lang);
@@ -1692,7 +1721,7 @@ function collectionBody(tab) {
 }
 
 function openCollection(tab = 'outfits') {
-  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'jokes'];
+  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'english'];
   const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}</p>
     <div class="tabs coll-tabs">${tabs.map((t) => `<button class="tab ${t === tab ? 'on' : ''}" data-t="${t}">${tr(t)}</button>`).join('')}</div>${collectionBody(tab)}`;
   openSheet(tr('collection'), html, (root) => {
@@ -1701,14 +1730,17 @@ function openCollection(tab = 'outfits') {
     root.querySelectorAll('.chip[data-slot]').forEach((b) => { b.onclick = () => { sfx.tap(); wardSlot = b.dataset.slot; again(); }; });
     root.querySelectorAll('.stk.on').forEach((x) => { x.onclick = () => { sfx.pop(); hop(x, 'wiggle'); }; });
     root.querySelectorAll('.badge.on').forEach((x) => { x.onclick = () => { sfx.sparkle(); hop(x, 'wiggle'); }; });
-    root.querySelectorAll('.joke-card').forEach((x) => { x.onclick = () => { sfx.tap(); hop(x, 'wiggle'); playJoke(JOKE_BY_ID[x.dataset.j]); }; });
+    root.querySelectorAll('.joke-card[data-j]').forEach((x) => { x.onclick = () => { sfx.tap(); hop(x, 'wiggle'); playJoke(JOKE_BY_ID[x.dataset.j]); }; });
+    root.querySelectorAll('.book-chips .chip').forEach((b) => { b.onclick = () => { sfx.tap(); bookChip = b.dataset.chip; again(); }; });
+    root.querySelectorAll('.tw-speed').forEach((b) => { b.onclick = () => { sfx.tap(); hop(b, 'wiggle'); speak(fill(L(TWISTER_BY_ID[b.dataset.tw].t), S.lang), S.lang, 'lucky', Number(b.dataset.s)); }; });
+    root.querySelectorAll('.idiom-card').forEach((b) => { b.onclick = () => { sfx.sparkle(); replayIdiom(IDIOM_BY_ID[b.dataset.idiom]); }; });
     root.querySelector('.deco-go')?.addEventListener('click', () => { sfx.tap(); startEdit(); });
     root.querySelectorAll('.tile').forEach((b) => {
       b.onclick = () => {
         if (b.classList.contains('locked')) { sfx.tap(); hop(b, 'wiggle'); return; }
         sfx.sparkle();
         if (b.dataset.d !== undefined) { startEdit(layout().some((it) => it.id === b.dataset.d) ? null : b.dataset.d); return; }
-        if (b.dataset.p) { goPlace(b.dataset.p); st.save(S); closeSheet(); say(fresh(LUCKY.arrive[b.dataset.p] || LUCKY.place)); return; }
+        if (b.dataset.p) { const first = !S.worldsSeen.includes(b.dataset.p); goPlace(b.dataset.p); st.save(S); closeSheet(); if (!(first && maybeIdiom('newWorld', 0.6))) say(fresh(LUCKY.arrive[b.dataset.p] || LUCKY.place)); return; }
         if (b.dataset.w !== undefined) {
           const w = WEAR_BY_ID[b.dataset.w];
           if (!w) S.wear = { ...S.wear, [wardSlot]: null };
@@ -1783,7 +1815,8 @@ function dogArrive() {
   const giftToday = S.dog.giftDay === st.today(S).date;
   ui.dog.innerHTML = `<div class="dog-body">${art.dog({ face: 'happy' })}</div>
     ${giftToday ? '' : `<button class="gift" aria-label="gift">🎁</button>`}
-    <button class="joke-btn" aria-label="joke">😂</button>
+    <button class="joke-btn joke-go" aria-label="joke">😂</button>
+    <button class="joke-btn twist-btn" aria-label="tongue twister">👅</button>
     ${S.dog.played ? '' : `<button class="pill together">🐾 ${tr('playTogether')}</button>`}`;
   const body = ui.dog.querySelector('.dog-body');
   hop(body, 'enter', 1500);
@@ -1799,11 +1832,17 @@ function dogArrive() {
     setTimeout(() => showModal({ custom: (host, done) => revealGift(host, { title: tr('fromDog', { dog: dogName() }), rewards: [g], line: LUCKY.levelUp }, done) }), 1200);
     st.save(S);
   };
-  ui.dog.querySelector('.joke-btn').onclick = (e) => {
+  ui.dog.querySelector('.joke-go').onclick = (e) => {
     e.stopPropagation();
     if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; } // wait until the current scene is over
     sfx.pop();
     taliJoke(DOG.jokeMore);
+  };
+  ui.dog.querySelector('.twist-btn').onclick = (e) => {
+    e.stopPropagation();
+    if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; }
+    sfx.pop();
+    taliTwister();
   };
   const tog = ui.dog.querySelector('.together');
   if (tog) tog.onclick = () => {
@@ -1817,7 +1856,7 @@ function dogArrive() {
     hop(body, 'zoom');
     st.boost(S, 'fun', 20);
     renderStats();
-    setTimeout(() => { say(fresh(LUCKY.dogPlay)); setTemp('laugh', 1500); heartsBurst(...luckyPoint(0.5, 0.2), 5); }, 1400);
+    setTimeout(() => { if (!maybeIdiom('play', 0.4)) { say(fresh(LUCKY.dogPlay)); setTemp('laugh', 1500); } heartsBurst(...luckyPoint(0.5, 0.2), 5); }, 1400);
     award(addH(5, 'dog', 8));
     st.save(S);
   };
@@ -1874,8 +1913,9 @@ function jokeSteps(j) {
 function taliJoke(lead = null, before = []) {
   if (!dogHere || jokesLeft() <= 0 || ask || mode !== 'main') return false;
   S.dog.jokes++;
-  talk([...before, ...(lead ? [timed('dog', fresh(lead))] : []), ...jokeSteps(nextJoke())], true);
-  if (jokesLeft() <= 0) ui.dog.querySelector('.joke-btn')?.remove();
+  const ears = lead === DOG.jokeNew ? pickIdiom('joke', 0.35, true) : null;
+  talk([...before, ...(lead ? [timed('dog', fresh(lead))] : []), ...(ears ? idiomSteps(ears) : []), ...jokeSteps(nextJoke())], true);
+  if (jokesLeft() <= 0) ui.dog.querySelector('.joke-go')?.remove();
   st.save(S);
   return true;
 }
@@ -1892,6 +1932,102 @@ function playJoke(j) {
     return setTimeout(() => speak(fill(L(pair), S.lang), S.lang, who), at);
   });
   jokeTimers.push(setTimeout(() => sfx.rimshot(), t));
+}
+
+// ---------- fun English: idioms Lucky acts out ----------
+
+const IDIOMS_PER_DAY = 3, IDIOM_GAP = 3 * 864e5;
+// An idiom that fits this moment ('any' for any of them): at most 3 a day, each one not again for 3 days, new ones first
+function pickIdiom(when, chance = 0.5, inChain = false) {
+  if (mode !== 'main' || ask || sheetOpen || modalOpen || (!inChain && chainQ.length) || !userActive()) return null;
+  const T0 = st.today(S);
+  if ((!turbo() && (T0.idioms || 0) >= IDIOMS_PER_DAY) || Math.random() > chance) return null;
+  const now = Date.now();
+  const pool = IDIOMS.filter((x) => (when === 'any' || x.when === when) && now - (S.idioms.at[x.id] || 0) > IDIOM_GAP);
+  if (!pool.length) return null;
+  const unheard = pool.filter((x) => !S.idioms.heard.includes(x.id));
+  const it = pick(unheard.length ? unheard : pool);
+  T0.idioms = (T0.idioms || 0) + 1;
+  S.idioms.at[it.id] = now;
+  return it;
+}
+
+// Lucky says the idiom, acts it out literally, then explains what it really means
+function idiomSteps(it, intro = false) {
+  return [
+    ...(intro ? [timed('lucky', fresh(LUCKY.idiomIntro))] : []),
+    ['lucky', ...it.say, 1100], // the picture starts while he is still saying it
+    () => {
+      const ms = antics.idiomShow(it.show);
+      if (!ms) return -1;
+      if (!S.idioms.heard.includes(it.id)) { S.idioms.heard.push(it.id); stat('idiomsSeen'); }
+      st.save(S);
+      return ms;
+    },
+    ['lucky', ...it.mean],
+  ];
+}
+
+function maybeIdiom(when, chance = 0.5) {
+  const it = pickIdiom(when, chance);
+  if (!it) return false;
+  talk(idiomSteps(it, ['any', 'idle', 'rare'].includes(when)), true);
+  return true;
+}
+
+// From the collection: Lucky acts it out again (doesn't count towards the 3 a day)
+function replayIdiom(it) {
+  closeSheet();
+  setTimeout(() => { if (mode === 'main' && !ask && !modalOpen) talk(idiomSteps(it), true); }, 450);
+}
+
+// ---------- tongue twisters: Tali asks, Lucky says it slowly, faster and super fast ----------
+
+const TWISTERS_PER_VISIT = 2;
+const twistersLeft = () => (turbo() ? 99 : TWISTERS_PER_VISIT - (S.dog.twisters || 0));
+const SPEEDS = [[0.85, '🐢'], [1.25, '🐇'], [1.7, '🚀']];
+
+function nextTwister() {
+  const T = S.twisters;
+  const pool = TWISTERS.filter((x) => !T.recent.includes(x.id));
+  const unheard = pool.filter((x) => !T.heard.includes(x.id));
+  const tw = pick(unheard.length ? unheard : pool.length ? pool : TWISTERS);
+  T.recent.push(tw.id);
+  while (T.recent.length > 12) T.recent.shift();
+  return tw;
+}
+
+function taliTwister() {
+  if (!dogHere || twistersLeft() <= 0 || ask || mode !== 'main' || chainQ.length) return false;
+  S.dog.twisters = (S.dog.twisters || 0) + 1;
+  const tw = nextTwister();
+  const frog = pickIdiom('twister', 0.35, true); // sometimes: "Ahem! I've got a frog in my throat!"
+  const at = ([speed, icon]) => () => {
+    const ms = say([tw.t[0], `${icon} ${tw.t[1]}`], 'lucky', { chain: true, speed });
+    if (!ms) return -1;
+    antics.twistPose(speed);
+    return Math.round((400 + tw.t[1].length * 70) / speed) + 350;
+  };
+  talk([
+    timed('dog', fresh(DOG.twisterAsk)),
+    ...(frog ? idiomSteps(frog) : []),
+    ...SPEEDS.map(at),
+    () => {
+      if (!S.twisters.heard.includes(tw.id)) { S.twisters.heard.push(tw.id); stat('twistersSaid'); }
+      st.boost(S, 'fun', 4);
+      renderStats();
+      award(addH(1, 'twister', 3));
+      st.save(S);
+      return antics.laughAt('dizzy') || 800;
+    },
+    timed('lucky', fresh(LUCKY.twisterTangled)),
+    () => { const b = ui.dog.querySelector('.dog-body'); if (b) hop(b, 'dogspin', 1400); sfx.bark(); return 300; },
+    timed('dog', fresh(DOG.twisterLaugh)),
+    ['lucky', ...fresh(LUCKY.twisterYourTurn)],
+  ], true);
+  if (twistersLeft() <= 0) ui.dog.querySelector('.twist-btn')?.remove();
+  st.save(S);
+  return true;
 }
 
 // Tali: tap - he barks, double tap - spins after his tail, long press - belly rub
@@ -1942,6 +2078,7 @@ function updateDog(now, asleep) {
   d.forceUntil = 0;
   d.played = false;
   d.jokes = 0;
+  d.twisters = 0;
   dogArrive();
   st.save(S);
 }
@@ -2146,6 +2283,7 @@ const TURBO_TOOLS = [
   ['ask', '❓', () => { closeSheet(); lastInput = Date.now(); busyUntil = 0; startAsk(pickAsk()); }],
   ['day', '🌅', () => { S.today = null; st.today(S); closeSheet(); toast('🌅 ' + tr('newDay'), 2000); }],
   ['nap', '💤', () => { closeSheet(); startNap(); }],
+  ['idiom', '🎭', () => { closeSheet(); setTimeout(() => maybeIdiom('any', 1), 450); }],
 ];
 
 function openParent() {
@@ -2247,14 +2385,17 @@ const NEED_LINES = { hunger: 'hungry', energy: 'tired', fun: 'bored', clean: 'di
 // Line choice: mostly about unmet needs and mood, sometimes general topics and rare lines
 function idleTalk() {
   const p = S.pet, t = tier();
-  if (Math.random() < 0.03) return sayAuto(fresh(LUCKY.rare));
+  if (Math.random() < 0.03) { if (maybeIdiom('rare', 0.5)) return; return sayAuto(fresh(LUCKY.rare)); }
+  if (t === 'low' && maybeIdiom('low', 0.25)) return;
+  if ((S.playedMs[S.today.date] || 0) > 40 * 60e3 && maybeIdiom('playedLong', 0.3)) return;
+  if (Math.random() < 0.08 && maybeIdiom(Math.random() < 0.3 ? 'idle' : 'any', 1)) return;
   if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
   if (dogHere && Math.random() < 0.45) return talk(fresh(CHATS));
   const needs = Object.keys(NEED_LINES).filter((k) => p[k] < 40);
   if (needs.length && Math.random() < 0.7) return sayAuto(fresh(LUCKY[NEED_LINES[pick(needs)]]));
   if (st.minutesToBed(Date.now(), S.settings) <= 60 && Math.random() < 0.4) return sayAuto(fresh(LUCKY.evening));
-  if (!S.today.missionDone && Math.random() < 0.12) return sayAuto(fresh(LUCKY.missionHint));
+  if (!S.today.missionDone && Math.random() < 0.12) { if (maybeIdiom('missionHint', 0.4)) return; return sayAuto(fresh(LUCKY.missionHint)); }
   if (Math.random() < (t === 'low' ? 0.75 : 0.5)) return sayAuto(fresh(LUCKY.tier[t]));
   const bag = IDLE_BAG.filter(([k]) => (k !== 'realPet' || S.settings.realPet) && !(t === 'low' && (k === 'jokes' || k === 'riddle')));
   let x = Math.random() * bag.reduce((a, [, w]) => a + w, 0);
@@ -2269,7 +2410,7 @@ function moodEvents(now, T0) {
   const t = tier();
   if (mode === 'main' && userActive()) {
     if (prevTier === 'low' && t !== 'low' && now - recoveredAt > 180e3) { recoveredAt = now; sayAuto(fresh(LUCKY.recovered)); }
-    else if (t === 'max' && prevTier && prevTier !== 'max' && !T0.maxSaid) { T0.maxSaid = true; sayAuto(fresh(LUCKY.maxReached)); binky(true); }
+    else if (t === 'max' && prevTier && prevTier !== 'max' && !T0.maxSaid) { T0.maxSaid = true; if (!maybeIdiom('max', 0.6)) { sayAuto(fresh(LUCKY.maxReached)); binky(true); } }
     else if (t === 'max' && now > nextBinkyAt) { nextBinkyAt = now + 90e3 + Math.random() * 60e3; if (prevTier === 'max') binky(true); }
     else if ((t === 'happy' || t === 'max') && now > nextTailAt && now >= busyUntil && !ask) { nextTailAt = now + 150e3 + Math.random() * 120e3; if (prevTier && Math.random() < 0.5) chaseTail(); }
   }
@@ -2294,7 +2435,7 @@ function loop() {
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
     if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'edit')) {
-      if (!S.session.warned && S.session.activeMs >= limit - 60e3) { S.session.warned = true; sayAuto(fresh(LUCKY.sleepSoon)); }
+      if (!S.session.warned && S.session.activeMs >= limit - 60e3) { S.session.warned = true; if (!maybeIdiom('sleepSoon', 0.5)) sayAuto(fresh(LUCKY.sleepSoon)); }
       if (S.session.activeMs >= limit) {
         S.session.napUntil = now + S.settings.napMin * 60e3;
         S.session.activeMs = 0;
@@ -2354,7 +2495,12 @@ function resume() {
   return gap;
 }
 
-document.addEventListener('pointerdown', () => { lastInput = Date.now(); }, { capture: true });
+document.addEventListener('pointerdown', () => {
+  const away = Date.now() - lastInput;
+  lastInput = Date.now();
+  // back after a couple of minutes of just looking: "Sorry, I had my head in the clouds!"
+  if (away > 120e3 && mode === 'main') setTimeout(() => maybeIdiom('back', 0.35), 350);
+}, { capture: true });
 window.addEventListener('blur', () => silence());
 window.addEventListener('focus', () => { lastInput = Date.now(); lastSpeech = Date.now(); });
 
@@ -2399,6 +2545,8 @@ function greetList(gap) {
 }
 
 function greet(gap) {
+  const h = new Date().getHours();
+  if (h < 12 && gap > 6 * 3600e3 && maybeIdiom(h < 8 ? 'early' : 'morning', 0.5)) return;
   setTemp('happy', 1500);
   sayAuto(fresh(greetList(gap)));
 }
@@ -2464,6 +2612,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name) };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister() };
 
 start();

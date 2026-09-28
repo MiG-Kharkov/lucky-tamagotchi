@@ -7,6 +7,7 @@ import { clipId, speechText, VOICES } from '../js/voicekey.js';
 import { REPLY, ASKS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from '../js/dialogs.js';
 import { MISSIONS, PALETTES } from '../js/missions.js';
 import { JOKES } from '../js/jokes.js';
+import { IDIOMS, TWISTERS } from '../js/english.js';
 
 const OUT = new URL('../audio/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
@@ -42,6 +43,9 @@ for (const j of JOKES) {
   addPair('dog', j.a);
   if (j.say) addPair('lucky', j.say);
 }
+// Fun English: Lucky's sayings (in context and what they mean) and tongue twisters (one clip, played at three speeds)
+for (const it of IDIOMS) { addPair('lucky', it.say); addPair('lucky', it.mean); }
+for (const tw of TWISTERS) addPair('lucky', tw.t);
 for (const k of ['washHint', 'noGames', 'tooTired']) addPair('lucky', [STR.ru[k], STR.en[k]]);
 // Lucky's questions: only Lucky's lines are voiced; answer choices are text
 walk('lucky', REPLY);

@@ -3,6 +3,22 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.5.0] – 2026-09-28
+
+### Added
+- **Sayings acted out:** 22 English idioms. Lucky uses them where they fit, acts them out literally, then explains
+  what they mean. The Russian translation gives the Russian saying. Some examples:
+  - *it's raining cats and dogs* when a cloud is tapped;
+  - *hold your horses* after lots of quick taps;
+  - *I'm all ears* before Tali's joke;
+  - *cool as a cucumber* after ninja breathing.
+  - At most 3 a day.
+- **Tongue twisters:** Tali's new 👅 button. Lucky says a twister slowly, faster and super fast (squeaky!), gets his
+  tongue in a knot, and invites the child to try. 22 twisters, 2 a visit.
+- The collection's **English** tab: jokes, tongue twisters (play at three speeds) and sayings (tap for Lucky to act
+  it out again). Two new badges.
+- **Carrot Rain:** a falling pizza. Catching it takes a point away, because bunnies can't eat pizza.
+
 ## [1.4.0] – 2026-09-28
 
 ### Added
@@ -91,6 +107,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.5.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.1...v1.2.0

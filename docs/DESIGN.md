@@ -55,6 +55,17 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   for a wet one, hiding for a ghost) and comments. In knock-knock jokes Lucky plays along ("Who's there?").
   Taps on Lucky don't talk over a joke. The Russian line explains the pun. New jokes come first, and heard ones
   go to the **joke book** in the collection (tap to hear it again).
+- **Sayings acted out** (22 idioms): Lucky uses one where it fits, acts it out literally, then explains what it means,
+  and the Russian line gives the Russian saying for the same thing. Examples: *raining cats and dogs* when a cloud
+  is tapped (cats and dogs fall on his umbrella), *hold your horses* after lots of quick taps, *a piece of cake*
+  after a great game, *I'm all ears* before Tali's joke (his ears grow), *slept like a log* in the morning,
+  *a fish out of water* in a new world, *cool as a cucumber* after ninja breathing, *couch potatoes* after a long
+  day of play. At most 3 a day, each one not again for 3 days, new ones first.
+- **Tongue twisters** (22): Tali's 👅 button (2 a visit). Lucky says the twister slowly 🐢, faster 🐇 and super fast 🚀
+  (the same clip played faster, so his voice goes squeaky), gets his tongue in a knot, Tali laughs, and Lucky invites
+  the child to try it out loud.
+- The collection's **English** tab keeps jokes, tongue twisters (play at any of the three speeds) and sayings
+  (tap one and Lucky acts it out again).
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
 - **Living scene:** sun, clouds (rain), trees (petals), flowers (butterflies), gong, palm, crab, sheep, pot of gold…
   Butterflies fly by; a daily surprise present.
@@ -81,7 +92,7 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | Action | Mechanics |
 |---|---|
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
-| 🎈 Play | Carrot Rain, Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
+| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
@@ -116,7 +127,7 @@ and a step towards the next belt (3 stamps per belt).
 - **Wardrobe:** 28 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
 - **8 worlds** by level, each with its own tappable details and Decorate items.
-- **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **35 badges**, Tali's joke book.
+- **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **37 badges**, the English tab (jokes, tongue twisters, sayings).
 - Pacing: stickers ~3.5 weeks, level items ~6 weeks, the last world ~1.5 months. Rewards arrive by days, not minutes.
 
 ## Parents' area

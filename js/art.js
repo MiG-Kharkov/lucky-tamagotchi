@@ -389,6 +389,7 @@ export const PROPS = {
     <path fill-rule="evenodd" d="M46 76 Q100 62 154 76 L154 104 Q100 92 46 104Z M67 90 a13 11 0 1 0 26 0 a13 11 0 1 0 -26 0Z M107 90 a13 11 0 1 0 26 0 a13 11 0 1 0 -26 0Z" fill="${MASK_FILL[c] || c}"/>
     <path d="M154 82 q16 -4 22 -16 M154 92 q18 2 26 -6" stroke="${MASK_FILL[c] || c}" stroke-width="6" fill="none" stroke-linecap="round"/>` },
   coins: { slot: 'eyes', art: () => em(80, 90, 26, '🪙') + em(120, 90, 26, '🪙') },
+  cukes: { slot: 'eyes', art: () => em(80, 90, 28, '🥒') + em(120, 90, 28, '🥒') },
   tophat: { slot: 'head', art: () => `<rect x="74" y="-2" width="52" height="40" rx="4" fill="#2A1B2E"/><rect x="62" y="34" width="76" height="9" rx="4" fill="#2A1B2E"/><rect x="74" y="25" width="52" height="7" fill="#FF5FA2"/>` },
   snowcap: { slot: 'head', art: () => `<g fill="#fff" stroke="#DCE8FB" stroke-width="1.5"><ellipse cx="100" cy="46" rx="30" ry="10"/><circle cx="86" cy="40" r="10"/><circle cx="104" cy="35" r="12"/><circle cx="119" cy="42" r="8"/>
     <ellipse cx="44" cy="68" rx="10" ry="5"/><ellipse cx="156" cy="68" rx="10" ry="5"/></g>` },

@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,
@@ -37,6 +37,7 @@ Offline mode needs https, so this is only for quick checks.
 | `js/ninja.js` | The ninja mission screen: counting, holds, sneak and freeze dance, hunts, look and make |
 | `js/missions.js` | Mission list, skills and the pick grids (with English words) |
 | `js/jokes.js` | Tali's jokes: question/answer and knock-knock, with Lucky's reaction and comment |
+| `js/english.js` | Sayings Lucky acts out (where each one fits, what it means, the Russian equivalent) and tongue twisters |
 | `js/state.js` | Saved state, stat decay, daily limits, levels, mood tiers, parent password storage, Turbo snapshot |
 | `js/i18n.js` | All texts as `[ru, en]` pairs: UI strings, Lucky's lines, jokes, missions, phrases, talk-game dialogues |
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |

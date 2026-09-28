@@ -57,9 +57,12 @@ function fresh() {
     days: [],
     today: null,
     // Tali's visits: day and n count visits per day, lastAt is when the last one ended, giftDay is the day of his present
-    dog: { name: '', met: false, forceUntil: 0, stayUntil: 0, played: false, jokes: 0, day: '', n: 0, lastAt: 0, giftDay: '' },
+    dog: { name: '', met: false, forceUntil: 0, stayUntil: 0, played: false, jokes: 0, twisters: 0, day: '', n: 0, lastAt: 0, giftDay: '' },
     // Tali's jokes: heard (for the joke book) and recent (not repeated soon)
     jokes: { heard: [], recent: [] },
+    // fun English: sayings Lucky acted out (at: when each was last shown) and tongue twisters
+    idioms: { heard: [], at: {} },
+    twisters: { heard: [], recent: [] },
     // ninja missions: stars per skill, the scroll of stamps, today's mask and animal cloud
     ninja: { skills: {}, scroll: [], mask: null, cloud: null },
     session: { activeMs: 0, lastAt: 0, activeAt: 0, napUntil: 0, warned: false },
