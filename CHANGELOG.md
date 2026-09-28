@@ -3,6 +3,22 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.4.0] – 2026-09-28
+
+### Added
+- **Tali's jokes:** 102 kids' jokes, 14 of them knock-knock jokes where Lucky plays along.
+  - Tali tells one when he arrives, more with the 😂 button next to him (3 a visit), and cheers Lucky up when he's sad.
+  - After the punchline (with a *ba-dum-tss*), Lucky laughs, does something that fits the joke and comments.
+  - Puns are explained in the Russian translation.
+- **Joke book** in the collection: heard jokes, tap one to hear it again. A new badge for 25 jokes.
+
+### Changed
+- **Tali comes much more often:** during play instead of a 3-hour window at a random time.
+  - The first session of the day always gets a visit; later sessions get one 60% of the time.
+  - At most 3 visits a day, 40 minutes apart, about 6 minutes each, never at night.
+- Tali's present comes once a day.
+- Taps on Lucky no longer cut a joke short; he still reacts, just without talking over Tali.
+
 ## [1.3.0] – 2026-09-27
 
 ### Changed
@@ -75,6 +91,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.4.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.1.0...v1.1.1

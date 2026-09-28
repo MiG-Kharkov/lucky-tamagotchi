@@ -6,6 +6,7 @@ import { STR, LUCKY, DOG, CHATS, PRANKS, RIDDLES, PHRASES } from '../js/i18n.js'
 import { clipId, speechText, VOICES } from '../js/voicekey.js';
 import { REPLY, ASKS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from '../js/dialogs.js';
 import { MISSIONS, PALETTES } from '../js/missions.js';
+import { JOKES } from '../js/jokes.js';
 
 const OUT = new URL('../audio/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
@@ -34,6 +35,13 @@ for (const p of PHRASES) addPair('lucky', p);
 // Ninja missions: the mission itself and the words for what she found, saw or made
 for (const m of MISSIONS) addPair('lucky', m.text);
 for (const list of Object.values(PALETTES)) for (const it of list) addPair('lucky', it.w);
+// Tali's jokes: Tali tells them, Lucky plays along in knock-knock jokes and comments
+for (const j of JOKES) {
+  if (j.q) addPair('dog', j.q);
+  if (j.kk) { addPair('dog', j.kk); addPair('lucky', j.who); }
+  addPair('dog', j.a);
+  if (j.say) addPair('lucky', j.say);
+}
 for (const k of ['washHint', 'noGames', 'tooTired']) addPair('lucky', [STR.ru[k], STR.en[k]]);
 // Lucky's questions: only Lucky's lines are voiced; answer choices are text
 walk('lucky', REPLY);

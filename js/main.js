@@ -1,6 +1,7 @@
 import * as st from './state.js';
 import { T, pick, say2, LUCKY, DOG, CHATS, PRANKS, RIDDLES, FOODS, CARE, DEEDS, PHRASES, BELTS } from './i18n.js';
 import { MISSIONS, SKILLS } from './missions.js';
+import { JOKES, JOKE_BY_ID } from './jokes.js';
 import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
@@ -66,11 +67,11 @@ function fresh(list) {
   return x;
 }
 
-let chainQ = [], chainTimer = 0;
+let chainQ = [], chainTimer = 0, chainKeep = false;
 let lastSaid = null;
 let busyUntil = 0;   // the current line plays until this moment
 let pending = null;  // one postponed automatic line
-function stopChain() { chainQ = []; clearTimeout(chainTimer); }
+function stopChain() { chainQ = []; chainKeep = false; clearTimeout(chainTimer); }
 
 function speechMs(text) { return Math.max(3200, text.length * 85); }
 
@@ -88,6 +89,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   if (ask && !forAsk) return 0; // don't interrupt Lucky's or the frog's question
   if ((auto || chain) && !userActive() && !(ambient && windowActive())) return 0;
   if ((auto || chain) && (mode === 'game' || mode === 'mission')) return 0;
+  if (!chain && chainKeep && chainQ.length) return 0; // taps don't talk over Tali's joke (Lucky still reacts)
   const now = Date.now();
   if (auto && (now < busyUntil || chainQ.length)) { pending = { pair, who, at: now }; return 0; }
   if (!chain) stopChain();
@@ -133,19 +135,29 @@ function silence() {
 }
 
 // A scene: lines in turn, each starts when the previous one ends
-function talk(lines) {
+function talk(lines, keep = false) {
   stopChain();
   chainQ = [...lines];
+  chainKeep = keep;
   nextLine();
 }
 
+// A step is a line [who, ru, en, pause?] or a function (an action) that returns how long to wait, or -1 to stop.
+// If a line can't be said (nobody is looking, a question is on screen), the rest of the scene is dropped.
 function nextLine() {
   const line = chainQ.shift();
   if (!line || mode !== 'main' || !windowActive()) return stopChain();
-  const [who, ru, en] = line;
+  if (typeof line === 'function') {
+    const ms = line();
+    if (ms < 0) return stopChain();
+    chainTimer = setTimeout(nextLine, ms || 0);
+    return;
+  }
+  const [who, ru, en, pause] = line;
   if (who === 'dog' && !dogHere) return nextLine();
   const ms = say([ru, en], who, { chain: true });
-  chainTimer = setTimeout(nextLine, ms + 600);
+  if (!ms) return stopChain();
+  chainTimer = setTimeout(nextLine, pause ?? ms + 600);
 }
 
 const reactAt = {};
@@ -552,6 +564,7 @@ function statValue(key) {
     case 'belt': return S.belt;
     case 'stickers': return S.stickers.length;
     case 'albums': return S.albumsDone.length;
+    case 'jokes': return S.jokes.heard.length;
     case 'worlds': return S.worldsSeen.length;
     default: return S.stats[key] || 0;
   }
@@ -1663,6 +1676,14 @@ function collectionBody(tab) {
         <div class="stickers">${a.stickers.map((x) => `<div class="stk ${S.stickers.includes(x) ? 'on' : ''}">${S.stickers.includes(x) ? x : '?'}</div>`).join('')}</div></div>`;
     }).join('')}`;
   }
+  if (tab === 'jokes') {
+    const heard = S.jokes.heard.map((id) => JOKE_BY_ID[id]).filter(Boolean).reverse();
+    const setup = (j, lang) => fill(j.kk ? [DOG.knock[0], LUCKY.whosThere[0], j.kk, j.who].map((x) => say2(x, lang)).join(' ') : say2(j.q, lang), lang);
+    return `<p class="muted center">${tr('jokesOf', { n: heard.length, m: JOKES.length })}${heard.length ? ' · ' + tr('jokeTap') : ''}</p>
+      ${heard.length ? '' : `<div class="card center jokes-empty">🐶 ${tr('jokesEmpty', { dog: dogName() })}</div>`}
+      <div class="joke-list">${heard.map((j) => `<button class="joke-card" data-j="${j.id}"><span class="jk-q">${setup(j, S.lang)}</span><b class="jk-a">${fill(L(j.a), S.lang)}</b>
+        ${S.settings.translate ? `<small class="jk-sub">${setup(j, other())} ${fill(say2(j.a, other()), other())}</small>` : ''}</button>`).join('')}</div>`;
+  }
   // badges
   return `<p class="muted center">${tr('badgesOf', { n: S.badges.length, m: BADGES.length })}</p><div class="badges">${BADGES.map(([id, e, name, key, goal]) => {
     const got = S.badges.includes(id), v = Math.min(goal, statValue(key));
@@ -1671,7 +1692,7 @@ function collectionBody(tab) {
 }
 
 function openCollection(tab = 'outfits') {
-  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges'];
+  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'jokes'];
   const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}</p>
     <div class="tabs coll-tabs">${tabs.map((t) => `<button class="tab ${t === tab ? 'on' : ''}" data-t="${t}">${tr(t)}</button>`).join('')}</div>${collectionBody(tab)}`;
   openSheet(tr('collection'), html, (root) => {
@@ -1680,6 +1701,7 @@ function openCollection(tab = 'outfits') {
     root.querySelectorAll('.chip[data-slot]').forEach((b) => { b.onclick = () => { sfx.tap(); wardSlot = b.dataset.slot; again(); }; });
     root.querySelectorAll('.stk.on').forEach((x) => { x.onclick = () => { sfx.pop(); hop(x, 'wiggle'); }; });
     root.querySelectorAll('.badge.on').forEach((x) => { x.onclick = () => { sfx.sparkle(); hop(x, 'wiggle'); }; });
+    root.querySelectorAll('.joke-card').forEach((x) => { x.onclick = () => { sfx.tap(); hop(x, 'wiggle'); playJoke(JOKE_BY_ID[x.dataset.j]); }; });
     root.querySelector('.deco-go')?.addEventListener('click', () => { sfx.tap(); startEdit(); });
     root.querySelectorAll('.tile').forEach((b) => {
       b.onclick = () => {
@@ -1758,21 +1780,30 @@ function dogArrive() {
   dogHere = true;
   stat('dogVisits');
   ui.scene.classList.add('has-dog');
+  const giftToday = S.dog.giftDay === st.today(S).date;
   ui.dog.innerHTML = `<div class="dog-body">${art.dog({ face: 'happy' })}</div>
-    ${S.dog.gift ? '' : `<button class="gift" aria-label="gift">🎁</button>`}
+    ${giftToday ? '' : `<button class="gift" aria-label="gift">🎁</button>`}
+    <button class="joke-btn" aria-label="joke">😂</button>
     ${S.dog.played ? '' : `<button class="pill together">🐾 ${tr('playTogether')}</button>`}`;
   const body = ui.dog.querySelector('.dog-body');
   hop(body, 'enter', 1500);
   const gift = ui.dog.querySelector('.gift');
+  // one present a day, even when Tali comes more often
   if (gift) gift.onclick = () => {
     if (mode !== 'main') return;
-    S.dog.gift = true;
+    S.dog.giftDay = st.today(S).date;
     gift.remove();
     sfx.sparkle();
     say(fresh(DOG.gift), 'dog');
     const g = rollGift(0.25, 0.05);
     setTimeout(() => showModal({ custom: (host, done) => revealGift(host, { title: tr('fromDog', { dog: dogName() }), rewards: [g], line: LUCKY.levelUp }, done) }), 1200);
     st.save(S);
+  };
+  ui.dog.querySelector('.joke-btn').onclick = (e) => {
+    e.stopPropagation();
+    if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; } // wait until the current scene is over
+    sfx.pop();
+    taliJoke(DOG.jokeMore);
   };
   const tog = ui.dog.querySelector('.together');
   if (tog) tog.onclick = () => {
@@ -1790,11 +1821,77 @@ function dogArrive() {
     award(addH(5, 'dog', 8));
     st.save(S);
   };
+  // hello, then straight away a joke (a cheering-up one if Lucky is sad)
   setTimeout(() => {
     sfx.bark();
-    if (!S.dog.met) { const line = pick(LUCKY.meetDog); if (sayAuto(line) > 0 || pending?.pair === line) { S.dog.met = true; st.save(S); } }
-    else if (userActive()) talk([['dog', ...fresh(DOG.arrive)], ['lucky', ...fresh(tier() === 'low' ? LUCKY.dogSad : LUCKY.dogHappy)]]);
+    if (!dogHere || !userActive() || mode !== 'main' || ask) return;
+    const sad = tier() === 'low';
+    const hello = S.dog.met ? [timed('dog', fresh(DOG.arrive)), timed('lucky', fresh(sad ? LUCKY.dogSad : LUCKY.dogHappy))] : [timed('lucky', pick(LUCKY.meetDog), 1500)];
+    S.dog.met = true;
+    taliJoke(sad ? DOG.cheer : DOG.jokeNew, hello);
   }, 700);
+}
+
+// ---------- Tali's jokes ----------
+
+const JOKES_PER_VISIT = 3;
+const jokesLeft = () => (turbo() ? 99 : JOKES_PER_VISIT - S.dog.jokes);
+// Roughly how long a line takes when spoken (Tali talks fast), so jokes keep their rhythm
+const pauseFor = (pair, min = 900, who = 'dog') => Math.max(min, 400 + pair[1].length * (who === 'lucky' ? 70 : 60));
+const timed = (who, pair, min = 1200) => [who, ...pair, pauseFor(pair, min, who)];
+
+// Not repeated soon; new ones first, so the joke book keeps growing
+function nextJoke() {
+  const J = S.jokes;
+  const pool = JOKES.filter((j) => !J.recent.includes(j.id));
+  const unheard = pool.filter((j) => !J.heard.includes(j.id));
+  const j = pick(unheard.length ? unheard : pool.length ? pool : JOKES);
+  J.recent.push(j.id);
+  while (J.recent.length > 60) J.recent.shift();
+  return j;
+}
+
+// A joke as a little scene: the question (Lucky thinks) or a knock-knock (Lucky plays along), the punchline with a
+// ba-dum-tss, Lucky laughs and does something that fits the joke, then he comments
+function jokeSteps(j) {
+  const punch = () => { const b = ui.dog.querySelector('.dog-body'); if (b) hop(b, 'hop'); sfx.rimshot(); return 450; };
+  const react = () => {
+    if (!dogHere) return -1;
+    if (!S.jokes.heard.includes(j.id)) { S.jokes.heard.push(j.id); stat('jokesHeard'); }
+    st.boost(S, 'fun', 5);
+    renderStats();
+    award(addH(1, 'joke', 4));
+    st.save(S);
+    return antics.laughAt(j.do) || 800;
+  };
+  const setup = j.kk
+    ? [['dog', ...DOG.knock[0], 1300], ['lucky', ...LUCKY.whosThere[0], 1200], ['dog', ...j.kk, pauseFor(j.kk)], ['lucky', ...j.who, j.cut ? 750 : pauseFor(j.who, 900, 'lucky')]]
+    : [['dog', ...j.q, pauseFor(j.q, 1500)], () => { antics.think(); return 1300; }];
+  return [...setup, ['dog', ...j.a, pauseFor(j.a)], punch, react, ['lucky', ...(j.say || fresh(LUCKY.jokeLaugh))]];
+}
+
+// Tali tells a joke (up to 3 a visit); lead is his line before it, before is a scene to play first
+function taliJoke(lead = null, before = []) {
+  if (!dogHere || jokesLeft() <= 0 || ask || mode !== 'main') return false;
+  S.dog.jokes++;
+  talk([...before, ...(lead ? [timed('dog', fresh(lead))] : []), ...jokeSteps(nextJoke())], true);
+  if (jokesLeft() <= 0) ui.dog.querySelector('.joke-btn')?.remove();
+  st.save(S);
+  return true;
+}
+
+// The joke book in the collection: tap a joke to hear it again (and tell it to friends at school)
+let jokeTimers = [];
+function playJoke(j) {
+  jokeTimers.forEach(clearTimeout);
+  const steps = j.kk ? [['dog', DOG.knock[0]], ['lucky', LUCKY.whosThere[0]], ['dog', j.kk], ['lucky', j.who], ['dog', j.a]] : [['dog', j.q], ['dog', j.a]];
+  let t = 0;
+  jokeTimers = steps.map(([who, pair], i) => {
+    const at = t;
+    t += pair === j.who && j.cut ? 750 : pauseFor(pair, i === 0 && j.q ? 1500 : 900) + (pair === j.q ? 800 : 0);
+    return setTimeout(() => speak(fill(L(pair), S.lang), S.lang, who), at);
+  });
+  jokeTimers.push(setTimeout(() => sfx.rimshot(), t));
 }
 
 // Tali: tap - he barks, double tap - spins after his tail, long press - belly rub
@@ -1812,17 +1909,41 @@ function dogLeave(silent = false) {
   setTimeout(() => { if (!dogHere) { ui.dog.innerHTML = ''; ui.scene.classList.remove('has-dog'); } }, silent ? 0 : 1200);
 }
 
-const DOG_STAY = 7 * 60e3;
+// Tali's visits happen while the child plays, not at set times, so there is nothing to miss:
+// in the day's first session always (after 1.5-3.5 minutes of play), in later ones 60% of the time,
+// at most 3 a day and 40 minutes apart. He stays about 6 minutes; never at night or while Lucky sleeps.
+const DOG_STAY = 6 * 60e3, DOG_GAP = 40 * 60e3, DOG_PER_DAY = 3;
+let dogDueAt = null, lastActiveMs = 0;
 
-// A visit: the dog comes once per visit window, stays ~7 minutes and leaves
+function planDog() {
+  const d = S.dog, seenToday = d.day === st.today(S).date && d.n > 0;
+  dogDueAt = Math.random() < (seenToday ? 0.6 : 1) ? (90 + Math.random() * 120) * 1000 : null;
+}
+
 function updateDog(now, asleep) {
-  const key = asleep ? null : st.dogVisitKey(S, now);
-  const d = S.dog;
-  if (key && key !== d.doneKey) {
-    if (d.visitKey !== key) { d.visitKey = key; d.gift = false; d.played = false; d.stayUntil = now + DOG_STAY; }
-    if (dogHere && now >= d.stayUntil) { d.doneKey = key; dogLeave(); st.save(S); }
-    else if (!dogHere && mode === 'main' && now < d.stayUntil) dogArrive();
-  } else if (dogHere) dogLeave(asleep);
+  const d = S.dog, T0 = st.today(S, now);
+  if (d.day !== T0.date) { d.day = T0.date; d.n = 0; }
+  if (S.session.activeMs + 5000 < lastActiveMs) planDog(); // a new session has started
+  lastActiveMs = S.session.activeMs;
+  const forced = now < d.forceUntil;
+  if (dogHere) {
+    if (forced) { d.stayUntil = Math.max(d.stayUntil, d.forceUntil); d.forceUntil = 0; } // invited while here: he stays longer
+    // time to go home (never in the middle of a joke); at once when Lucky falls asleep
+    if (asleep || (now >= d.stayUntil && !chainQ.length)) { d.lastAt = now; dogLeave(asleep); st.save(S); }
+    return;
+  }
+  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length) return;
+  const due = forced || (dogDueAt !== null && S.session.activeMs >= dogDueAt && d.n < DOG_PER_DAY
+    && now - (d.lastAt || 0) > DOG_GAP && !st.isNight(now, S.settings) && userActive());
+  if (!due) return;
+  dogDueAt = null;
+  if (!forced) d.n++;
+  d.stayUntil = forced ? d.forceUntil : now + DOG_STAY;
+  d.forceUntil = 0;
+  d.played = false;
+  d.jokes = 0;
+  dogArrive();
+  st.save(S);
 }
 
 // ---------- sleep ----------
@@ -2127,6 +2248,7 @@ const NEED_LINES = { hunger: 'hungry', energy: 'tired', fun: 'bored', clean: 'di
 function idleTalk() {
   const p = S.pet, t = tier();
   if (Math.random() < 0.03) return sayAuto(fresh(LUCKY.rare));
+  if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
   if (dogHere && Math.random() < 0.45) return talk(fresh(CHATS));
   const needs = Object.keys(NEED_LINES).filter((k) => p[k] < 40);
@@ -2282,8 +2404,12 @@ function greet(gap) {
 }
 
 function start() {
-  if (S.dog.visitKey && S.dog.stayUntil) S.dog.doneKey = S.dog.visitKey;
+  // A visit doesn't survive closing the app: Tali has gone home, and the next one comes after the usual gap
+  if (S.dog.stayUntil > Date.now()) S.dog.lastAt = Date.now();
+  S.dog.stayUntil = 0;
   S.dog.forceUntil = 0;
+  lastActiveMs = S.session.activeMs;
+  planDog();
   // Old saves: a single outfit becomes a wardrobe slot
   const old = WEAR_BY_ID[S.outfit];
   if (old && !Object.values(S.wear).some(Boolean)) S.wear = { [old.slot]: old.id };
@@ -2338,6 +2464,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name) };
 
 start();

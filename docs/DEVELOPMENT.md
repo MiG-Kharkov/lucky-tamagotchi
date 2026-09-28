@@ -36,6 +36,7 @@ Offline mode needs https, so this is only for quick checks.
 | `js/antics.js` | Gestures (tap / double / long / stroke) and the scene antics: what every thing does and how Lucky joins in, props |
 | `js/ninja.js` | The ninja mission screen: counting, holds, sneak and freeze dance, hunts, look and make |
 | `js/missions.js` | Mission list, skills and the pick grids (with English words) |
+| `js/jokes.js` | Tali's jokes: question/answer and knock-knock, with Lucky's reaction and comment |
 | `js/state.js` | Saved state, stat decay, daily limits, levels, mood tiers, parent password storage, Turbo snapshot |
 | `js/i18n.js` | All texts as `[ru, en]` pairs: UI strings, Lucky's lines, jokes, missions, phrases, talk-game dialogues |
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |

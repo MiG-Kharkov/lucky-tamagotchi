@@ -74,4 +74,5 @@ export const BADGES = [
   ['beltPink', '🩷', ['Розовый мастер', 'Pink master'], 'belt', 7],
   ['stickers30', '📒', ['Коллекционер', 'Collector'], 'stickers', 30],
   ['album1', '📚', ['Первый альбом', 'First album'], 'albums', 1],
+  ['jokes25', '😂', ['Хохотушка', 'Giggle champion'], 'jokes', 25],
 ];

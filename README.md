@@ -46,8 +46,8 @@
 ## 💗 Meet Lucky
 
 Lucky is a ginger lop-eared bunny who dreams of earning the **Pink Master Belt** of ninja training.
-His best friend **Tali**, a tiny white chihuahua with black spots, drops by to play, and a
-**riddle frog** sometimes hops in with a puzzle.
+His best friend **Tali**, a tiny white chihuahua with black spots, drops by to play and tell jokes
+(Lucky laughs and plays along), and a **riddle frog** sometimes hops in with a puzzle.
 
 Lucky talks with real recorded voices, reacts to how he feels and asks questions.
 Tap, double-tap, hold or stroke him (and everything around him) and he answers in a different way:
@@ -72,8 +72,9 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle |
 | 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, and Lucky joins in with sunglasses, umbrellas, space helmets and more |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them |
-| 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item) and 34 badges |
-| 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks, 19 kid-friendly jokes |
+| 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 35 badges and Tali's joke book |
+| 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks |
+| 🐶 **Tali's jokes** | Over 100 kids' jokes, knock-knock jokes included. Lucky laughs, does something that fits and comments. Puns are explained in the translation, and heard jokes go into a joke book to retell at school |
 | 🌬️ **Feelings** | A daily *"How are you feeling?"* check-in and a guided ninja-breathing exercise |
 
 ## 🌱 Made for healthy play

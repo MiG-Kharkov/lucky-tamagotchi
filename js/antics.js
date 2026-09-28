@@ -771,6 +771,50 @@ export function createAntics(api) {
     return { ...base, press: (c) => { base.press?.(c); api.hop(c.el, 'wiggle'); } };
   }
 
+  // ---------- reactions to Tali's jokes: [ms until Lucky can comment, what he does] ----------
+  const sideOf = () => sceneRect().width + 30;
+  const JOKE_DO = {
+    laugh: [1500, () => { pose('laugh', 1800, 'roll', 1500); }],
+    sleepy: [1900, () => { api.setTemp('sleep', 2000); sfx.yawn(); api.fxAt(...head(), ['💤'], 3, 'spark'); }],
+    specs: [1500, () => { prop('specs', 5000); pose('happy', 1600, 'listen', 1600); }],
+    shades: [1300, () => { prop('shades', 6000); pose('happy', 1500, 'proud', 1200); }],
+    helmet: [1300, () => { prop('helmet', 7000); sfx.zip(); pose('happy', 1500, 'proud', 1200); }],
+    heli: [2300, () => { sfx.whirr(); pose('laugh', 2400, 'heli'); }],
+    float: [2800, () => { sfx.magic(); pose('laugh', 3300, 'zeroG', 3500); }],
+    binky: [1200, () => { sfx.sparkle(); pose('laugh', 1400, 'binky'); api.fxAt(...head(), ['✨'], 4, 'spark'); }],
+    bigjump: [1200, () => { sfx.boing(); pose('laugh', 1400, 'bigjump', 1100); }],
+    shake: [1300, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); spray(...api.luckyPoint(0.5, 0.45), ['✨', '💫']); }],
+    wet: [2600, () => { const a = begin('jokeWet'); api.fxAt(...head(), ['💧'], 8, 'drop'); sfx.rain(); getWet(a, 1700); at(a, 2800, end); }],
+    eat: [1500, () => { const [x, y] = api.luckyPoint(1.1, 0.2); fly('🥕', [x, y], mouth(), 500, { spin: 200, size: 28 }); setTimeout(() => { api.setTemp('eat', 1600); sfx.crunch(); }, 500); }],
+    lolly: [1300, () => { prop('lolly', 4000); api.setTemp('eat', 1500); sfx.lick(); }],
+    cheese: [1300, () => { prop('cheese', 3500); api.setTemp('laugh', 1500); sfx.pop(); }],
+    coins: [1900, () => { prop('coins', 2400); sfx.jig(); pose(null, 0, 'jig', 1900); }],
+    coconut: [1400, () => { prop('coconut', 3500); api.setTemp('eat', 1500); sfx.slurp(); }],
+    pearl: [1300, () => { prop('pearl', 3500); sfx.chime(); api.fxAt(...paw(), ['✨'], 4, 'spark'); }],
+    clover: [1300, () => { prop('crown', 8000); sfx.magic(); pose('happy', 1500, 'proud', 1200); }],
+    flower: [1200, () => { prop('flower', 20000); sfx.sparkle(); api.setTemp('happy', 1500); }],
+    butterfly: [2300, () => { prop('butterfly', 2300); api.setTemp('laugh', 2200); setTimeout(() => { unprop('nose', true); fly('🦋', nose(), [sideOf(), 40], 1100, { arc: 60, size: 28 }); }, 2200); }],
+    crown: [1300, () => { prop('crown', 6000); pose('happy', 1500, 'proud', 1200); }],
+    umbrella: [1500, () => { const [hx, hy] = head(); prop('umbrella', 4500); api.fxAt(hx, hy - 70, ['💧'], 8, 'drop'); sfx.rain(); api.setTemp('happy', 1600); }],
+    shiver: [1600, () => { prop('snowcap', 3000); api.hop(L, 'shiver', 1500); sfx.bubble(); }],
+    hide: [2400, () => { const a = begin('jokeHide'); hold(a, 'hiding'); at(a, 1600, () => { L.classList.remove('hiding'); a.cls.delete('hiding'); sfx.boing(); pose('laugh', 1200, 'hop'); }); at(a, 2400, end); }],
+    vanish: [2500, () => { const a = begin('jokeVanish'); sfx.magic(); hold(a, 'vanish'); at(a, 1800, () => { L.classList.remove('vanish'); a.cls.delete('vanish'); sfx.pop(); api.fxAt(...head(), ['✨'], 5, 'spark'); }); at(a, 2500, end); }],
+    startle: [1200, () => { pose('ok', 1000, 'startle', 1100); api.hop(L, 'hop'); }],
+    chase: [2100, () => { pose('laugh', 2200, 'chase', 2100); }],
+    hug: [1300, () => { sfx.happy(); pose('happy', 1500, 'hug'); api.hearts(...head(), 5); }],
+    bow: [1500, () => { pose('happy', 1600, 'bow', 1500); }],
+    wave: [1400, () => { pose('happy', 1500, 'wave', 1200); api.fxAt(...feet(), ['💦'], 3, 'spark'); sfx.splash(); }],
+    climb: [1800, () => { pose('laugh', 1800, 'climb', 1800); }],
+    clap: [1100, () => { pose('laugh', 1200, 'clap'); sfx.pop(); setTimeout(() => sfx.pop(), 300); }],
+    proud: [1300, () => { pose('happy', 1500, 'proud', 1200); api.fxAt(...head(), ['✨'], 3, 'spark'); }],
+    music: [2200, () => { pose('laugh', 2200, 'dance', 2200); api.fxAt(...head(), ['🎵', '🎶'], 5, 'spark'); sfx.trumpet(); }],
+    rainbow: [1600, () => { rainbow(); sfx.magic(); pose('happy', 1500, 'hop'); }],
+    sneeze: [1400, () => { api.setTemp('sleep', 400); setTimeout(() => { sfx.sneeze(); pose('laugh', 1200, 'sneeze'); api.fxAt(...nose(), ['💨', '✨'], 4, 'spark'); }, 400); }],
+    sniff: [1500, () => { pose('happy', 1500, 'sniff', 1500); sfx.sniff(); }],
+    slip: [1900, () => { pose('ok', 700, 'slip', 1800); setTimeout(() => { sfx.bonk(); api.setTemp('laugh', 1200); }, 650); }],
+    spin: [1600, () => { pose('laugh', 1500, 'pirouette', 1500); sfx.magic(); }],
+  };
+
   // ---------- wiring ----------
   function run(table, kind, el, p) {
     const fn = table?.[kind];
@@ -792,6 +836,23 @@ export function createAntics(api) {
     decor: (kind, el, it, p) => run(forDecor(it), kind, el, p),
     line, prop, unprop, setSticky, clearProps, fly, popUp, spray, end,
     busy: () => !!act,
+    // Tali's joke: Lucky listens to the question, then laughs and does something that fits.
+    // Returns how long to wait before Lucky's comment (0 when he can't take part right now).
+    think() {
+      if (!api.free()) return;
+      pose('ok', 1800, 'listen', 1700);
+      popUp('🤔', ...api.luckyPoint(0.82, 0.02), 1600, 30);
+    },
+    laughAt(name) {
+      if (!api.free()) return 0;
+      end();
+      sfx.happy();
+      pose('laugh', 1200, 'lol', 1000);
+      api.fxAt(...head(), ['😂', '🤣'], 3, 'spark');
+      const [ms, fn] = JOKE_DO[name] || JOKE_DO.laugh;
+      setTimeout(() => { if (api.free()) fn(); }, 800);
+      return 800 + ms;
+    },
     // the frog's riddle: Lucky thinks in his reading glasses
     thinking(on) {
       if (on) { prop('specs', Infinity); L.classList.add('think'); }

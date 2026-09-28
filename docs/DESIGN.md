@@ -45,6 +45,16 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   answer choices are text only, so they can be shuffled without new recordings:
   favourite things, "would you rather", guess what I'm thinking, "do you know…?", guess my mood,
   "tap my ears / nose / tummy", choose-your-path adventures.
+- **Tali's visits:** he drops by while the child plays, not at set times, so there is nothing to miss:
+  in the day's first session always (after 1.5–3.5 minutes of play), in later sessions 60% of the time,
+  at most 3 visits a day and 40 minutes apart. He stays about 6 minutes, never at night or while Lucky sleeps,
+  and brings one present a day.
+- **Tali's jokes** (102, 14 of them knock-knock): one when he arrives, more with the 😂 button next to him
+  (3 a visit), and a cheering-up one when Lucky is sad. A joke is a small scene: the question (Lucky tilts his head),
+  the punchline with a *ba-dum-tss*, Lucky laughs, does something that fits (glasses for a clever joke, soaked
+  for a wet one, hiding for a ghost) and comments. In knock-knock jokes Lucky plays along ("Who's there?").
+  Taps on Lucky don't talk over a joke. The Russian line explains the pun. New jokes come first, and heard ones
+  go to the **joke book** in the collection (tap to hear it again).
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
 - **Living scene:** sun, clouds (rain), trees (petals), flowers (butterflies), gong, palm, crab, sheep, pot of gold…
   Butterflies fly by; a daily surprise present.
@@ -106,7 +116,7 @@ and a step towards the next belt (3 stamps per belt).
 - **Wardrobe:** 28 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
 - **8 worlds** by level, each with its own tappable details and Decorate items.
-- **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **34 badges**.
+- **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **35 badges**, Tali's joke book.
 - Pacing: stickers ~3.5 weeks, level items ~6 weeks, the last world ~1.5 months. Rewards arrive by days, not minutes.
 
 ## Parents' area

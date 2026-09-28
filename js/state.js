@@ -56,7 +56,10 @@ function fresh() {
     stickers: [],
     days: [],
     today: null,
-    dog: { name: '', met: false, forceUntil: 0, visitKey: '', doneKey: '', stayUntil: 0, gift: false, played: false },
+    // Tali's visits: day and n count visits per day, lastAt is when the last one ended, giftDay is the day of his present
+    dog: { name: '', met: false, forceUntil: 0, stayUntil: 0, played: false, jokes: 0, day: '', n: 0, lastAt: 0, giftDay: '' },
+    // Tali's jokes: heard (for the joke book) and recent (not repeated soon)
+    jokes: { heard: [], recent: [] },
     // ninja missions: stars per skill, the scroll of stamps, today's mask and animal cloud
     ninja: { skills: {}, scroll: [], mask: null, cloud: null },
     session: { activeMs: 0, lastAt: 0, activeAt: 0, napUntil: 0, warned: false },
@@ -214,18 +217,6 @@ export function addHearts(S, n, cat, cap) {
   return { give, ups };
 }
 
-// Dog visit window: about 2 days in 3, 3 hours at a random time between 10:00 and 18:00, from day 2.
-export function dogVisitKey(S, now) {
-  if (now < S.dog.forceUntil) return 'force-' + S.dog.forceUntil;
-  if (S.days.length < 2 || isNight(now, S.settings)) return null;
-  const k = dayKey(now);
-  const h = hash(k + 'tali');
-  if (h % 100 >= 65) return null;
-  const start = new Date(now);
-  start.setHours(10 + ((h >>> 8) % 8), (h >>> 16) % 60, 0, 0);
-  const s = start.getTime();
-  return now >= s && now < s + 3 * H ? k : null;
-}
 
 export const missionIndex = (S, len) => (hash(S.today.date + 'm') + S.today.missionSwap) % len;
 export const careIndex = (S, len) => hash(S.today.date + 'c') % len;

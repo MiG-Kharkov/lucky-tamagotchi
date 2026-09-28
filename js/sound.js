@@ -196,6 +196,8 @@ export const sfx = {
   freeze: () => { tone(1200, 0.15, { type: 'square', vol: 0.05 }); tone(600, 0.3, { type: 'square', vol: 0.05, delay: 0.15 }); },
   go: () => { tone(600, 0.1, { type: 'triangle', vol: 0.08 }); tone(900, 0.2, { type: 'triangle', vol: 0.08, delay: 0.1 }); },
   tick: () => tone(1000, 0.04, { type: 'square', vol: 0.03 }),
+  // ba-dum-tss after a punchline
+  rimshot: () => { tone(200, 0.1, { vol: 0.13, slide: 0.7 }); tone(150, 0.12, { vol: 0.13, slide: 0.7, delay: 0.13 }); noise(0.6, { vol: 0.06, type: 'highpass', freq: 6000, delay: 0.27 }); },
 };
 
 // A cheerful loop for Freeze dance: start() / stop()
