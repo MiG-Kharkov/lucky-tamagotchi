@@ -3,6 +3,31 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.6.0] – 2026-09-29
+
+### Added
+- **Super things:** 9 decorations and stickers glow and have their own fun on tap, double tap and long press:
+  - ball: keepy-uppy with a best score;
+  - house: peekaboo and tidying up;
+  - tent: a ghost story and marshmallows;
+  - snowman: a snowball fight;
+  - rocket: souvenirs and fireworks;
+  - pond: the frog jumps on Lucky's head, and fishing with a random catch;
+  - balloon: a ride up, then down on the umbrella;
+  - UFO: a tractor beam;
+  - fairy: shrinking and random wishes.
+- **Visitors for every world**, each with its own flight and ending: butterflies with five endings, a ladybird whose
+  spots Lucky counts, a bee, a bird, a fish, snowflakes, shooting stars, a UFO, a kite, a balloon, sweets, an owl in the
+  evening, and rarely a unicorn or a baby dragon.
+- **Bunny habits** in quiet moments: grooming, stretching, flopping, sniffing, nibbling, looking around, zoomies.
+
+### Changed
+- **Decorate tray:** categories (super, home, this world, other worlds, sticker albums) and a two-row grid instead of
+  one long row.
+  - Placed decorations are marked, and tapping one again selects it instead of adding a copy.
+  - Locked decorations show their level.
+- More variety in petting reactions, in how the daily present arrives and in how Tali comes in.
+
 ## [1.5.0] – 2026-09-28
 
 ### Added
@@ -107,6 +132,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.6.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.2.0...v1.3.0

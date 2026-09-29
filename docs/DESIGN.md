@@ -66,6 +66,21 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   the child to try it out loud.
 - The collection's **English** tab keeps jokes, tongue twisters (play at any of the three speeds) and sayings
   (tap one and Lucky acts it out again).
+- **Super things** (9, they glow): the ball (keepy-uppy: Lucky counts out loud, best score kept), the house
+  (hide and seek, peekaboo in the window, tidying up, a knock-knock joke, a nap), the tent (a ghost story, marshmallows
+  on a campfire), the snowman (a snowball fight; he throws back and wobbles after three hits), the rocket (a souvenir
+  from space, fireworks, a trip to the moon), the pond (the frog jumps on Lucky's head; fishing with a random catch),
+  the balloon (pops and grows back; carries Lucky up, he comes down on his umbrella), the UFO (a tractor beam) and the
+  fairy (Lucky shrinks; a different wish each time). Ordinary things keep their simpler reactions.
+- **Visitors** fly by every 2–3 minutes of play, different in each world and each with its own flight and ending:
+  butterflies (on his nose or ear, circling his head, a missed catch, a whole family), a ladybird (Lucky counts its
+  seven spots out loud), a bee, a bird that sings on his head or drops a feather, a fish that splashes him, a snowflake
+  on his tongue, shooting stars, a UFO, a kite, a balloon, sweets, an owl in the evening, and rarely a unicorn or a
+  baby dragon. The same visitor never comes twice in a row.
+- **Bunny habits:** in quiet moments (no taps for a while) Lucky grooms, stretches, flops over, sniffs, nibbles grass,
+  looks around or does zoomies, with a word about real rabbits now and then.
+- Petting, the daily present (different wrapping; it pops up, floats down on a parachute, is dropped by a bird or dug
+  up) and Tali's arrival (runs, jumps, digs, spins or skates in) vary too.
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
 - **Living scene:** sun, clouds (rain), trees (petals), flowers (butterflies), gong, palm, crab, sheep, pot of gold…
   Butterflies fly by; a daily surprise present.
@@ -96,7 +111,7 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
-| ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky |
+| ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky. The tray has categories (⭐ super, 🏡 home, 🌍 this world, 🗺️ other worlds, 📒 sticker albums) and a grid; a decoration already on the scene is marked ✓ and selected when tapped again |
 | 💬 Phrase of the day | A conversational phrase and a 3-question quiz |
 | 🌙 Put to bed | Voluntary end of the session, with a bonus |
 

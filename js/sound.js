@@ -196,6 +196,7 @@ export const sfx = {
   freeze: () => { tone(1200, 0.15, { type: 'square', vol: 0.05 }); tone(600, 0.3, { type: 'square', vol: 0.05, delay: 0.15 }); },
   go: () => { tone(600, 0.1, { type: 'triangle', vol: 0.08 }); tone(900, 0.2, { type: 'triangle', vol: 0.08, delay: 0.1 }); },
   tick: () => tone(1000, 0.04, { type: 'square', vol: 0.03 }),
+  crackle: () => { for (let i = 0; i < 12; i++) noise(0.03, { vol: 0.05, delay: i * 0.11 + Math.random() * 0.05, type: 'highpass', freq: 2500 + Math.random() * 2500 }); },
   gallop: () => { for (let i = 0; i < 8; i++) { const d = Math.floor(i / 2) * 0.28 + (i % 2) * 0.1; tone(i % 2 ? 520 : 440, 0.05, { type: 'square', vol: 0.04, delay: d }); noise(0.04, { vol: 0.05, delay: d, type: 'lowpass', freq: 1200 }); } },
   buzz: () => { tone(210, 1.1, { type: 'sawtooth', vol: 0.025, slide: 1.1 }); tone(214, 1.1, { type: 'sawtooth', vol: 0.02, delay: 0.05 }); },
   // ba-dum-tss after a punchline

@@ -390,6 +390,9 @@ export const PROPS = {
     <path d="M154 82 q16 -4 22 -16 M154 92 q18 2 26 -6" stroke="${MASK_FILL[c] || c}" stroke-width="6" fill="none" stroke-linecap="round"/>` },
   coins: { slot: 'eyes', art: () => em(80, 90, 26, '🪙') + em(120, 90, 26, '🪙') },
   cukes: { slot: 'eyes', art: () => em(80, 90, 28, '🥒') + em(120, 90, 28, '🥒') },
+  rod: { slot: 'hand', art: () => em(166, 128, 46, '🎣') },
+  marsh: { slot: 'hand', art: () => `<path d="M156 170 L182 108" stroke="#C98E5A" stroke-width="3" stroke-linecap="round"/>` + em(184, 102, 26, '🍡') },
+  balloonUp: { slot: 'hand', art: () => `<path d="M154 168 Q170 110 162 36" stroke="#9A8AA0" stroke-width="1.6" fill="none"/>` + em(162, 20, 50, '🎈') },
   tophat: { slot: 'head', art: () => `<rect x="74" y="-2" width="52" height="40" rx="4" fill="#2A1B2E"/><rect x="62" y="34" width="76" height="9" rx="4" fill="#2A1B2E"/><rect x="74" y="25" width="52" height="7" fill="#FF5FA2"/>` },
   snowcap: { slot: 'head', art: () => `<g fill="#fff" stroke="#DCE8FB" stroke-width="1.5"><ellipse cx="100" cy="46" rx="30" ry="10"/><circle cx="86" cy="40" r="10"/><circle cx="104" cy="35" r="12"/><circle cx="119" cy="42" r="8"/>
     <ellipse cx="44" cy="68" rx="10" ry="5"/><ellipse cx="156" cy="68" rx="10" ry="5"/></g>` },

@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,

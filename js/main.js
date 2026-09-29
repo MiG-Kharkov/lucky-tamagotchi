@@ -4,7 +4,7 @@ import { MISSIONS, SKILLS } from './missions.js';
 import { JOKES, JOKE_BY_ID } from './jokes.js';
 import { IDIOMS, TWISTERS, IDIOM_BY_ID, TWISTER_BY_ID } from './english.js';
 import { openMission } from './ninja.js';
-import { PLACES, DECOR, ALBUMS, STICKERS, BADGES } from './content.js';
+import { PLACES, DECOR, ALBUMS, STICKERS, BADGES, SUPER } from './content.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
 import { CONFIG } from './config.js';
@@ -253,6 +253,10 @@ const antics = createAntics({
   boost: (k, n) => { st.boost(S, k, n); renderStats(); },
   stat,
   idiom: (when, chance) => maybeIdiom(when, chance),
+  active: () => userActive(),
+  toast: (html) => toast(html, 2500),
+  // best scores (keepy-uppy): true when it's a new record
+  record: (key, n) => { const k = 'best_' + key; if (n <= (S.stats[k] || 0)) return false; S.stats[k] = n; st.save(S); return true; },
 });
 
 function confetti() {
@@ -426,7 +430,7 @@ function renderDecor() {
   const html = (front) => items.map((it, i) => {
     if ((it.y >= FRONT_Y) !== front) return '';
     const w = it.k === 'decor' ? DECOR_W[it.id] : EMOJI_W;
-    return `<div class="pl ${it.k === 'decor' ? 'pl-decor dec-' + it.id : 'pl-emoji'} ${editSel === i ? 'sel' : ''}" data-i="${i}"
+    return `<div class="pl ${it.k === 'decor' ? 'pl-decor dec-' + it.id : 'pl-emoji'} ${SUPER.has(it.id) ? 'super' : ''} ${editSel === i ? 'sel' : ''}" data-i="${i}"
       style="left:${it.x}%;top:${it.y}%;--w:${w};--s:${it.s};--f:${it.f ? -1 : 1}"><div class="pl-in">${it.k === 'decor' ? art.decor(it.id) : `<span>${it.id}</span>`}</div></div>`;
   }).join('');
   ui.decor.innerHTML = html(false);
@@ -488,21 +492,68 @@ ui.editTools.addEventListener('click', (e) => {
   if (b.dataset.a === 'flip') it.f = it.f ? 0 : 1;
   if (b.dataset.a === 'del') { items.splice(editSel, 1); editSel = -1; sfx.pop(); }
   renderDecor();
+  if (b.dataset.a === 'del') renderTray();
   st.save(S);
 });
 
-function trayItems() {
-  const seen = new Set();
+// Decorate tray: categories (super things, home decorations, this world, other worlds, sticker albums) and a grid
+let trayCat = null;
+function trayCats() {
+  const open = PLACES.filter((pl) => S.level >= pl.level);
+  const here = PLACES.find((pl) => pl.id === S.bg) || PLACES[0];
+  const emo = (id) => ({ k: 'emoji', id });
+  const allEmoji = [...new Set([...open.flatMap((pl) => pl.props), ...S.stickers])];
   return [
-    ...DECOR.filter((d) => S.level >= d.level).map((d) => ({ k: 'decor', id: d.id })),
-    ...PLACES.filter((pl) => S.level >= pl.level).flatMap((pl) => pl.props).map((id) => ({ k: 'emoji', id })),
-    ...S.stickers.map((id) => ({ k: 'emoji', id })),
-  ].filter((o) => !seen.has(o.id) && seen.add(o.id));
+    { id: 'super', icon: '⭐', label: tr('traySuper'), groups: [{ items: [
+      ...DECOR.filter((d) => SUPER.has(d.id) && S.level >= d.level).map((d) => ({ k: 'decor', id: d.id })),
+      ...allEmoji.filter((e) => SUPER.has(e)).map(emo)] }] },
+    { id: 'home', icon: '🏡', label: tr('trayHome'), groups: [{ items: DECOR.map((d) => ({ k: 'decor', id: d.id, lv: S.level < d.level ? d.level : 0 })) }] },
+    { id: 'world', icon: '🌍', label: L(here.name), groups: [{ items: here.props.map(emo) }] },
+    { id: 'worlds', icon: '🗺️', label: tr('trayWorlds'), groups: open.filter((pl) => pl.id !== here.id).map((pl) => ({ title: L(pl.name), items: pl.props.map(emo) })) },
+    { id: 'stickers', icon: '📒', label: tr('stickers'), groups: ALBUMS.map((a) => ({ title: L(a.name), items: a.stickers.filter((x) => S.stickers.includes(x)).map(emo) })).filter((g) => g.items.length) },
+  ].filter((c) => c.groups.some((g) => g.items.length));
+}
+
+function renderTray() {
+  const cats = trayCats();
+  if (!cats.some((c) => c.id === trayCat)) trayCat = cats.some((c) => c.id === 'world') ? 'world' : cats[0].id;
+  const cur = cats.find((c) => c.id === trayCat);
+  const placed = (id) => layout().filter((it) => it.id === id).length;
+  const tile = (o) => {
+    const n = placed(o.id);
+    return `<button class="tray-it ${SUPER.has(o.id) ? 'super' : ''} ${o.lv ? 'locked' : ''}" data-k="${o.k}" data-id="${o.id}" ${o.lv ? `data-lv="${o.lv}"` : ''}>
+      ${o.k === 'decor' ? art.decor(o.id) : o.id}${n ? `<i class="tray-n">${o.k === 'decor' ? '✓' : n}</i>` : ''}${o.lv ? `<i class="tray-lock">🔒 ${o.lv}</i>` : ''}</button>`;
+  };
+  const grid = ui.tray.querySelector('.tray-grid'), y = grid && grid.dataset.c === trayCat ? grid.scrollTop : 0;
+  // only the open category shows its name, so all of them fit on one line
+  ui.tray.innerHTML = `<div class="tray-top"><div class="tray-cats">${cats.map((c) => `<button class="tray-cat ${c.id === trayCat ? 'on' : ''}" data-c="${c.id}" aria-label="${c.label}">${c.icon}<span class="tc-label"> ${c.label}</span></button>`).join('')}</div>
+      <button class="btn pink tray-done" aria-label="${tr('done')}">✓</button></div>
+    ${trayCat === 'super' ? `<p class="tray-note">✨ ${tr('superNote')}</p>` : ''}
+    <div class="tray-grid" data-c="${trayCat}">${cur.groups.map((g) => `${g.title ? `<div class="tray-h">${g.title}</div>` : ''}${g.items.map(tile).join('')}`).join('')}</div>`;
+  ui.tray.querySelector('.tray-grid').scrollTop = y;
+  ui.tray.querySelector('.tray-done').onclick = finishEdit;
+  ui.tray.querySelectorAll('.tray-cat').forEach((b) => { b.onclick = () => { sfx.tap(); trayCat = b.dataset.c; renderTray(); }; });
+  ui.tray.querySelectorAll('.tray-it').forEach((b) => {
+    b.onclick = () => {
+      if (b.dataset.lv) { sfx.tap(); hop(b, 'wiggle'); toast('🔒 ' + tr('unlockAt', { n: b.dataset.lv }), 2000); return; }
+      addItem({ k: b.dataset.k, id: b.dataset.id });
+    };
+  });
 }
 
 // Put an item on the scene: decorations go to their usual spot, emoji near the centre
 function addItem(o) {
   const items = layout();
+  // a decoration is only once on the scene: tapping it again in the tray selects it
+  const there = o.k === 'decor' ? items.findIndex((it) => it.id === o.id) : -1;
+  if (there >= 0) {
+    editSel = there;
+    renderDecor();
+    sfx.tap();
+    const el = [...LAYERS.flatMap((l) => [...l.querySelectorAll('.pl')])].find((x) => Number(x.dataset.i) === there);
+    if (el) hop(el, 'wiggle');
+    return;
+  }
   if (items.length >= MAX_ITEMS) return toast(tr('editFull'), 2500);
   const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : [50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8];
   items.push({ k: o.k, id: o.id, x, y, s: 1, f: 0 });
@@ -511,7 +562,10 @@ function addItem(o) {
   renderDecor();
   st.save(S);
   stat('decorPlaced');
-  react('place-' + (LUCKY.place_item[o.id] ? o.id : 'sticker'), LUCKY.place_item[o.id] || LUCKY.placeGeneric, 0.9);
+  // the first super thing: Lucky explains the gestures
+  if (SUPER.has(o.id) && !S.stats.superHint) { S.stats.superHint = 1; say(fresh(LUCKY.antics.superHint)); }
+  else react('place-' + (LUCKY.place_item[o.id] ? o.id : 'sticker'), LUCKY.place_item[o.id] || LUCKY.placeGeneric, 0.9);
+  renderTray();
 }
 
 function startEdit(addId = null) {
@@ -521,12 +575,9 @@ function startEdit(addId = null) {
   mode = 'edit';
   editSel = -1;
   document.body.classList.add('editing');
-  const list = trayItems();
-  ui.tray.innerHTML = `<div class="tray-head"><span>${tr('editHint')}</span><button class="btn pink tray-done">✓ ${tr('done')}</button></div>
-    <div class="tray-items">${list.map((o, i) => `<button class="tray-it" data-i="${i}">${o.k === 'decor' ? art.decor(o.id) : o.id}</button>`).join('')}</div>`;
+  renderTray();
   ui.tray.hidden = false;
-  ui.tray.querySelector('.tray-done').onclick = finishEdit;
-  ui.tray.querySelectorAll('.tray-it').forEach((b) => { b.onclick = () => addItem(list[b.dataset.i]); });
+  toast('✏️ ' + tr('editHint'), 2500);
   renderDecor();
   // Opened from Collection → Home with a decoration: put it back on the scene right away
   if (addId) addItem({ k: 'decor', id: addId });
@@ -879,16 +930,17 @@ function luckyPress(part, p) {
   pet(part, p);
 }
 
+const PET_MOVES = ['hop', 'hop', 'hop', 'clap', 'sway', 'proud', 'wave'];
 function pet(part, p) {
   const [x, y] = sceneXY(p);
   // Sulks when he badly needs something (except joy: petting is exactly what helps)
   const need = st.lowestNeed(S.pet);
   if (tier() === 'low' && LUCKY.sulk[need] && S.pet[need] < 30 && Math.random() < 0.35) { sulk(need); return; }
   sfx.pop();
-  setTemp(part === 'head' ? 'happy' : 'laugh', 1100);
+  setTemp(part === 'head' ? 'happy' : pick(['laugh', 'laugh', 'happy']), 1100);
   if (part === 'head') hop(ui.lucky, 'pat', 600);
   else if (part === 'tummy') hop(ui.lucky, 'jiggle', 700);
-  else hop(ui.lucky);
+  else hop(ui.lucky, pick(PET_MOVES), 1400);
   heartsBurst(x, y - 20);
   st.boost(S, 'fun', 3);
   tapCount++;
@@ -1068,14 +1120,62 @@ function fxAt(x, y, list, n, cls) {
 
 // Tappable details of the worlds live in antics.js
 
-// Now and then a butterfly flies by; it can be caught
-let nextVisitorAt = Date.now() + 70e3;
+// Now and then a visitor flies by and can be caught. Who comes depends on the world (and the time of day);
+// each one has its own way of flying and its own ending, and a rare one now and then.
+const VISITORS = [
+  { e: '🦋', w: 3, in: 'garden dojo candy irish castle beach', path: 'flutter', end: ['nose', 'ear', 'circle', 'miss', 'family'] },
+  { e: '🐞', w: 2, in: 'garden irish dojo castle', path: 'flutter', end: ['spots'] },
+  { e: '🐝', w: 2, in: 'garden candy irish castle', path: 'zigzag', end: ['bee'] },
+  { e: '🐦', w: 2, in: 'garden irish winter castle dojo', path: 'glide', end: ['sing', 'feather'], flip: true },
+  { e: '🐠', w: 3, in: 'beach', path: 'jump', end: ['splash'], flip: true },
+  { e: '❄️', w: 3, in: 'winter', path: 'fall', end: ['tongue'] },
+  { e: '🌠', w: 3, in: 'space', path: 'streak', end: ['wish'] },
+  { e: '🛸', w: 2, in: 'space', path: 'glide', end: ['alien'] },
+  { e: '🪁', w: 1, in: 'garden beach irish dojo castle', path: 'float', end: ['kite'] },
+  { e: '🎈', w: 1, in: 'garden candy beach irish castle', path: 'rise', end: ['pop'] },
+  { e: '🍬', w: 3, in: 'candy', path: 'float', end: ['sweet'] },
+  { e: '🦉', w: 1.5, in: 'garden irish winter castle dojo', path: 'glide', end: ['owl'], evening: true, flip: true },
+  { e: '🦄', w: 0.15, in: 'all', path: 'glide', end: ['unicorn'], flip: true },
+  { e: '🐉', w: 0.15, in: 'dojo castle space winter', path: 'glide', end: ['dragon'], flip: true },
+];
+const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 2600, fall: 9000, float: 13000, rise: 10000 };
+
+// A flight path as keyframes in % of the scene, a little different every time
+function flightPath(kind) {
+  const right = Math.random() < 0.5, x0 = right ? -12 : 112, x1 = right ? 112 : -12, y = 18 + Math.random() * 28;
+  const at = (t) => x0 + (x1 - x0) * t;
+  const k = (x, yy) => ({ left: x + '%', top: yy + '%' });
+  const n = 9, a = 5 + Math.random() * 8;
+  switch (kind) {
+    case 'zigzag': return { right, frames: Array.from({ length: 11 }, (_, i) => k(at(i / 10), y + (i % 2 ? a : -a))) };
+    case 'glide': return { right, frames: Array.from({ length: 6 }, (_, i) => k(at(i / 5), y - Math.sin((i / 5) * Math.PI) * a)) };
+    case 'streak': return { right, frames: [k(x0, 4 + Math.random() * 8), k(x1, 30 + Math.random() * 12)] };
+    case 'jump': { const x = 20 + Math.random() * 60, d = right ? 14 : -14; return { right, frames: [k(x, 64), k(x + d / 2, 42), k(x + d, 64), k(x + d * 1.5, 48), k(x + d * 2, 66)] }; }
+    case 'fall': { const x = 15 + Math.random() * 70; return { right, frames: Array.from({ length: 8 }, (_, i) => k(x + Math.sin(i) * 6, -8 + i * 13)) }; }
+    case 'rise': { const x = 15 + Math.random() * 70; return { right, frames: Array.from({ length: 7 }, (_, i) => k(x + Math.sin(i) * 7, 96 - i * 18)) }; }
+    case 'float': return { right, frames: Array.from({ length: 7 }, (_, i) => k(at(i / 6), y + Math.sin(i * 1.3) * a)) };
+    default: return { right, frames: Array.from({ length: n }, (_, i) => k(at(i / (n - 1)), y + Math.sin(i * 1.7) * a + (i % 3 === 1 ? -3 : 0))) }; // flutter
+  }
+}
+
+let nextVisitorAt = Date.now() + 70e3, lastVisitor = '';
 function maybeVisitor(now) {
   if (now < nextVisitorAt || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
   nextVisitorAt = now + 100e3 + Math.random() * 80e3;
+  const evening = st.minutesToBed(now, S.settings) <= 120;
+  const pool = VISITORS.filter((v) => (v.in === 'all' || v.in.split(' ').includes(S.bg)) && (!v.evening || evening) && v.e !== lastVisitor);
+  let r = Math.random() * pool.reduce((sum, v) => sum + v.w, 0);
+  const v = pool.find((x) => (r -= x.w) < 0) || pool[0];
+  if (!v) return;
+  lastVisitor = v.e;
   const b = document.createElement('button');
-  b.className = 'visitor ' + (Math.random() < 0.5 ? 'path1' : 'path2');
-  b.textContent = pick(['🦋', '🦋', '🐞', '🐝']);
+  b.className = 'visitor';
+  b.textContent = v.e;
+  const { right, frames } = flightPath(v.path);
+  if (v.flip && right) b.style.transform = 'scaleX(-1)';
+  ui.scene.appendChild(b);
+  const ms = FLIGHT[v.path];
+  b.animate(frames, { duration: ms, easing: v.path === 'streak' || v.path === 'jump' ? 'ease-in-out' : 'linear', fill: 'forwards' });
   b.onclick = (e) => {
     e.stopPropagation();
     const [x, y] = sceneXY(e);
@@ -1084,10 +1184,17 @@ function maybeVisitor(now) {
     fxAt(x, y, ['✨', '💖'], 6, 'spark');
     award(addH(1, 'bug', 5));
     stat('bugs');
-    if (!antics.catchBug()) say(fresh(LUCKY.butterfly));
+    if (!antics.visitor(pick(v.end), x, y)) say(fresh(LUCKY.butterfly));
   };
-  ui.scene.appendChild(b);
-  setTimeout(() => b.remove(), 11000);
+  setTimeout(() => b.remove(), ms + 200);
+}
+
+// Quiet moments (no taps for a while): Lucky does real bunny things by himself - grooming, a stretch, a flop…
+let nextFidgetAt = Date.now() + 40e3;
+function maybeFidget(now) {
+  if (now < nextFidgetAt || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || !windowActive() || now - lastInput < 12e3 || now < busyUntil) return;
+  nextFidgetAt = now + 35e3 + Math.random() * 35e3;
+  antics.fidget();
 }
 
 // Daily surprise: a present appears after a minute of play
@@ -1095,8 +1202,9 @@ function maybeSurprise(now, T0) {
   if (T0.surprise || ask || mode !== 'main' || sheetOpen || modalOpen || !userActive() || S.session.activeMs < 60e3 || ui.scene.querySelector('.surprise')) return;
   const b = document.createElement('button');
   b.className = 'surprise';
-  b.textContent = '🎁';
-  b.style.left = (18 + Math.random() * 60) + '%';
+  b.textContent = pick(['🎁', '🎁', '🎁', '🧺', '📦', '💝']);
+  const left = 18 + Math.random() * 60;
+  b.style.left = left + '%';
   b.onclick = (e) => {
     e.stopPropagation();
     const day = st.today(S);
@@ -1109,6 +1217,24 @@ function maybeSurprise(now, T0) {
     st.save(S);
   };
   ui.scene.appendChild(b);
+  // it pops up, floats down on a parachute, is dropped by a bird or dug up from the ground
+  const how = pick(['pop', 'sky', 'bird', 'dig']);
+  const r = ui.scene.getBoundingClientRect(), x = (left / 100) * r.width, gy = r.height * 0.9;
+  if (how === 'sky') {
+    const chute = document.createElement('span');
+    chute.className = 'chute';
+    chute.textContent = '🪂';
+    b.appendChild(chute);
+    b.animate([{ bottom: '105%' }, { bottom: '5%' }], { duration: 2800, easing: 'ease-out' }).onfinish = () => chute.remove();
+  } else if (how === 'bird') {
+    antics.fly('🐦', [-40, r.height * 0.2], [x, r.height * 0.25], 1000, { size: 34 });
+    setTimeout(() => antics.fly('🐦', [x, r.height * 0.25], [r.width + 40, r.height * 0.1], 1000, { size: 34 }), 1000);
+    b.animate([{ bottom: '75%', opacity: 0 }, { bottom: '75%', opacity: 1, offset: 0.4 }, { bottom: '5%' }], { duration: 1900, easing: 'ease-in' });
+  } else if (how === 'dig') {
+    b.animate([{ transform: 'translateX(-50%) translateY(70px) scale(.3)' }, { transform: 'translateX(-50%) translateY(-12px) scale(1.1)', offset: 0.7 }, { transform: 'translateX(-50%)' }], { duration: 1100, easing: 'ease-out' });
+    fxAt(x, gy, ['💨', '🌱'], 6, 'spark');
+    sfx.puff();
+  }
   if (!maybeIdiom('surprise', 0.35)) sayAuto(fresh(LUCKY.surprise));
 }
 
@@ -1819,7 +1945,12 @@ function dogArrive() {
     <button class="joke-btn twist-btn" aria-label="tongue twister">👅</button>
     ${S.dog.played ? '' : `<button class="pill together">🐾 ${tr('playTogether')}</button>`}`;
   const body = ui.dog.querySelector('.dog-body');
-  hop(body, 'enter', 1500);
+  // he runs in, jumps in from the sky, pops out of the ground, spins in or rolls in on a skateboard
+  const entry = pick(['enter', 'enterJump', 'enterDig', 'enterSpin', 'enterSkate']);
+  hop(body, entry, 1900);
+  if (entry === 'enterSkate') { ui.dog.insertAdjacentHTML('beforeend', '<span class="skate">🛹</span>'); setTimeout(() => ui.dog.querySelector('.skate')?.remove(), 1500); sfx.whoosh(); }
+  if (entry === 'enterDig') setTimeout(() => { const d = body.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); fxAt(d.left - sc.left + d.width / 2, d.bottom - sc.top - 10, ['💨', '🌱'], 6, 'spark'); sfx.puff(); }, 200);
+  if (entry === 'enterJump') setTimeout(() => sfx.boing(), 500);
   const gift = ui.dog.querySelector('.gift');
   // one present a day, even when Tali comes more often
   if (gift) gift.onclick = () => {
@@ -2473,6 +2604,7 @@ function loop() {
   if (tick % 10 === 0) checkBadges();
   if (tick % 60 === 0) applyNinjaLook();
   maybeVisitor(now);
+  maybeFidget(now);
   maybeSurprise(now, T0);
   maybeMood(T0);
   maybeFrog(now, T0);
@@ -2612,6 +2744,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister() };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget() };
 
 start();

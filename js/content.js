@@ -27,6 +27,9 @@ export const DECOR = [
   { id: 'pond', level: 27, name: ['Пруд лягушки', "Frog's pond"] },
 ];
 
+// Super things: few, with their own fun on tap, double tap and long press (antics.js); they glow in Decorate
+export const SUPER = new Set(['rocket', 'hutch', 'ball', 'pond', 'snowman', 'tent', '🎈', '🛸', '🧚']);
+
 // Stickers: 6 albums of 10. A complete album gives a special item
 export const ALBUMS = [
   { id: 'garden', name: ['Сад', 'Garden'], reward: 'lei', stickers: ['🌸', '🌻', '🌷', '🦋', '🐞', '🐝', '🍀', '🐣', '🌈', '🪁'] },
