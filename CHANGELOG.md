@@ -3,6 +3,18 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.6.1] – 2026-09-29
+
+### Fixed
+- **Things no longer move after Decorate.** They are placed on the background picture itself, so they stay on the same
+  spot of grass or sky whatever the scene's height. Layouts from earlier versions are converted once and keep their
+  place.
+- **Decorate shows the whole scene**, scaled down above the tray, instead of cutting its top off, so high things
+  (a balloon, the rainbow) can be seen and moved. What you see is where things end up.
+- **The tray keeps one height** on every tab, however many things a category has (it scrolls inside). The scene no
+  longer jumps when switching tabs.
+- Lucky's speech bubble no longer blocks dragging while decorating.
+
 ## [1.6.0] – 2026-09-29
 
 ### Added
@@ -132,6 +144,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.6.1]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.3.0...v1.4.0

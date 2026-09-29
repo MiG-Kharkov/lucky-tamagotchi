@@ -52,6 +52,7 @@ function fresh() {
     worldsSeen: ['garden'],
     decorOff: [],
     layout: null,
+    layoutV: 2, // decoration coordinates are in % of the background picture
     bg: 'garden',
     stickers: [],
     days: [],
@@ -89,6 +90,8 @@ export function load() {
       const saved = JSON.parse(raw);
       saved.v ??= 1;
       const S = merge(fresh(), saved);
+      // decorations were placed in % of the visible scene before 1.6.1 (main.js migrateLayout converts them)
+      if (!saved.layoutV) S.layoutV = 1;
       // v2: default bedtime moved from 21:00 to 22:00
       if (S.v < 2) { if (S.settings.bedtime === '21:00') S.settings.bedtime = '22:00'; S.v = 2; }
       return S;

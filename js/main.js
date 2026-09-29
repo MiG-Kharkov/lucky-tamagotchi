@@ -399,10 +399,49 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
   };
 }
 
-// Scene layout: each place has its own item list (coordinates in % of the scene)
+// Scene layout: each place has its own item list. Coordinates are in % of the background picture (see artBox),
+// not of the visible scene, so an item stays on the same spot of grass or sky when the scene gets shorter
+// (in Decorate the tray is taller than the action buttons).
 const DECOR_W = { rainbow: 72, lantern: 12, hutch: 31, bowl: 18, ball: 13, tent: 30, snowman: 15, igloo: 30, rocket: 15, castle: 34, pond: 32 };
-const DECOR_POS = { rainbow: [50, 14], lantern: [88, 11], hutch: [17, 60], bowl: [86, 90], ball: [10, 91],
-  tent: [82, 58], snowman: [88, 68], igloo: [18, 62], rocket: [86, 50], castle: [20, 54], pond: [74, 90] };
+const DECOR_POS = { rainbow: [50, 35], lantern: [88, 33], hutch: [17, 70], bowl: [86, 92], ball: [10, 93],
+  tent: [82, 68], snowman: [88, 76], igloo: [18, 71], rocket: [86, 62], castle: [20, 65], pond: [74, 92] };
+
+// The background is a 400×700 picture drawn bottom-aligned and scaled to cover the scene (xMidYMax slice).
+// The decoration layers get exactly the same box.
+const ART_W = 400, ART_H = 700;
+function artBox(w, h) {
+  const k = Math.max(w / ART_W, h / ART_H), bw = ART_W * k, bh = ART_H * k;
+  return { left: (w - bw) / 2, top: h - bh, width: bw, height: bh };
+}
+function fitLayer(el, w, h) {
+  const b = artBox(w, h);
+  Object.assign(el.style, { left: b.left + 'px', top: b.top + 'px', width: b.width + 'px', height: b.height + 'px' });
+}
+const sceneSize = () => ({ width: ui.scene.clientWidth, height: ui.scene.clientHeight }); // layout size, not the scaled one
+function fitDecor() {
+  const r = sceneSize();
+  if (r.width && r.height) [ui.decor, ui.decorFront].forEach((l) => fitLayer(l, r.width, r.height));
+}
+// % of the visible scene → % of the picture (for defaults placed in the middle of what's on screen)
+function sceneToArt(xp, yp) {
+  const r = sceneSize(), b = artBox(r.width, r.height);
+  return [((xp / 100) * r.width - b.left) / b.width * 100, ((yp / 100) * r.height - b.top) / b.height * 100];
+}
+// the top of the picture that is actually visible, in %
+const artVisibleTop = () => { const r = sceneSize(), b = artBox(r.width, r.height); return (-b.top / b.height) * 100; };
+// Saves from before 1.6.1 kept % of the visible scene: convert them once, with this phone's usual scene size
+function migrateLayout() {
+  if (S.layoutV >= 2 || mode !== 'main') return;
+  const r = sceneSize();
+  if (!r.width || !r.height) return;
+  for (const list of Object.values(S.layout || {})) {
+    for (const it of list || []) { const [x, y] = sceneToArt(it.x, it.y); it.x = +x.toFixed(1); it.y = +y.toFixed(1); }
+  }
+  S.layoutV = 2;
+  st.save(S);
+  renderDecor();
+}
+new ResizeObserver(() => fitDecor()).observe(ui.scene);
 const EMOJI_W = 13;
 const MAX_ITEMS = 30;
 let editSel = -1;
@@ -422,10 +461,11 @@ function placeNewDecor(id) {
   if (!items.some((it) => it.id === id)) items.push({ k: 'decor', id, x: DECOR_POS[id][0], y: DECOR_POS[id][1], s: 1, f: 0 });
 }
 
-// Items below this line are closer to the viewer, in front of Lucky
-const FRONT_Y = 80;
+// Items below this line (in % of the picture) are closer to the viewer, in front of Lucky
+const FRONT_Y = 85;
 
 function renderDecor() {
+  fitDecor();
   const items = layout();
   const html = (front) => items.map((it, i) => {
     if ((it.y >= FRONT_Y) !== front) return '';
@@ -456,14 +496,14 @@ onLayers('pointerdown', (e) => {
   const i = Number(el.dataset.i);
   if (editSel !== i) { editSel = i; LAYERS.forEach((l) => l.querySelectorAll('.pl.sel').forEach((x) => x.classList.remove('sel'))); el.classList.add('sel'); ui.editTools.hidden = false; }
   const r = ui.decor.getBoundingClientRect();
-  drag = { el, i, r, id: e.pointerId, sx: e.clientX, sy: e.clientY, x0: layout()[i].x, y0: layout()[i].y, moved: false };
+  drag = { el, i, r, id: e.pointerId, sx: e.clientX, sy: e.clientY, x0: layout()[i].x, y0: layout()[i].y, minY: artVisibleTop() + 3, moved: false };
   el.setPointerCapture(e.pointerId);
 });
 onLayers('pointermove', (e) => {
   if (!drag || e.pointerId !== drag.id) return;
   const it = layout()[drag.i];
   it.x = Math.max(2, Math.min(98, drag.x0 + ((e.clientX - drag.sx) / drag.r.width) * 100));
-  it.y = Math.max(4, Math.min(98, drag.y0 + ((e.clientY - drag.sy) / drag.r.height) * 100));
+  it.y = Math.max(drag.minY, Math.min(98, drag.y0 + ((e.clientY - drag.sy) / drag.r.height) * 100));
   drag.el.style.left = it.x + '%';
   drag.el.style.top = it.y + '%';
   drag.moved = true;
@@ -528,8 +568,7 @@ function renderTray() {
   // only the open category shows its name, so all of them fit on one line
   ui.tray.innerHTML = `<div class="tray-top"><div class="tray-cats">${cats.map((c) => `<button class="tray-cat ${c.id === trayCat ? 'on' : ''}" data-c="${c.id}" aria-label="${c.label}">${c.icon}<span class="tc-label"> ${c.label}</span></button>`).join('')}</div>
       <button class="btn pink tray-done" aria-label="${tr('done')}">✓</button></div>
-    ${trayCat === 'super' ? `<p class="tray-note">✨ ${tr('superNote')}</p>` : ''}
-    <div class="tray-grid" data-c="${trayCat}">${cur.groups.map((g) => `${g.title ? `<div class="tray-h">${g.title}</div>` : ''}${g.items.map(tile).join('')}`).join('')}</div>`;
+    <div class="tray-grid" data-c="${trayCat}">${trayCat === 'super' ? `<p class="tray-note">✨ ${tr('superNote')}</p>` : ''}${cur.groups.map((g) => `${g.title ? `<div class="tray-h">${g.title}</div>` : ''}${g.items.map(tile).join('')}`).join('')}</div>`;
   ui.tray.querySelector('.tray-grid').scrollTop = y;
   ui.tray.querySelector('.tray-done').onclick = finishEdit;
   ui.tray.querySelectorAll('.tray-cat').forEach((b) => { b.onclick = () => { sfx.tap(); trayCat = b.dataset.c; renderTray(); }; });
@@ -555,7 +594,7 @@ function addItem(o) {
     return;
   }
   if (items.length >= MAX_ITEMS) return toast(tr('editFull'), 2500);
-  const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : [50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8];
+  const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : sceneToArt(50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8).map((v) => +v.toFixed(1));
   items.push({ k: o.k, id: o.id, x, y, s: 1, f: 0 });
   editSel = items.length - 1;
   sfx.pop();
@@ -568,15 +607,30 @@ function addItem(o) {
   renderTray();
 }
 
+// In Decorate the tray is taller than the action buttons. Instead of cutting the top of the scene off,
+// show the whole scene scaled down, so things end up exactly where they were put.
+let sceneH = 0;
+function editScale(on) {
+  const st2 = ui.scene.style;
+  if (!on) { st2.flex = st2.height = st2.transform = st2.transformOrigin = st2.marginBottom = ''; return; }
+  const h = sceneH || ui.scene.offsetHeight;
+  st2.flex = st2.height = st2.transform = st2.marginBottom = '';
+  const room = ui.scene.offsetHeight; // the space left above the tray
+  const k = Math.min(1, room / h);
+  Object.assign(st2, { flex: 'none', height: h + 'px', transform: `scale(${k})`, transformOrigin: '50% 0', marginBottom: (room - h) + 'px' });
+}
+
 function startEdit(addId = null) {
   if (mode !== 'main') return;
   cancelAsk();
   closeSheet();
+  sceneH = ui.scene.offsetHeight; // the scene's usual height, before the tray opens
   mode = 'edit';
   editSel = -1;
   document.body.classList.add('editing');
   renderTray();
   ui.tray.hidden = false;
+  editScale(true);
   toast('✏️ ' + tr('editHint'), 2500);
   renderDecor();
   // Opened from Collection → Home with a decoration: put it back on the scene right away
@@ -591,6 +645,7 @@ function finishEdit(silent = false) {
   drag = null;
   document.body.classList.remove('editing');
   ui.tray.hidden = true;
+  editScale(false);
   renderDecor();
   st.save(S);
   if (silent === true) return;
@@ -2232,6 +2287,10 @@ function renderSleep(force = false) {
   const time = fmtTime(until);
   ui.overlay.className = 'overlay show sleep-ov' + (night ? '' : ' rest');
   const bgHtml = night ? art.scene('night') : `${art.scene(S.bg)}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
+  requestAnimationFrame(() => {
+    const rd = ui.overlay.querySelector('.rest-decor'), bg = ui.overlay.querySelector('.sleep-bg');
+    if (rd && bg) { const r = bg.getBoundingClientRect(); fitLayer(rd, r.width, r.height); }
+  });
   ui.overlay.innerHTML = `<div class="sleep-bg">${bgHtml}</div>
     <button class="shooting" aria-label="star">🌠</button>
     <button class="icon-btn gear gear-sleep" aria-label="parents">⚙️</button>
@@ -2653,6 +2712,7 @@ const redrawAfterRotate = () => {
   rotateT = setTimeout(() => {
     if (window.innerWidth > window.innerHeight) return;
     window.scrollTo(0, 0);
+    if (mode === 'edit') { editScale(false); document.body.classList.remove('editing'); ui.tray.hidden = true; sceneH = ui.scene.offsetHeight; document.body.classList.add('editing'); ui.tray.hidden = false; editScale(true); }
     renderBg();
     renderDecor();
     renderLucky(true);
@@ -2713,6 +2773,7 @@ function start() {
   renderDecor();
   renderLucky(true);
   applyNinjaLook();
+  migrateLayout();
   $('#beltChip').onclick = () => {
     if (mode !== 'main') return;
     sfx.tap();

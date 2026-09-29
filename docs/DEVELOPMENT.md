@@ -79,6 +79,13 @@ To release:
 3. Commit, then tag: `git tag -a v1.2.0 -m "Lucky 1.2.0"`.
 4. Push the commit and the tag: `git push --follow-tags`.
 
+## Decorations
+
+Positions in `S.layout` are in % of the 400×700 background picture (`artBox` in `main.js`), not of the visible scene.
+The picture is drawn bottom-aligned and scaled to cover, and the decoration layers get the same box, so items stay on
+the same spot of the picture when the scene's height changes. In Decorate the whole scene is shown scaled down above
+the tray (`editScale`). Saves from before 1.6.1 (`layoutV` 1) are converted once at start.
+
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
