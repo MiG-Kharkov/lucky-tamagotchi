@@ -441,6 +441,7 @@ body.covered #app { visibility: hidden; }
 .edit-btn { left: 68px; animation-delay: -1.2s; }
 body.editing .word-btn, body.editing .actions { display: none; }
 body.editing .lucky, body.editing .dog { pointer-events: none; opacity: .8; }
+body.editing .dog button { display: none; } /* Tali's joke, twister, gift and play buttons wait until Decorate is done */
 body.editing .scene { box-shadow: var(--shadow), inset 0 0 0 4px var(--pink); }
 body.editing .pl { outline: 2px dashed #ffffffaa; outline-offset: 2px; border-radius: 10px; }
 body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }

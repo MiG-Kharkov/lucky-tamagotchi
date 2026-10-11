@@ -17,7 +17,7 @@ export function easter(y) {
 
 // lead: how many days before the day the decorations start; after: how many days after it they stay.
 // stickers: holiday stickers for Decorate (they show only while their holiday is on, and come back next year).
-// gift: the daily surprise and the present boxes in the last week.
+// gift: the daily surprise and the present boxes while the holiday is on.
 export const EVENTS = [
   { id: 'halloween', icon: '🎃', name: ['Хэллоуин', 'Halloween'], date: (y) => new Date(y, 9, 31), lead: 21, after: 1,
     stickers: ['🎃', '👻', '🦇', '🕸️', '🧹', '🍬'], gift: ['🎃', '🍬', '🧺'], confetti: ['#FF8A1F', '#7B3FB8', '#2E2A33', '#FFD23F', '#9BE15D'] },

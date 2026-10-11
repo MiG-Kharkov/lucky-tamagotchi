@@ -195,7 +195,12 @@ export function createAntics(api) {
     }
   }
   function setSticky(slot, id, arg) {
-    if (id) { sticky[slot] = [id, arg]; if (!worn[slot]) prop(id, Infinity, arg); }
+    if (id) {
+      const prev = sticky[slot]?.[0];
+      sticky[slot] = [id, arg];
+      // on unless something else is worn there; the last holiday's hat gives way to the new one
+      if (!worn[slot] || (worn[slot].id === prev && prev !== id)) prop(id, Infinity, arg);
+    }
     else { delete sticky[slot]; if (worn[slot]) unprop(slot); }
   }
   function clearProps() {
@@ -355,7 +360,7 @@ export function createAntics(api) {
       api.fxAt(c.x, c.y + 20, w === 'candy' ? ['🍬', '🍭'] : w === 'winter' ? ['❄️'] : ['💧'], 8, 'drop');
     },
     tap: who((c) => {
-      // in the last week before Halloween a cloud may rain sweets anywhere, before Christmas it may snow
+      // while Halloween is on a cloud may rain sweets anywhere, before Christmas it may snow
       const ev = api.event?.(), swap = ev?.stage >= 3 && Math.random() < 0.4 && { halloween: 'candy', christmas: 'winter' }[ev.id];
       const w = swap || api.world();
       if (w !== 'candy' && w !== 'winter' && api.idiom?.('cloud', 0.35)) return; // "It's raining cats and dogs!"
@@ -868,13 +873,13 @@ export function createAntics(api) {
 
   // Easter: painted eggs hidden in the world. Each one is found once (a chick hatches);
   // Lucky praises every find with the sensei's words, and when all are found: "All found! Ninja detective!"
-  const foundEggs = new Set();
+  const foundToday = (kind) => { const T = api.day(); T.found ||= {}; return (T.found[kind] ||= []); };
   const eggKey = (el) => api.world() + ':' + el.dataset.egg;
   R.egg = {
     press: () => sfx.pop(),
     tap: (c) => {
-      if (foundEggs.has(eggKey(c.el))) return;
-      foundEggs.add(eggKey(c.el));
+      if (foundToday('eggs').includes(eggKey(c.el))) return;
+      foundToday('eggs').push(eggKey(c.el));
       c.el.classList.add('found');
       const gold = c.el.classList.contains('gold'), left = ui.bg.querySelectorAll('.ev-egg:not(.found)').length;
       popUp('🐣', c.x, c.y - 12, 1900, 30, 'pop-rise');
@@ -889,13 +894,12 @@ export function createAntics(api) {
     },
   };
   // the leprechaun's gold coins: found the same way, one coin flies to Lucky
-  const foundCoins = new Set();
   const coinKey = (el) => api.world() + ':' + el.dataset.coin;
   R.coin = {
     press: () => sfx.catch(),
     tap: (c) => {
-      if (foundCoins.has(coinKey(c.el))) return;
-      foundCoins.add(coinKey(c.el));
+      if (foundToday('coins').includes(coinKey(c.el))) return;
+      foundToday('coins').push(coinKey(c.el));
       c.el.classList.add('found');
       const left = ui.bg.querySelectorAll('.ev-coin:not(.found)').length;
       fly('🪙', [c.x, c.y], paw(), 700, { arc: 50, spin: 360, size: 24 });
@@ -910,8 +914,8 @@ export function createAntics(api) {
   };
   // the world was drawn again: eggs and coins found before stay found
   function refreshEggs() {
-    ui.bg.querySelectorAll('.ev-egg').forEach((e) => { if (foundEggs.has(eggKey(e))) e.classList.add('found'); });
-    ui.bg.querySelectorAll('.ev-coin').forEach((e) => { if (foundCoins.has(coinKey(e))) e.classList.add('found'); });
+    ui.bg.querySelectorAll('.ev-egg').forEach((e) => e.classList.toggle('found', foundToday('eggs').includes(eggKey(e))));
+    ui.bg.querySelectorAll('.ev-coin').forEach((e) => e.classList.toggle('found', foundToday('coins').includes(coinKey(e))));
   }
 
   // ---------- holiday things in the worlds (art.js eventScene): each answers, and Lucky joins in ----------
@@ -1815,7 +1819,7 @@ export function createAntics(api) {
 
   // A caught visitor: what happens depends on who it is (and for butterflies, on luck). x, y: where it was caught.
   function visitor(kind, x, y) {
-    if (!api.free()) return false;
+    if (!api.free() || api.talking()) return false;
     const a = begin('visitor'), w = sceneRect().width, off = [w + 40, 30];
     const away = (e, from, ms = 1100) => fly(e, from, off, ms, { arc: 60, size: 28 });
     const V = {
@@ -2030,14 +2034,17 @@ export function createAntics(api) {
   const dogEl = () => ui.dog.querySelector('.dog-body');
   const dogDo = (cls, ms) => { const d = dogEl(); if (d) api.hop(d, cls, ms); };
   const dogAt = (fx = 0.5, fy = 0.3) => { const d = dogEl(); if (!d) return null; const r = d.getBoundingClientRect(), s = sceneRect(); return [r.left - s.left + r.width * fx, r.top - s.top + r.height * fy]; };
-  // the scene goes dark around them for a moment
+  // the scene goes dark around them for a moment (undark: at once, when what brought it is over)
+  const darks = new Set();
   function dark(ms) {
     const d = document.createElement('div');
     d.className = 'fx-dark';
     d.style.setProperty('--ms', ms + 'ms');
     ui.fx.appendChild(d);
-    setTimeout(() => d.remove(), ms);
+    darks.add(d);
+    setTimeout(() => { d.remove(); darks.delete(d); }, ms);
   }
+  function undark() { darks.forEach((d) => d.remove()); darks.clear(); }
   const CHAT_FX = {
     'Lucky, you look so happy today!': () => pose('laugh', 1400, 'binky'),
     'That is because {name} takes care of me!': () => api.hearts(...head(), 5),
@@ -2089,6 +2096,7 @@ export function createAntics(api) {
     // a tap on Lucky while he hides: 'You found me!' (true if handled)
     luckyTap: () => !!act?.onLuckyTap?.(),
     refreshEggs,
+    undark,
     // a chat line is starting: act it out (main.js calls this before each line of a chat or a prank)
     chat(en) {
       const fx = CHAT_FX[en];

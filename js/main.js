@@ -275,6 +275,7 @@ const antics = createAntics({
   free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
   talking: () => storyOn(),
   world: () => S.bg,
+  day: () => st.today(S),
   say: (list, who = 'lucky') => say(fresh(list), who),
   hop, setTemp, floatFx, fxAt, luckyPoint, sceneXY,
   hearts: heartsBurst,
@@ -527,13 +528,15 @@ function placeNewDecor(id) {
 // Items below this line (in % of the picture) are closer to the viewer, in front of Lucky
 const FRONT_Y = 85;
 
+// A holiday sticker is on the scene only while its holiday is on (it comes back next year)
+const shownNow = (it) => !(it.k === 'emoji' && HOLIDAY_ONLY.has(it.id) && !(EV && EV.stage >= 2 ? EV.stickers : []).includes(it.id));
+
 function renderDecor() {
   fitDecor();
   const items = layout();
-  const holiday = EV && EV.stage >= 2 ? EV.stickers : [];
   const html = (front) => items.map((it, i) => {
     if ((it.y >= FRONT_Y) !== front) return '';
-    if (it.k === 'emoji' && HOLIDAY_ONLY.has(it.id) && !holiday.includes(it.id)) return ''; // back next year
+    if (!shownNow(it)) return '';
     const w = it.k === 'decor' ? DECOR_W[it.id] : EMOJI_W;
     return `<div class="pl ${it.k === 'decor' ? 'pl-decor dec-' + it.id : 'pl-emoji'} ${SUPER.has(it.id) ? 'super' : ''} ${editSel === i ? 'sel' : ''}" data-i="${i}"
       style="left:${it.x}%;top:${it.y}%;--w:${w};--s:${it.s};--f:${it.f ? -1 : 1}"><div class="pl-in">${it.k === 'decor' ? art.decor(it.id) : `<span>${it.id}</span>`}</div></div>`;
@@ -659,7 +662,7 @@ function addItem(o) {
     if (el) hop(el, 'wiggle');
     return;
   }
-  if (items.length >= MAX_ITEMS) return toast(tr('editFull'), 2500);
+  if (items.filter(shownNow).length >= MAX_ITEMS) return toast(tr('editFull'), 2500); // hidden holiday stickers don't count
   const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : sceneToArt(50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8).map((v) => +v.toFixed(1));
   items.push({ k: o.k, id: o.id, x, y, s: 1, f: 0 });
   editSel = items.length - 1;
@@ -881,7 +884,7 @@ function goPlace(id) {
 // ---------- holidays (events.js): the same game, decorated for a few weeks before each holiday ----------
 
 let EV = null; // the holiday that is on (with its stage), or null
-// who drops the daily surprise and what Tali rides in on, in a holiday's last week
+// who drops the daily surprise and what Tali rides in on while a holiday is on
 const HOLIDAY_CARRIER = { halloween: '🦇', christmas: '🎅', newyear: '🎅', valentine: '🕊️', patrick: '🐦', easter: '🐣' };
 const HOLIDAY_RIDE = { halloween: '🧹', christmas: '🛷', newyear: '🛷' };
 const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown' };
@@ -1091,6 +1094,7 @@ let washGain = 0, washIdle = 0, washDown = false, washLast = 0, cleanBefore = 10
 function leaveMain(next) {
   cancelAsk();
   antics.end();
+  antics.undark();
   stopChain();
   pending = null;
   mode = next;
@@ -1478,6 +1482,7 @@ function maybeVisitor(now) {
     e.stopPropagation();
     const [x, y] = sceneXY(e);
     b.remove();
+    if (v.e === '👻') antics.undark(); // the ghost is caught: the light comes back
     sfx.sparkle();
     fxAt(x, y, ['✨', '💖'], 6, 'spark');
     award(addH(1, 'bug', 5));
@@ -1525,7 +1530,7 @@ function maybeSurprise(now, T0) {
     b.appendChild(chute);
     b.animate([{ bottom: '105%' }, { bottom: '5%' }], { duration: 2800, easing: 'ease-out' }).onfinish = () => chute.remove();
   } else if (how === 'bird') {
-    // in a holiday's last week someone else brings it: a bat, Santa, a chick…
+    // while a holiday is on someone else brings it: a bat, Santa, a chick…
     const bird = (EV && EV.stage >= 3 && HOLIDAY_CARRIER[EV.id]) || '🐦';
     antics.fly(bird, [-40, r.height * 0.2], [x, r.height * 0.25], 1000, { size: 34 });
     setTimeout(() => antics.fly(bird, [x, r.height * 0.25], [r.width + 40, r.height * 0.1], 1000, { size: 34 }), 1000);
@@ -2331,10 +2336,14 @@ function dogArrive() {
   setTimeout(() => {
     sfx.bark();
     if (!dogHere || !userActive() || mode !== 'main' || ask) return;
-    const sad = tier() === 'low';
+    antics.end(); // a scene the child started in these 0.7 s gives way to the hello
+    const sad = tier() === 'low', T0 = st.today(S);
     let hello = S.dog.met ? [timed('dog', fresh(DOG.arrive)), timed('lucky', fresh(sad ? LUCKY.dogSad : LUCKY.dogHappy))] : [timed('lucky', pick(LUCKY.meetDog), 1500)];
-    // at Halloween he comes trick-or-treating, and Lucky gives him a sweet
-    if (S.dog.met && EV?.id === 'halloween' && EV.stage >= 3) hello = [timed('dog', DOG.trickOrTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) { const r = d.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); antics.fly('🍬', luckyPoint(0.7, 0.6), [r.left - sc.left + r.width / 2, r.top - sc.top + r.height * 0.45], 700, { arc: 50, spin: 300, size: 26 }); } sfx.pop(); return 200; },
+    // at Halloween he comes trick-or-treating and Lucky gives him a sweet: on his first visit of the day in the last
+    // week, and every time on the day itself
+    const trick = S.dog.met && EV?.id === 'halloween' && (EV.days === 0 || (EV.days <= 7 && !T0.trickTreat));
+    if (trick) T0.trickTreat = true;
+    if (trick) hello =[timed('dog', DOG.trickOrTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) { const r = d.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); antics.fly('🍬', luckyPoint(0.7, 0.6), [r.left - sc.left + r.width / 2, r.top - sc.top + r.height * 0.45], 700, { arc: 50, spin: 300, size: 26 }); } sfx.pop(); return 200; },
       timed('lucky', LUCKY.holidayThings.trickTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) hop(d, 'hop'); sfx.crunch(); return 300; }, timed('dog', DOG.sweetThanks[0])];
     S.dog.met = true;
     taliJoke(sad ? DOG.cheer : DOG.jokeNew, hello);
@@ -2631,9 +2640,12 @@ function exitSleep() {
   ui.overlay.innerHTML = '';
   cover(false);
   renderLucky(true);
-  sayAuto(fresh(LUCKY.woke));
+  updateEvent(); // a new day may have brought a holiday
+  if (!holidayHi()) sayAuto(fresh(LUCKY.woke));
+  if (!document.hidden) wokeAt = Date.now();
   sfx.happy();
 }
+let wokeAt = 0; // he has just said good morning (coming back to the app wakes him up first)
 
 function startNap() {
   S.session.napUntil = Date.now() + S.settings.napMin * 60e3;
@@ -2878,7 +2890,7 @@ function idleTalk() {
   if (Math.random() < 0.08 && maybeIdiom(Math.random() < 0.3 ? 'idle' : 'any', 1)) return;
   // holidays: a word about it now and then (Tali has his own in the last week)
   if (EV && EV.stage >= 2 && LUCKY.holiday[EV.id] && Math.random() < 0.1) return sayAuto(fresh(LUCKY.holiday[EV.id].idle));
-  if (dogHere && EV && EV.stage >= 3 && DOG.holiday[EV.id] && Math.random() < 0.15) return sayAuto(fresh(DOG.holiday[EV.id]), 'dog');
+  if (dogHere && EV && EV.stage >= 3 && EV.days <= 7 && DOG.holiday[EV.id] && Math.random() < 0.15) return sayAuto(fresh(DOG.holiday[EV.id]), 'dog');
   if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
   if (dogHere && Math.random() < 0.45) return talk(acted(fresh(CHATS)));
@@ -3002,7 +3014,9 @@ document.addEventListener('visibilitychange', () => {
   lastInput = Date.now();
   lastSpeech = Date.now();
   loop();
-  if (gap > 3 * 3600e3 && mode === 'main') sayAuto(fresh(LUCKY.welcomeBack));
+  updateEvent(); // the app may have slept in memory overnight: the holiday look and greeting are today's
+  // one hello: if he has just woken up and said good morning, that was it
+  if (mode === 'main' && Date.now() - wokeAt > 2000 && !holidayHi() && gap > 3 * 3600e3) sayAuto(fresh(LUCKY.welcomeBack));
 });
 window.addEventListener('pagehide', () => st.save(S));
 
@@ -3038,21 +3052,29 @@ function greetList(gap) {
 }
 
 // In a holiday's last week the day's first greeting is about it: on the eve its own line, on the day the greeting
+// (the decorations are out for three weeks, the greeting only in the last one)
 function holidayGreeting() {
-  const H = EV && EV.stage >= 3 && LUCKY.holiday[EV.id], T0 = st.today(S);
+  const H = EV && EV.stage >= 3 && EV.days <= 7 && LUCKY.holiday[EV.id], T0 = st.today(S);
   if (!H || T0.holidayHi === EV.id) return null;
   T0.holidayHi = EV.id;
   return EV.stage >= 4 ? H.greet : EV.days === 1 && H.eve ? H.eve : H.idle;
 }
 
-function greet(gap) {
+// Says the day's holiday greeting if there is one (on arrival, on coming back to the app and on waking up);
+// on New Year's Day itself the countdown follows
+function holidayHi() {
+  if (document.hidden) return false; // the app is in the background: kept for when she comes back
   const hol = holidayGreeting();
-  if (hol) {
-    setTemp('happy', 1500);
-    sayAuto(fresh(hol));
-    if (EV.id === 'newyear' && EV.stage >= 4) setTimeout(() => { if (mode === 'main' && !antics.busy() && !ask) antics.countdown(); }, 4200);
-    return;
-  }
+  if (!hol) return false;
+  setTemp('happy', 1500);
+  // on New Year's Day the countdown is the greeting (it ends with "Happy New Year!" and fireworks)
+  if (EV.id === 'newyear' && EV.days === 0) { setTimeout(() => { if (mode === 'main' && !antics.busy() && !ask) antics.countdown(); else sayAuto(fresh(hol)); }, 1200); return true; }
+  sayAuto(fresh(hol));
+  return true;
+}
+
+function greet(gap) {
+  if (holidayHi()) return;
   const h = new Date().getHours();
   if (h < 12 && gap > 6 * 3600e3 && maybeIdiom(h < 8 ? 'early' : 'morning', 0.5)) return;
   setTemp('happy', 1500);
