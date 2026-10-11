@@ -1,8 +1,13 @@
 // Mini-games. Shared shell: start screen with Back, ✕ during play, result screen.
 // Each game is run(ctx) → { stop(): score, cleanup() }. You can't lose, only score less.
+// The usual four are played on ordinary days; while a holiday is on, its three games (holigames.js) take their place.
+// Those have a difficulty to choose (easy, normal, hard), count points and end with ctx.finish(points): stars, the best
+// score at that difficulty, a record; the game's 0-30 score (for hearts) is the points against the game's target.
 
 import { PHRASES, DIALOGS } from './i18n.js';
 import { speak } from './sound.js';
+import { LEVEL_IDS } from './arcade.js';
+import { HOLIDAY_GAMES } from './holigames.js';
 
 const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
 
@@ -13,11 +18,29 @@ export const GAMES = [
   { id: 'talk', emoji: '🗣️', energy: 5, great: 12, run: runTalk },
 ];
 
-export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, onCancel, onEnd }) {
-  host.innerHTML = `<div class="game g-${game.id}">
+// the holiday games run their kind with the holiday's theme at the chosen difficulty
+for (const list of Object.values(HOLIDAY_GAMES)) {
+  for (const gm of list) {
+    gm.great = 24;
+    gm.run = (ctx) => (gm.kind === 'memory' ? runMemory(ctx, gm.theme) : gm.kind === 'simon' ? runSimon(ctx, gm.theme) : gm.kind(ctx, gm.theme, ctx.level));
+  }
+}
+export { HOLIDAY_GAMES };
+
+const LEVEL_ICON = { easy: '🐢', normal: '🐇', hard: '🚀' };
+// stars from the points: three at the target, two from 55% of it, one for playing
+export const starsOf = (points, target) => (points >= target ? 3 : points >= target * 0.55 ? 2 : 1);
+const scoreOf = (points, target) => Math.round(30 * Math.min(1, points / target));
+
+// level: the difficulty chosen last time; bestOf(level): the best points there; onLevel(level): remember the choice;
+// onRecord(level, points): true when it's a new best
+export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onCancel, onEnd }) {
+  const holiday = !!game.target;
+  host.innerHTML = `<div class="game g-${game.id}${holiday ? ' g-holiday' : ''}">
     <div class="game-stage"></div>
     <div class="game-hud"><button class="g-exit" aria-label="close">✕</button><span class="g-info" hidden></span></div>
     <div class="game-card"><div class="game-emoji">${game.emoji}</div><h2>${tr('g_' + game.id)}</h2><p>${tr('g_' + game.id + '_hint')}</p>
+      ${holiday ? `<div class="g-levels">${LEVEL_IDS.map((l) => `<button class="g-level${l === level ? ' on' : ''}" data-l="${l}"><b>${LEVEL_ICON[l]}</b>${tr('lvl_' + l)}</button>`).join('')}</div><p class="g-best"></p>` : ''}
       <div class="row"><button class="btn big pink g-start">${tr('start')}</button></div>
       <div class="row"><button class="btn ghost g-cancel">${tr('back')}</button></div>
     </div>
@@ -26,10 +49,32 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, o
   const card = host.querySelector('.game-card');
   const info = host.querySelector('.g-info');
   let inst = null, ended = false, final = 0;
+  const showBest = () => { const el = card.querySelector('.g-best'), b = bestOf(level); if (el) el.textContent = b ? `🏆 ${tr('gBest', { n: b })}` : ''; };
+  showBest();
+  card.querySelectorAll('.g-level').forEach((b) => {
+    b.onclick = () => { sfx.tap(); level = b.dataset.l; card.querySelectorAll('.g-level').forEach((x) => x.classList.toggle('on', x === b)); onLevel?.(level); showBest(); };
+  });
 
   const ctx = {
     stage, sfx, lang, tr, svgOk, svgHappy, svgSad,
+    get level() { return level; },
     info: (html) => { info.hidden = false; info.innerHTML = html; },
+    // the holiday games end with their points
+    finish: (points) => {
+      if (ended) return;
+      ended = true;
+      const target = game.target[level];
+      final = scoreOf(points, target);
+      inst?.cleanup();
+      const stars = starsOf(points, target), record = onRecord?.(level, points);
+      sfx.levelup();
+      card.innerHTML = `<div class="g-stars">${[1, 2, 3].map((i) => `<i class="${i <= stars ? 'on' : ''}">⭐</i>`).join('')}</div>
+        <h2>${tr('gPoints', { n: points })}</h2>
+        ${record ? `<p class="g-record">🏆 ${tr('gNewBest')}</p>` : `<p class="g-best">🏆 ${tr('gBest', { n: bestOf(level) })}</p>`}
+        <div class="row"><button class="btn big pink">${tr('done')}</button></div>`;
+      card.hidden = false;
+      card.querySelector('button').onclick = () => onEnd(final);
+    },
     end: (score, msg) => {
       if (ended) return;
       ended = true;
@@ -49,7 +94,8 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, o
     if (!inst) return onCancel();          // not started yet: the attempt is not used up
     if (ended) return onEnd(final);
     ended = true;
-    onEnd(inst.stop());                    // left mid-game: count the score so far
+    const got = inst.stop();               // left mid-game: count the score so far
+    onEnd(holiday ? scoreOf(got, game.target[level]) : got);
   };
 }
 
@@ -179,14 +225,16 @@ function runCatch(ctx) {
 
 // ---------- Ninja Memory ----------
 
-function runMemory(ctx) {
+function runMemory(ctx, theme = null) {
   const { stage, sfx } = ctx;
-  const set = ['🐰', '🥕', '🌸', '🥷', '🐶', '🍓'];
+  const pairs = theme ? { easy: 6, normal: 8, hard: 10 }[ctx.level] || 8 : 6;
+  const set = theme ? shuffle(theme.faces).slice(0, pairs) : ['🐰', '🥕', '🌸', '🥷', '🐶', '🍓'];
   const cards = shuffle([...set, ...set]);
-  let open = [], moves = 0, found = 0, lock = false;
+  let open = [], moves = 0, found = 0, lock = false, points = 0, streak = 0;
+  const t0 = performance.now();
   const timers = [];
-  stage.innerHTML = `<div class="mem">${cards.map((e, i) => `<button class="mem-card" data-i="${i}"><span class="mc-back">🐾</span><span class="mc-face">${e}</span></button>`).join('')}</div>`;
-  const hud = () => ctx.info(ctx.tr('memMoves', { n: moves }));
+  stage.innerHTML = `<div class="mem mem-${pairs}">${cards.map((e, i) => `<button class="mem-card" data-i="${i}"><span class="mc-back">${theme ? theme.back : '🐾'}</span><span class="mc-face">${e}</span></button>`).join('')}</div>`;
+  const hud = () => ctx.info(theme ? `⭐ ${points} &nbsp;${ctx.tr('memMoves', { n: moves })}` : ctx.tr('memMoves', { n: moves }));
   hud();
   stage.querySelectorAll('.mem-card').forEach((b) => {
     b.onclick = () => {
@@ -203,28 +251,39 @@ function runMemory(ctx) {
         a.classList.add('match');
         c.classList.add('match');
         sfx.catch();
+        // pairs found one after another are worth more
+        streak++;
+        points += 40 * Math.min(streak, 5);
+        hud();
         if (++found === set.length) {
-          timers.push(setTimeout(() => ctx.end(Math.max(6, Math.min(30, 30 - (moves - 6) * 2)), ctx.tr('memEnd', { n: moves })), 700));
+          if (theme) {
+            const secs = (performance.now() - t0) / 1000;
+            points += Math.max(0, pairs * 30 - (moves - pairs) * 10) + Math.max(0, Math.round(pairs * 25 - secs * 2));
+            timers.push(setTimeout(() => ctx.finish(points), 700));
+          } else timers.push(setTimeout(() => ctx.end(Math.max(6, Math.min(30, 30 - (moves - 6) * 2)), ctx.tr('memEnd', { n: moves })), 700));
         }
       } else {
+        streak = 0;
         lock = true;
         timers.push(setTimeout(() => { a.classList.remove('flip'); c.classList.remove('flip'); lock = false; }, 850));
       }
     };
   });
   const cleanup = () => timers.forEach(clearTimeout);
-  return { cleanup, stop: () => { cleanup(); return found * 2; } };
+  return { cleanup, stop: () => { cleanup(); return theme ? points : found * 2; } };
 }
 
 // ---------- Copy Lucky ----------
 
-function runSimon(ctx) {
+function runSimon(ctx, theme = null) {
   const { stage, sfx } = ctx;
-  const pads = [
+  const pads = theme?.pads || [
     { e: '🌸', c: '#FF7AB8', f: 523 }, { e: '🦋', c: '#9B7BFF', f: 659 },
     { e: '⭐', c: '#FFD23F', f: 784 }, { e: '🍀', c: '#4CD37B', f: 988 },
   ];
-  const MAX = 12;
+  const MAX = theme ? { easy: 10, normal: 16, hard: 24 }[ctx.level] || 16 : 12;
+  const pace = theme ? { easy: 1.1, normal: 1, hard: 0.8 }[ctx.level] || 1 : 1;
+  let points = 0;
   stage.innerHTML = `<div class="simon">
     <div class="simon-lucky">${ctx.svgOk}</div>
     <div class="simon-msg"></div>
@@ -235,7 +294,7 @@ function runSimon(ctx) {
   let seq = [], pos = 0, accepting = false, best = 0;
   const timers = [];
   const later = (fn, ms) => timers.push(setTimeout(fn, ms));
-  const hud = () => ctx.info(`🎵 ${best}`);
+  const hud = () => ctx.info(theme ? `⭐ ${points} &nbsp;🎵 ${best}` : `🎵 ${best}`);
   hud();
 
   function flash(i) {
@@ -245,11 +304,11 @@ function runSimon(ctx) {
   }
 
   function nextRound() {
-    seq.push(Math.floor(Math.random() * 4));
+    seq.push(theme?.melody ? theme.melody[seq.length % theme.melody.length] : Math.floor(Math.random() * 4));
     pos = 0;
     accepting = false;
     msg.textContent = ctx.tr('simonWatch');
-    const gap = Math.max(420, 700 - seq.length * 25);
+    const gap = Math.max(300, (700 - seq.length * 25) * pace);
     seq.forEach((i, k) => later(() => flash(i), 500 + k * gap));
     later(() => { accepting = true; msg.textContent = ctx.tr('simonYour'); }, 500 + seq.length * gap);
   }
@@ -261,20 +320,21 @@ function runSimon(ctx) {
       flash(i);
       if (i !== seq[pos]) {
         accepting = false;
-        later(() => ctx.end(best * 3, ctx.tr('simonEnd', { n: best })), 500);
+        later(() => (theme ? ctx.finish(points) : ctx.end(best * 3, ctx.tr('simonEnd', { n: best }))), 500);
         return;
       }
       if (++pos < seq.length) return;
       accepting = false;
       best = seq.length;
+      points += best * 10;
       hud();
-      if (best >= MAX) later(() => ctx.end(best * 3, ctx.tr('simonEnd', { n: best })), 600);
-      else { msg.textContent = '💗'; later(nextRound, 800); }
+      if (best >= MAX) later(() => (theme ? ctx.finish(points + 200) : ctx.end(best * 3, ctx.tr('simonEnd', { n: best }))), 600);
+      else { msg.textContent = theme ? '⭐' : '💗'; later(nextRound, 800); }
     };
   });
   later(nextRound, 400);
   const cleanup = () => timers.forEach(clearTimeout);
-  return { cleanup, stop: () => { cleanup(); return best * 3; } };
+  return { cleanup, stop: () => { cleanup(); return theme ? points : best * 3; } };
 }
 
 // ---------- Chat with Lucky ----------

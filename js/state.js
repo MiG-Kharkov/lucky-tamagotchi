@@ -73,6 +73,8 @@ function fresh() {
     lastGameAt: 0,
     // the holiday calendars: the days whose window was opened, per holiday and year ('halloween-2026')
     calendar: {},
+    // the holiday games: the difficulty chosen last for each, and the best points per game and difficulty ('hw_zapper:easy')
+    games: { level: {}, best: {} },
   };
 }
 

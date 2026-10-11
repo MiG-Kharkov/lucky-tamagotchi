@@ -1621,3 +1621,23 @@ body.ev-easter.ev-s3 {
 .cal-day.big .cd-in { font-size: 34px; }
 .cal-day.opening { animation: calOpen .38s ease-in; }
 @keyframes calOpen { 50% { transform: rotateY(90deg) scale(1.1); } }
+/* ---------- the holiday games (arcade.js, holigames.js): a difficulty to choose, stars and records ---------- */
+.g-holi-head { margin: 4px 0 0; font-weight: 800; color: var(--ev-ink, var(--pink-d)); }
+.game-item { position: relative; }
+.gi-best { position: absolute; right: 10px; top: 8px; font-style: normal; font-size: 12px; font-weight: 800; color: var(--muted); }
+.g-levels { display: flex; gap: 8px; justify-content: center; margin: 4px 0 6px; }
+.g-level { flex: 1; max-width: 104px; padding: 8px 4px; border-radius: 16px; background: #F4ECF7; font-size: 13px; font-weight: 800; color: var(--muted); display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.g-level b { font-size: 24px; line-height: 1; }
+.g-level.on { background: #fff; color: var(--ev-ink, var(--pink-d)); box-shadow: inset 0 0 0 3px var(--ev-1, var(--pink)), var(--shadow); }
+.g-best { min-height: 18px; margin: 2px 0 6px !important; font-weight: 800; color: var(--muted); }
+.g-record { margin: 4px 0 8px !important; font-size: 18px; font-weight: 900; color: #E2A800 !important; animation: pulse 1s ease-in-out infinite; }
+.g-stars { display: flex; justify-content: center; gap: 6px; font-size: 44px; }
+.g-stars i { font-style: normal; filter: grayscale(1) opacity(.35); }
+.g-stars i.on { filter: none; animation: starPop .5s cubic-bezier(.3, 1.6, .5, 1) backwards; }
+.g-stars i.on:nth-child(2) { animation-delay: .2s; } .g-stars i.on:nth-child(3) { animation-delay: .4s; }
+@keyframes starPop { from { transform: scale(0) rotate(-40deg); } }
+.g-mult { color: #E2A800; }
+.arcade { display: block; touch-action: none; }
+.mem.mem-8 .mem-card, .mem.mem-10 .mem-card { aspect-ratio: 1; }
+.mem.mem-10 { grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.mem.mem-10 .mem-card span { font-size: 30px; border-radius: 14px; }

@@ -11,7 +11,7 @@ import { CONFIG } from './config.js';
 import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
-import { GAMES, openGame } from './game.js';
+import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
 import { createAntics, gestures } from './antics.js';
 import { createTricks } from './tricks.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly } from './events.js';
@@ -1875,11 +1875,14 @@ function openPlay() {
   if (left > 0 && wait > 0) say(fresh(LUCKY.cooldown));
   if (left <= 0) say(P('noGames'));
   const note = left <= 0 ? tr('noGames') : wait > 0 ? `⏳ ${tr('gameCooldown', { n: wait })}` : tr('gamesLeft', { n: left });
-  const html = `<p class="muted center">${note}</p>
-    <div class="game-list">${GAMES.map((g) => `<button class="game-item" data-id="${g.id}" ${can ? '' : 'disabled'}>
-      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span></button>`).join('')}</div>`;
-  openSheet('🎈 ' + tr('pickGame'), html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
-    b.onclick = () => { sfx.tap(); closeSheet(); startGame(GAMES.find((g) => g.id === b.dataset.id)); };
+  // while a holiday is on, its own three games take the usual ones' place
+  const list = EV && EV.stage >= 3 && HOLIDAY_GAMES[EV.id] ? HOLIDAY_GAMES[EV.id] : GAMES, holiday = list !== GAMES;
+  const best = (g) => { const b = Math.max(0, ...Object.entries(S.games.best).filter(([k]) => k.startsWith(g.id + ':')).map(([, v]) => v)); return b ? `<i class="gi-best">🏆 ${b}</i>` : ''; };
+  const html = `<p class="muted center">${note}</p>${holiday ? `<p class="center g-holi-head">${EV.icon} ${tr('holidayGames')}</p>` : ''}
+    <div class="game-list">${list.map((g) => `<button class="game-item" data-id="${g.id}" ${can ? '' : 'disabled'}>
+      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${holiday ? best(g) : ''}</button>`).join('')}</div>`;
+  openSheet((holiday ? EV.icon + ' ' : '🎈 ') + tr('pickGame'), html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
+    b.onclick = () => { sfx.tap(); closeSheet(); startGame(list.find((g) => g.id === b.dataset.id)); };
   }));
 }
 
@@ -1906,6 +1909,11 @@ function startGame(game) {
     svgOk: luckyPic({ face: 'ok', wear: S.wear }),
     svgHappy: luckyPic({ face: 'laugh', wear: S.wear }),
     svgSad: luckyPic({ face: 'sad', wear: S.wear }),
+    // the holiday games: the difficulty she chose last time (easy at first), and the best points at each
+    level: S.games.level[game.id] || 'easy',
+    bestOf: (lv) => S.games.best[game.id + ':' + lv] || 0,
+    onLevel: (lv) => { S.games.level[game.id] = lv; st.save(S); },
+    onRecord: (lv, pts) => { const k = game.id + ':' + lv; if (pts <= (S.games.best[k] || 0)) return false; S.games.best[k] = pts; st.save(S); return true; },
     onCancel: closeGame,
     onEnd: (score) => {
       const T0 = st.today(S);
@@ -3119,7 +3127,7 @@ if ('serviceWorker' in navigator) {
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
   game: (id) => startGame(GAMES.find((g) => g.id === id)), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
-  trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
+  startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 
 start();
