@@ -3,6 +3,54 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.8.0] – 2026-10-11
+
+### Added
+- **Lucky answers every touch in many ways,** picked at random and never the same twice in a row. A pat can be a hop,
+  a clap, a wave, a shimmy, a twirl, a wink, a blush, heart eyes or star eyes; a double tap a binky, a backflip, a ninja
+  jump, a star jump or a spin; a long press a hug, a bunny loaf, a cosy doze or melting with love; a stroke a purr,
+  a stretch, a roll, and after many strokes static fluff. The nose sometimes nearly sneezes ("Ah… ah… Oh, it's
+  gone!") or sneezes three times, a double tap on it can be a clown's honk. What a touch gives for the game (joy,
+  hearts, badges) is the same as before.
+- **New places to touch:** his **paws** (a high five, a double high five, a paw shake), his **tail** (a wag, a look
+  back, a chase; hold it and he asks you to be gentle: a bunny's tail is delicate), and tap-dancing feet.
+- **Swipes:** fling him up and he jumps, down and he goes flat as a pancake, sideways and he slides, dodges or kicks.
+- **Rare big tricks,** now and then instead of the usual answer (at most one in about a minute, and only when nothing
+  else is on the screen): Super Bunny flies off one side and back from the other in a cape, the Cheshire bunny fades
+  away until only his grin is left (tap the grin to bring him back), ninja clones (tap the real one), a bunny out of
+  a hat, a giant who stomps and then goes tiny, a balloon bunny who puffs up and zips around letting the air out,
+  Robo-Bunny, a handstand, a statue that mustn't laugh (a tap makes it), a disco with a mirror ball (Tali dances too),
+  a cartwheel that goes wrong, peekaboo, meditation, a quick change into one of his outfits, a spin till he's dizzy.
+  Parents can show one with the 🎩 tool in Turbo.
+- **Lucky's drawing:** nine new expressions (wink, cheeky, shy, surprised, star eyes, heart eyes, dizzy, a big grin, a
+  sly look), front paws that move (he claps, waves by his cheek, washes his face, puts his paws on his hips, hugs,
+  grabs his cheeks when startled, blows a kiss, dances), a fluffy pom-pom tail, toes, chest fluff and a shiny nose.
+- **New voice lines** (40 clips) for the new tricks and touches; the rest reuses recorded lines ("Super Bunny to the
+  rescue!", "Ta-da! I'm back!", "Beep-beep! I'm a clown!", "Can you do a cartwheel? I can't, I've got paws.").
+
+### Changed
+- **One thing at a time on the screen.** A window (a level-up, a present, a sticker) never opens over a game or a
+  mission and waits until it's over; a hint never sits on top of a window; Tali's joke, a saying or a tongue twister
+  waits while a sheet or a window covers the scene instead of talking behind it; nothing automatic (chatter, a question,
+  the frog, Tali arriving, the surprise) starts in the middle of Lucky's scene; and Lucky doesn't run off to a scene
+  while Tali is telling a joke. A sheet or a window ends Lucky's scene under it.
+- In a big jump the speech bubble steps aside while Lucky is up there (the voice goes on), so it never hides him.
+- In a question Lucky shrinks to fit between the bubble and the choices; on a short screen three or four choices go in
+  two columns.
+- The scene under a game, a mission or sleep isn't drawn, and the stat bars are only touched when they change, which
+  saves battery.
+
+### Fixed
+- **Lucky swung a whole body width to the side in every spin** (a binky, a roll, a flop): he was centred with a
+  transform that turned with him. Now he spins on the spot.
+- A change of expression redrew the whole of Lucky, which restarted his animations (on iPhone they could stop); now
+  only the eyes and the mouth change.
+- Lucky's scenes kept playing under Decorate and Wash.
+- The frog's sticker was lost if the screen changed before her goodbye; it is given at once now.
+- A saying counted towards the day's three even when it couldn't be shown.
+- The joke book kept talking after its sheet was closed.
+- A broken step in a scene could leave Lucky silent until a reload.
+
 ## [1.7.0] – 2026-10-11
 
 ### Added

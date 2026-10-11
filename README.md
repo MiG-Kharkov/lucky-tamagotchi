@@ -50,9 +50,10 @@ His best friend **Tali**, a tiny white chihuahua with black spots, drops by to p
 (Lucky laughs and plays along), and a **riddle frog** sometimes hops in with a puzzle.
 
 Lucky talks with real recorded voices, reacts to how he feels and asks questions.
-Tap, double-tap, hold or stroke him (and everything around him) and he answers in a different way:
-he sneezes, purrs, thumps his feet, gets soaked by a rain cloud and shakes himself dry,
-runs away from the crab, hides behind a tree and waits for you to find him.
+Tap, double-tap, hold, stroke or swipe him (and everything around him) and he answers in a different way every time:
+he sneezes, purrs, gives you a high five, does a backflip, thumps his feet, gets soaked by a rain cloud and shakes
+himself dry, runs away from the crab, hides behind a tree and waits for you to find him.
+And now and then he pulls off a big trick: Super Bunny's flight, a Cheshire grin, ninja clones, a bunny out of a hat.
 Nothing bad ever happens to him: no illness, no dying, no guilt.
 
 > [!NOTE]
@@ -75,6 +76,7 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🎃 **Holidays** | Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter: for a few weeks before each one the worlds slowly dress up (more every week), Lucky gets a holiday hat, holiday visitors and stickers come, and at Easter there are eggs to find. The game itself stays the same |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them. The tray is sorted into categories. ✨ **Super things** glow and have their own fun: keepy-uppy with the ball, fishing in the pond, a balloon ride, a UFO beam, a fairy's wishes, a rocket that brings back souvenirs… |
 | 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 37 badges, and an English tab with jokes, tongue twisters and sayings |
+| 🎩 **Tricks** | Every touch has several answers: a pat, a clap, a wave, a wink, a blush, a backflip, a high five with his paws, a wag of his pom-pom tail, a bunny loaf, static fluff from stroking, a pancake when you swipe down. Rare big tricks: Super Bunny flies in a cape, the Cheshire bunny leaves only his grin, ninja clones (find the real one), a bunny out of a hat, a giant, Robo-Bunny, a statue that mustn't laugh, a disco… |
 | 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks, and Lucky and Tali acting out their chats (a "WOOF!" in the middle of ninja training, a race, being scared of the dark) |
 | 🎭 **Fun English** | Lucky acts out English sayings literally ("it's raining cats and dogs": cats and dogs fall from the sky), then explains what they mean, with the Russian saying for the same thing. Tali asks for tongue twisters, and Lucky says them slowly, faster and super fast. Everything goes into the English tab of the collection |
 | 🐶 **Tali's jokes** | Over 100 kids' jokes, knock-knock jokes included. Lucky laughs, does something that fits and comments. Puns are explained in the translation, and heard jokes go into a joke book to retell at school |

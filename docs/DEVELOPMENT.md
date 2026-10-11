@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`, `chat(i)` / `prank(i)` (a chat or prank with Tali, acted out), `event('halloween:3')` (show a holiday at a stage, `null` for the calendar)) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)` / `ask(id)`, `mission(id)`, `game(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`, `chat(i)` / `prank(i)` (a chat or prank with Tali, acted out), `event('halloween:3')` (show a holiday at a stage, `null` for the calendar), `tricks()` / `trick(name)` (Lucky's rare tricks), `touch(gesture, part, dir)` (one way of answering a touch), `frog()`, `dog()`, `modal(title)`, `toast(html)`, `talk(steps, keep)`, `now()` (mode, chat, scene, windows)) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,
@@ -33,7 +33,8 @@ Offline mode needs https, so this is only for quick checks.
 | `index.html` | The page, Content-Security-Policy, layout skeleton |
 | `css/style.css` | All styles and animations |
 | `js/main.js` | Game logic and UI: speech rules, care actions, taps on Lucky, questions, visitors, decorate mode, dojo, collection, parents' area, main loop |
-| `js/antics.js` | Gestures (tap / double / long / stroke) and the scene antics: what every thing does and how Lucky joins in, props |
+| `js/antics.js` | Gestures (tap / double / long / stroke / swipe) and the scene antics: what every thing does and how Lucky joins in, props, the scene tools (`kit`) |
+| `js/tricks.js` | Lucky's tricks: the ways he answers each touch on each part of him, and the rare big tricks |
 | `js/ninja.js` | The ninja mission screen: counting, holds, sneak and freeze dance, hunts, look and make |
 | `js/missions.js` | Mission list, skills and the pick grids (with English words) |
 | `js/jokes.js` | Tali's jokes: question/answer and knock-knock, with Lucky's reaction and comment |
@@ -44,7 +45,7 @@ Offline mode needs https, so this is only for quick checks.
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |
 | `js/wardrobe.js` | 28 outfit items (SVG layers per slot) |
 | `js/content.js` | Worlds, decorations, sticker albums, badges |
-| `js/art.js` | SVG art: Lucky, Tali, 8 worlds + night, decorations, belts, icon, Lucky's props |
+| `js/art.js` | SVG art: Lucky (with his 16 expressions), Tali, 8 worlds + night, decorations, belts, icon, Lucky's props |
 | `js/game.js` | Mini-games and their shared shell |
 | `js/sound.js` | Web Audio effects, voice clip playback, built-in voice fallback, iOS audio unlock |
 | `js/voicekey.js` | Clip ids (shared with the generator) and voice settings |
@@ -87,6 +88,39 @@ The picture is drawn bottom-aligned and scaled to cover, and the decoration laye
 the same spot of the picture when the scene's height changes. In Decorate the whole scene is shown scaled down above
 the tray (`editScale`). Saves from before 1.6.1 (`layoutV` 1) are converted once at start.
 
+## Lucky's drawing and tricks
+
+- `art.lucky()` draws him; the eyes (`.face-eyes`) and the mouth (`.face-mouth`) are separate groups, so a new
+  expression is `art.setLuckyFace()` (`renderLucky` in `main.js` does it): nothing else is redrawn and the running
+  animations go on. A full redraw (an outfit change) restarts the animations of the parts, so set the face or outfit
+  first and add an animation class after it.
+- The parts animations move: `.head`, `.ear-l`/`.ear-r`, `.face-eyes`, `.nose`, `.body`, `.tummy`, `.feet`, `.paws`
+  (`.paw-l`/`.paw-r`, drawn last so they can go in front of his face) and `.tail`. CSS offsets for the paws are in the
+  drawing's units (viewBox 0 0 200 210).
+- `#lucky` is centred with a negative margin, not `transform: translateX(-50%)`: a transform turns with him, and
+  every spin swung him a body width to the side. Animations use the individual `translate`, `rotate` and `scale`
+  properties.
+- Props go on two layers: `.l-props` over him and `.l-back` behind him (a prop with `back: true`, like the hero cape).
+- `tricks.js`: each gesture and part has a list of ways `[weight, key, show, ok?]`; the same way never comes twice in a
+  row. `show()` returns the line it wants (main.js says it with its usual cadence). What a touch means for the game
+  stays in `main.js`. A rare trick is an antics scene (`kit.begin` … `kit.end`): it starts only when `quiet()` (nothing
+  else on the screen), anything that covers the scene ends it, and its line comes when Lucky is at rest.
+  `act.onLuckyTap` lets a trick take a tap (the statue laughs, the grin comes back, the real Lucky among the clones).
+- Classes that lift Lucky into the bubble's place are listed in `AIR` in `main.js`: while one is on, the bubble steps
+  aside. Add a new high jump there.
+- Watch out for class names that already style other things: `.fly` is the flying food, for example.
+
+## One thing at a time
+
+- `leaveMain(mode)` is the way out of the scene (Wash, Decorate, a game, a mission): it ends a question, Lucky's
+  scene, a chat and a waiting line.
+- `showModal` doesn't open a window during a game or a mission, `closeGame` opens what waited; `toast` waits while a
+  window is open. A window or a sheet ends Lucky's scene (`antics.end`).
+- A chat (`talk`) waits up to 30 s while a sheet or a window is open (`nextStep`); a step that throws ends the chat.
+- Everything automatic in the main loop checks `antics.busy()`, and Lucky joins a world scene only when `talking()` is
+  false (no joke, saying or tongue twister going on).
+- While a game, a mission or sleep fills the screen, `body.covered` hides `#app`, so the scene isn't drawn.
+
 ## Holidays
 
 `js/events.js` lists the holidays. Each one starts `lead` days before its date and stays `after` days after it; on the
@@ -105,7 +139,7 @@ picture, so they line up and taps go through to the world underneath (only Easte
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 2,809 MP3 files, ~29 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 2,849 MP3 files, ~29 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
@@ -126,8 +160,9 @@ Tali is **Orus**, the frog is **Charon**. 2,809 MP3 files, ~29 MB. If a line has
   and Start over keeps it. The recovery password (`CONFIG.parent.recovery`, also in the README) always works.
 - Older versions let whoever opened ⚙️ first create the password, which could be the child. That data (`lucky-parent-v1`)
   is removed on start, so the default password works again after the update.
-- **Turbo** mode removes all limits for testing and showing, with tools for levels, visitors, questions, naps and
-  a new day. The real progress is saved before Turbo and restored when it is switched off.
+- **Turbo** mode removes all limits for testing and showing, with tools for levels, visitors, questions, naps,
+  a new day, sayings, holidays and Lucky's rare tricks. The real progress is saved before Turbo and restored when it is
+  switched off.
 
 ## Screen Time (iPhone)
 
@@ -140,7 +175,9 @@ Tali is **Orus**, the frog is **Charon**. 2,809 MP3 files, ~29 MB. If a line has
 
 There is no test framework in the repo. During development the game was checked with Playwright scripts
 (iPhone emulation, muted audio) covering care actions, questions, the frog, Turbo, the parent password,
-limits, voice clip coverage, every gesture on every scene thing and every mission kind (with Playwright's fake clock).
+limits, voice clip coverage, every gesture on every scene thing and every mission kind (with Playwright's fake clock),
+every way Lucky answers a touch and every rare trick, and overlaps: whether a visible bubble ever covers his head,
+whether a trick starts when something is on the screen, and whether a sheet or a window ends it.
 When changing speech or audio code, check on a real iPhone: first-tap audio unlock, silent switch,
 switching to another app and back (the sound must come back on the next tap), returning after a call, and offline mode.
 In Turbo mode the waits inside missions are 2 seconds, which is handy for checking them by hand.

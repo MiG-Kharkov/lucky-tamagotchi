@@ -40,7 +40,14 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 
 ## Talking
 
-- **Lines:** ~330 of Lucky's lines plus scenes with Tali; recent lines are not repeated.
+- **One thing at a time on the screen.** A window (a level-up, a present, a sticker) never opens over a game or a
+  mission, it waits until that is over; a hint never sits on top of a window; a chat with lines (Tali's joke, a saying,
+  a tongue twister) waits while a sheet or a window covers the scene; nothing automatic (chatter, a question, the frog,
+  Tali arriving, the surprise, the mood check-in) starts in the middle of Lucky's scene; while Tali tells a joke Lucky
+  doesn't run off to a scene. Leaving the scene (Wash, Decorate, a game, a mission, sleep) ends whatever was going on.
+  In a big jump the bubble steps aside while Lucky is up there.
+- **Lines:** ~720 of Lucky's lines (chatter, care, the scenes, holidays, the sensei, tricks) plus scenes with Tali;
+  recent lines are not repeated.
 - **Lucky's questions** (at most every 4 minutes, up to 8 a day). Lucky's lines are voiced; the child's
   answer choices are text only, so they can be shuffled without new recordings:
   favourite things, "would you rather", guess what I'm thinking, "do you know…?", guess my mood,
@@ -91,17 +98,36 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
 - **Living scene:** sun, clouds (rain), trees (petals), flowers (butterflies), gong, palm, crab, sheep, pot of gold…
   Butterflies fly by; a daily surprise present.
-- **Gestures on Lucky** depend on where and how:
+- **Gestures on Lucky** depend on where and how. Each one has several ways to answer, picked by weight and never the
+  same twice in a row (`js/tricks.js`); what a touch gives for the game (joy, hearts, badge counters) doesn't depend on
+  the way:
 
   | | Tap | Double tap | Long press |
   |---|---|---|---|
-  | Head / body | pat, hop | binky | hug |
-  | Tummy | giggle | drum | tummy rub |
-  | Feet | paw wiggle | thump (a real bunny warning) | thump |
-  | Nose | sneeze | boop | bunny kiss |
+  | Head / body | pat, hop, clap, wave by his cheek, shimmy, twirl, bounce, hands on hips; a wink, a blush, heart or star eyes; rarely helicopter ears | binky, backflip, ninja jump, star jump, spin | hug (now and then too tight), bunny loaf, a cosy doze, melting |
+  | Tummy | jiggle, giggle, a drum roll, a cheeky shimmy | drum, a bongo solo | tummy rub, a flop |
+  | Feet | paw wiggle, tiptoes, tap-dancing | thump (a real bunny warning; Tali gets a fright), tap dance | thump |
+  | Paws | high five, wave, clap | double high five, clap | paw shake |
+  | Tail | wag, look back, chase it | chase, wag | "Gently! A bunny's tail is very delicate." |
+  | Nose | sneeze, a sneeze that never comes, three sneezes | boop, a clown's honk, a sneeze | bunny kiss, a blown kiss |
   | Ears | wiggle (3 taps = helicopter) | | ear massage |
 
-  Stroking him with a finger makes him purr (bunnies really purr by grinding their teeth). Six quick taps tickle him.
+  A stroke with a finger makes him purr (bunnies really purr by grinding their teeth), melt, stretch or roll over, and
+  lots of strokes give him static fluff. A swipe up makes him jump, down squashes him flat as a pancake, sideways he
+  slides, dodges or kicks. Six quick taps tickle him.
+- **Rare tricks:** now and then a gesture becomes a big trick instead: Super Bunny's flight (a cape, off one side and
+  back from the other, a superhero landing), the Cheshire bunny (only the grin stays; tap it), ninja clones (find the
+  real one), a bunny out of a hat, a giant who stomps and then goes tiny, a balloon bunny, Robo-Bunny, a handstand, a
+  statue that mustn't laugh, a disco, a cartwheel that goes wrong, peekaboo, meditation, a quick change into one of his
+  own outfits (only ones she has), a spin till he's dizzy. Each fits certain gestures (a double tap, a long press, a
+  stroke, a swipe). At most one in about 50 seconds, none in the first 20 seconds, the last six don't come back soon,
+  and only when the screen is free: no line playing, no question, sheet, window, hint, chat or scene. A trick is a
+  scene: a sheet or a window ends it, and nothing automatic starts while it plays. Its line comes when Lucky is at rest,
+  so the bubble never covers him.
+- **Lucky's face** is a separate layer: 16 expressions (ok, happy, laugh, eat, sleep, tired, sad, wink, cheeky, shy,
+  surprised, star eyes, heart eyes, dizzy, grin, sly). A new expression swaps only the eyes and the mouth, so his other
+  animations keep running. His front paws are drawn in front of him, so old moves use them too: he claps, waves,
+  washes his face, puts his paws on his hips, hugs, grabs his cheeks when startled, blows a kiss, dances.
 - **Scene antics:** every tappable thing answers a tap, a double tap and a long press, and Lucky often joins in:
   sunglasses from the sun, a rain cloud that soaks him (he shakes dry), an umbrella, a rainbow, sniffing flowers,
   a flower behind his ear, hide and seek behind a tree, running from the crab, a coconut on the head, a snowball
