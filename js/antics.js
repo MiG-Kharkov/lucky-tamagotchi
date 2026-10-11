@@ -883,7 +883,7 @@ export function createAntics(api) {
       if (foundToday('eggs').includes(eggKey(c.el))) return;
       foundToday('eggs').push(eggKey(c.el));
       c.el.classList.add('found');
-      const gold = c.el.classList.contains('gold'), left = ui.bg.querySelectorAll('.ev-egg:not(.found)').length;
+      const gold = c.el.classList.contains('gold'), left = ui.hunt.querySelectorAll('.ev-egg:not(.found)').length;
       popUp('🐣', c.x, c.y - 12, 1900, 30, 'pop-rise');
       api.fxAt(c.x, c.y, gold ? ['✨', '🌟'] : ['✨'], gold ? 8 : 4, 'spark');
       sfx.happy();
@@ -903,7 +903,7 @@ export function createAntics(api) {
       if (foundToday('coins').includes(coinKey(c.el))) return;
       foundToday('coins').push(coinKey(c.el));
       c.el.classList.add('found');
-      const left = ui.bg.querySelectorAll('.ev-coin:not(.found)').length;
+      const left = ui.hunt.querySelectorAll('.ev-coin:not(.found)').length;
       fly('🪙', [c.x, c.y], paw(), 700, { arc: 50, spin: 360, size: 24 });
       api.fxAt(c.x, c.y, ['✨', '🍀'], 5, 'spark');
       sfx.sparkle();
@@ -916,8 +916,8 @@ export function createAntics(api) {
   };
   // the world was drawn again: eggs and coins found before stay found
   function refreshEggs() {
-    ui.bg.querySelectorAll('.ev-egg').forEach((e) => e.classList.toggle('found', foundToday('eggs').includes(eggKey(e))));
-    ui.bg.querySelectorAll('.ev-coin').forEach((e) => e.classList.toggle('found', foundToday('coins').includes(coinKey(e))));
+    ui.hunt.querySelectorAll('.ev-egg').forEach((e) => e.classList.toggle('found', foundToday('eggs').includes(eggKey(e))));
+    ui.hunt.querySelectorAll('.ev-coin').forEach((e) => e.classList.toggle('found', foundToday('coins').includes(coinKey(e))));
   }
 
   // ---------- holiday things in the worlds (art.js eventScene): each answers, and Lucky joins in ----------
@@ -2093,6 +2093,8 @@ export function createAntics(api) {
     const id = el.classList.contains('sky-pet') ? 'skypet' : el.dataset.tap;
     run(R[id], kind, el, p);
   });
+  // the eggs and coins to find, in their layer above the decorations
+  gestures(ui.hunt, (t) => t.closest('[data-tap]'), (kind, el, p) => run(R[el.dataset.tap], kind, el, p));
 
   return {
     // a tap on Lucky while he hides: 'You found me!' (true if handled)

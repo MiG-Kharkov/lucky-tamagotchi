@@ -4,7 +4,7 @@
   --pink-l: #FFE3F0;
   --purple: #8B6CFF;
   --ink: #4A2B4F;
-  --muted: #9A7C9E;
+  --muted: #806284;
   --card: #FFFFFF;
   --radius: 22px;
   --shadow: 0 6px 18px rgba(160, 60, 120, .16);
@@ -174,8 +174,8 @@ input, select { font: inherit; }
   padding: 12px 18px; border-radius: 16px; font-weight: 700; font-size: 16px;
   background: #F4ECF7; color: var(--ink); box-shadow: 0 3px 0 #0000000f;
 }
-.btn.pink { background: linear-gradient(180deg, #FF7DB6, var(--pink)); color: #fff; box-shadow: 0 4px 0 var(--pink-d); }
-.btn.purple { background: linear-gradient(180deg, #A48BFF, var(--purple)); color: #fff; box-shadow: 0 4px 0 #6B4FE0; }
+.btn.pink { background: linear-gradient(180deg, #FF7DB6, var(--pink)); color: #fff; box-shadow: 0 4px 0 var(--pink-d); text-shadow: 0 1px 1px #0000004d; }
+.btn.purple { background: linear-gradient(180deg, #A48BFF, var(--purple)); color: #fff; box-shadow: 0 4px 0 #6B4FE0; text-shadow: 0 1px 1px #0000004d; }
 .btn.ghost { background: transparent; box-shadow: none; color: var(--muted); text-decoration: underline; }
 .btn.danger { color: #D0455B; }
 .btn.big { font-size: 20px; padding: 14px 32px; }
@@ -197,7 +197,7 @@ input, select { font: inherit; }
 .sheet-wrap.show .sheet { transform: none; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .sheet-head h2 { margin: 0; font-size: 21px; }
-.x { width: 36px; height: 36px; border-radius: 12px; background: #F4ECF7; font-size: 16px; }
+.x { width: 44px; height: 44px; border-radius: 14px; background: #F4ECF7; font-size: 17px; flex: none; }
 .muted { color: var(--muted); font-size: 13.5px; }
 .center { text-align: center; }
 
@@ -286,6 +286,9 @@ input, select { font: inherit; }
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .modal.show ~ .toast { visibility: hidden; } /* a hint never sits on top of a window */
+/* with a sheet open the hint shows at the bottom, clear of the sheet's title and ✕ */
+.sheet-wrap.show ~ .toast { top: auto; bottom: calc(env(safe-area-inset-bottom) + 16px); transform: translate(-50%, 30px); }
+.sheet-wrap.show ~ .toast.show { transform: translate(-50%, 0); }
 /* a game, a mission or sleep fills the screen: the scene under it isn't drawn (its animations cost nothing) */
 body.covered #app { visibility: hidden; }
 
@@ -299,8 +302,6 @@ body.covered #app { visibility: hidden; }
   display: flex; justify-content: space-between; pointer-events: none;
 }
 .game-hud span { background: #fff; border-radius: 16px; padding: 8px 16px; font-weight: 800; font-size: 20px; box-shadow: var(--shadow); }
-.g-score::before { content: "🥕 "; }
-.g-time::before { content: "⏱ "; }
 .game-card {
   position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: min(320px, 88%);
   background: #FFF8FB; border-radius: 30px; padding: 22px; text-align: center; box-shadow: 0 20px 50px #4A2B4F44;
@@ -375,7 +376,7 @@ body.covered #app { visibility: hidden; }
 .game { background: linear-gradient(#FFE3F0, #E9DDFF); }
 .game-stage { position: absolute; inset: 0; }
 .game-hud { align-items: center; }
-.game-hud .g-exit { pointer-events: auto; width: 44px; height: 44px; border-radius: 14px; background: #fff; box-shadow: var(--shadow); font-size: 18px; font-weight: 800; color: var(--pink-d); }
+.game-hud .g-exit, .m-head .g-exit { pointer-events: auto; width: 44px; height: 44px; border-radius: 14px; background: #fff; box-shadow: var(--shadow); font-size: 18px; font-weight: 800; color: var(--pink-d); }
 .g-info { background: #fff; border-radius: 16px; padding: 8px 16px; font-weight: 800; font-size: 18px; box-shadow: var(--shadow); }
 .game-card .row + .row { margin-top: 4px; }
 
@@ -453,9 +454,6 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .edit-tools button { width: 46px; height: 42px; border-radius: 13px; background: #F4ECF7; font-size: 20px; }
 .tray { padding: 8px 10px calc(env(safe-area-inset-bottom) + 10px); }
 .tray[hidden] { display: none; }
-.tray-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: 13px; font-weight: 700; color: var(--muted); }
-.tray-head .btn { padding: 9px 16px; flex: none; }
-.tray-items { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
 .tray-it { flex: none; width: 58px; height: 58px; border-radius: 16px; background: #fff; box-shadow: var(--shadow); font-size: 32px; display: grid; place-items: center; padding: 6px; }
 .tray-it svg { width: 100%; height: 100%; }
 
@@ -484,16 +482,6 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 @keyframes ripple { to { transform: translate(-50%, -50%) scale(6); opacity: 0; } }
 
 .visitor { position: absolute; z-index: 6; font-size: 34px; width: 56px; height: 56px; display: grid; place-items: center; filter: drop-shadow(0 4px 6px #0003); }
-.visitor.path1 { animation: path1 11s linear forwards; }
-.visitor.path2 { animation: path2 11s linear forwards; }
-@keyframes path1 {
-  0% { left: -12%; top: 40%; } 20% { left: 15%; top: 28%; } 40% { left: 40%; top: 38%; }
-  60% { left: 62%; top: 24%; } 80% { left: 85%; top: 34%; } 100% { left: 112%; top: 22%; }
-}
-@keyframes path2 {
-  0% { left: 112%; top: 30%; transform: scaleX(-1); } 25% { left: 78%; top: 46%; transform: scaleX(-1); } 50% { left: 50%; top: 32%; transform: scaleX(-1); }
-  75% { left: 22%; top: 44%; transform: scaleX(-1); } 100% { left: -12%; top: 30%; transform: scaleX(-1); }
-}
 .surprise {
   position: absolute; bottom: 5%; z-index: 6; font-size: 44px; transform: translateX(-50%);
   filter: drop-shadow(0 8px 12px #0004); animation: surprise 1.4s ease-in-out infinite;
@@ -707,7 +695,6 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .pw-card .pw + .pw { margin-top: 8px; }
 .pw-err { min-height: 18px; margin: 6px 0 0 !important; color: #D0455B !important; font-size: 13px; }
 
-.rec-code { font: 800 30px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 3px; color: var(--pink-d); background: #FFF0F7; border: 2px dashed #FFB3D6; border-radius: 16px; padding: 12px; margin: 8px 0; user-select: text; -webkit-user-select: text; }
 .pw-card .pw-forgot { margin-top: 6px; font-size: 14px; }
 
 /* ---------- question: Lucky above the answer choices (--askW: what fits under the bubble, set by fitAsk) ---------- */
@@ -869,8 +856,6 @@ body:not(.editing) .dec-rainbow { pointer-events: none; }
 [data-tap="lamp"].lit { animation: litPulse 4.2s ease-in-out; }
 @keyframes litPulse { 10%, 90% { filter: drop-shadow(0 0 10px #FFD23F) brightness(1.35); } }
 [data-tap].swingfast { transform-origin: 50% 0; animation: swing .6s ease-in-out 3; }
-.pl.kickup .pl-in { animation: kickup 1.2s cubic-bezier(.3, 1.2, .5, 1); }
-@keyframes kickup { 35% { transform: translateY(-160%) rotate(200deg); } 70% { transform: translateY(0) rotate(360deg); } 85% { transform: translateY(-20%) rotate(360deg); } 100% { transform: rotate(360deg); } }
 .pl.launch .pl-in { animation: launch 3.6s ease-in-out; }
 @keyframes launch { 6% { transform: translateX(-2px); } 12% { transform: translateX(2px); } 18% { transform: none; } 45%, 60% { transform: translateY(-900%); opacity: 0; } 62% { transform: translateY(-900%); opacity: 1; } 95% { transform: translateY(3%); } }
 .pl.floaty .pl-in { animation: floaty 2.4s ease-in-out; }
@@ -887,7 +872,6 @@ body:not(.editing) .dec-rainbow { pointer-events: none; }
   background: linear-gradient(#FFE3F0, #E9DDFF); text-align: center;
 }
 .m-head { width: 100%; display: flex; justify-content: space-between; align-items: center; }
-.m-head .g-exit { width: 44px; height: 44px; border-radius: 14px; background: #fff; box-shadow: var(--shadow); font-size: 18px; font-weight: 800; color: var(--pink-d); }
 .m-skill { background: #fff; border-radius: 14px; padding: 8px 12px; font-weight: 800; font-size: 14px; box-shadow: var(--shadow); }
 .m-top { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .m-lucky { position: relative; width: min(40vw, 170px); aspect-ratio: 200 / 210; }
@@ -1194,6 +1178,12 @@ body.ev-newyear.ev-s3 { --ev-deco: "✨"; background: radial-gradient(circle at 
 .ev-newyear.ev-s3 .pl.dec-castle .pl-in::after { content: "🎁"; position: absolute; left: -6%; bottom: -2%; font-size: calc(var(--w) * .24cqw); pointer-events: none; }
 /* Valentine's Day, St Patrick's Day, Easter */
 .bg svg.ev-layer [data-tap] { pointer-events: auto; }
+/* the things to find sit above the decorations (but not in the way while decorating) */
+.hunt { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.hunt svg { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.hunt [data-tap] { pointer-events: auto; cursor: pointer; touch-action: none; }
+body.editing .hunt { opacity: .55; }
+body.editing .hunt [data-tap] { pointer-events: none; }
 .ev-egg { animation: evEgg 4s ease-in-out infinite; transform-origin: 50% 90%; }
 .ev-egg.gold { filter: drop-shadow(0 0 4px #FFD23F); }
 .ev-egg.found { opacity: 0; pointer-events: none; transition: opacity .5s; }
@@ -1466,7 +1456,7 @@ body.ev-halloween.ev-s3 {
   --ev-btn: linear-gradient(180deg, #FFA24C, #FF7A12); --ev-btn-edge: #C2560A;
   --ev-head: linear-gradient(90deg, #FFE2C4, #EBDCFF);
   --ev-reveal: radial-gradient(circle at 50% 42%, #8A4FD6 0%, #3B1F66 60%, #1E1233 100%);
-  --ev-a1: "🦇"; --ev-a2: "🎃"; --ev-a3: "🕸️"; --ev-a4: "👻"; --ev-a5: "🍬";
+  --ev-a1: "🦇"; --ev-a2: "🍭"; --ev-a3: "🕸️"; --ev-a4: "👻"; --ev-a5: "🍬";
   --ev-s1: "🍬"; --ev-s2: "🎃"; --ev-s3: "👻"; --ev-s4: "🌙"; --ev-lvl: "🕷️";
 }
 body.ev-christmas.ev-s3 {
@@ -1631,14 +1621,57 @@ body.ev-easter.ev-s3 {
 .g-level b { font-size: 24px; line-height: 1; }
 .g-level.on { background: #fff; color: var(--ev-ink, var(--pink-d)); box-shadow: inset 0 0 0 3px var(--ev-1, var(--pink)), var(--shadow); }
 .g-best { min-height: 18px; margin: 2px 0 6px !important; font-weight: 800; color: var(--muted); }
-.g-record { margin: 4px 0 8px !important; font-size: 18px; font-weight: 900; color: #E2A800 !important; animation: pulse 1s ease-in-out infinite; }
+.g-record { margin: 4px 0 8px !important; font-size: 18px; font-weight: 900; color: #A06A00 !important; animation: pulse 1s ease-in-out infinite; }
 .g-stars { display: flex; justify-content: center; gap: 6px; font-size: 44px; }
 .g-stars i { font-style: normal; filter: grayscale(1) opacity(.35); }
 .g-stars i.on { filter: none; animation: starPop .5s cubic-bezier(.3, 1.6, .5, 1) backwards; }
 .g-stars i.on:nth-child(2) { animation-delay: .2s; } .g-stars i.on:nth-child(3) { animation-delay: .4s; }
 @keyframes starPop { from { transform: scale(0) rotate(-40deg); } }
-.g-mult { color: #E2A800; }
+.g-mult { color: #A06A00; }
 .arcade { display: block; touch-action: none; }
 .mem.mem-8 .mem-card, .mem.mem-10 .mem-card { aspect-ratio: 1; }
 .mem.mem-10 { grid-template-columns: repeat(5, 1fr); gap: 7px; }
 .mem.mem-10 .mem-card span { font-size: 30px; border-radius: 14px; }
+
+/* ---------- review 1.9.1: the same look everywhere, and the smallest phones ---------- */
+/* New Year's yellow buttons and chips carry dark text (white on yellow was 1.4–2:1) */
+body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear.ev-s3 .tray-cat.on, body.ev-newyear.ev-s3 .g-level.on { color: #4A2B00; text-shadow: none; }
+.ev-s3 .chip.on, .ev-s3 .tray-cat.on { text-shadow: 0 1px 1px #0000004d; } /* white on the holiday colour reads better */
+.ev-s3 .tile.sel, .ev-s3 .tile.sel.rare, .ev-s3 .tile.sel.gold { box-shadow: 0 0 0 3px var(--ev-1), var(--shadow); }
+/* the mood check-in and other windows: a translation under a button's words */
+.m-btns .btn small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 1px; }
+.m-btns .btn.pink small { color: #ffffffd9; }
+.game-card p small.g-sub { display: block; font-size: 13px; margin-top: 4px; }
+/* a long line on a short screen: smaller text instead of covering Lucky's head */
+.bubble.tight { font-size: 15px; padding: 8px 12px; line-height: 1.25; }
+.bubble.tight .b-sub { font-size: 12px; margin-top: 3px; }
+.bubble.tighter { font-size: 14px; line-height: 1.2; }
+.bubble.tighter .b-sub { font-size: 11.5px; }
+/* the best score in the Play list keeps clear of the game's name */
+.game-item:has(.gi-best) .gi-text { padding-right: 56px; }
+/* Collection and the phrase of the day keep one height: the tabs and the quiz don't make the sheet jump */
+.sheet:has(.coll-tabs), .sheet:has(.quiz-box) { height: 86%; }
+/* Home tiles in Collection are one height */
+.tile-art.dec-tile { min-height: 0; overflow: hidden; }
+.tile-art.dec-tile svg { width: 80%; height: 100%; }
+/* the memory game's end card stands out from the cards */
+.game:has(.game-card:not([hidden])) .game-stage { opacity: .35; }
+/* the holiday's memory and Jingle Bells games in the holiday's colours */
+.ev-s3 .g-holiday .mc-back { background: var(--ev-btn); }
+.ev-s3 .g-holiday .simon-msg { color: var(--ev-ink); }
+.ev-s3 .g-holiday .game-stage { background: var(--ev-head); }
+
+@media (max-width: 340px) {
+  .a-name { font-size: 10px; letter-spacing: -.2px; }
+  .stat { padding: 5px; gap: 2px; }
+  .s-ico { font-size: 15px; }
+  .coll-tabs { flex-wrap: wrap; overflow-x: visible; }
+  .coll-tabs .tab { flex: 1 0 30%; }
+  .tray-cats { gap: 4px; }
+  .tray-cat { min-width: 34px; padding: 6px; }
+}
+@media (max-height: 600px) {
+  .sleep-content { justify-content: flex-start; overflow-y: auto; padding-top: calc(env(safe-area-inset-top) + 58px); }
+  .sleep-lucky { width: min(42%, 180px); margin: 8px 0; }
+  .sleep-content h1 { font-size: 24px; }
+}

@@ -40,7 +40,7 @@ const luckyPic = (o) => luckyArt({ ...o, extra: EV && EV.stage >= 3 && !o.wear?.
 
 const ui = {
   top: $('#top'), stats: $('#stats'), scene: $('#scene'), bg: $('#bg'), bubble: $('#bubble'),
-  decor: $('#decor'), decorFront: $('#decorFront'), dog: $('#dog'), lucky: $('#lucky'), fx: $('#fx'), actions: $('#actions'),
+  decor: $('#decor'), decorFront: $('#decorFront'), hunt: $('#hunt'), dog: $('#dog'), lucky: $('#lucky'), fx: $('#fx'), actions: $('#actions'),
   tray: $('#tray'), choices: $('#choices'), editTools: $('#editTools'), sheetWrap: $('#sheetWrap'), sheet: $('#sheet'), overlay: $('#overlay'), modal: $('#modal'), toast: $('#toast'),
 };
 
@@ -115,6 +115,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   ui.bubble.className = 'bubble show b-' + who + (ui.bubble.classList.contains('aloft') ? ' aloft' : '');
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
   if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
+  else fitBubble();
   // The line plays right away; tapping the bubble plays the translation
   ui.bubble.onclick = (e) => {
     e.stopPropagation();
@@ -134,6 +135,18 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
 }
 
 const sayAuto = (pair, who = 'lucky') => say(pair, who, { auto: true });
+
+// On a short screen a long line could reach down over Lucky's head: then the bubble's text gets smaller (measured
+// on the layout box, not the bubble's pop-in animation)
+function fitBubble() {
+  const B = ui.bubble, parts = [...ui.lucky.querySelectorAll('.head, .ear')];
+  if (!parts.length) return;
+  const top = ui.scene.getBoundingClientRect().top, headTop = Math.min(...parts.map((g) => g.getBoundingClientRect().top));
+  const over = () => top + B.offsetTop + B.offsetHeight + 9 - headTop;
+  if (over() <= 0) return;
+  B.classList.add('tight');
+  if (over() > 0) B.classList.add('tighter');
+}
 
 function hideBubble() { clearTimeout(bubbleTimer); ui.bubble.classList.remove('show'); }
 // Up in a big jump Lucky would go behind the bubble: while he is up there it steps aside (the voice goes on)
@@ -228,14 +241,27 @@ function riddle(r) {
   talk([['lucky', ...r[0]], ['lucky', ...r[1]]].map((x, i) => (i === 1 ? ['lucky', '🤔 … ' + x[1], '🤔 … ' + x[2]] : x)));
 }
 
-let toastLater = null;
+// Hints come one after another (a new badge is no longer swept away by the food fact): each stays its time, at
+// least 2.5 s, and never sits on top of a window (they wait until it closes)
+const toastQ = [];
+let toastOn = false;
 function toast(html, ms = 3500) {
-  if (modalOpen) { toastLater = [html, ms]; return; } // shown when the window closes, never on top of it
+  if ((toastOn && ui.toast.innerHTML === html) || toastQ.some(([h]) => h === html)) return;
+  toastQ.push([html, ms]);
+  if (toastQ.length > 4) toastQ.splice(0, toastQ.length - 4);
+  if (!toastOn) nextToast();
+}
+function nextToast() {
+  if (toastOn || modalOpen || !toastQ.length) return;
+  const [html, ms] = toastQ.shift();
+  toastOn = true;
   ui.toast.innerHTML = html;
   ui.toast.classList.add('show');
   clearTimeout(toast.t);
-  toast.t = setTimeout(() => ui.toast.classList.remove('show'), ms);
+  toast.t = setTimeout(() => { ui.toast.classList.remove('show'); toast.t = setTimeout(() => { toastOn = false; nextToast(); }, 350); }, Math.max(2500, ms));
 }
+// a window takes the screen: the hint goes, the queued ones follow when it closes
+function hideToast() { clearTimeout(toast.t); ui.toast.classList.remove('show'); toastOn = false; }
 
 // ---------- effects ----------
 
@@ -362,10 +388,11 @@ function nextModal() {
   if (!m) {
     modalOpen = false;
     ui.modal.className = 'modal';
-    if (toastLater) { const [h, ms] = toastLater; toastLater = null; toast(h, ms); }
+    nextToast(); // hints that waited for the window
     return;
   }
   if (!modalOpen) setTimeout(() => { if (modalOpen) antics.end(); }); // Lucky's scene stops under the window (not mid-step)
+  if (!modalOpen && toastOn) { const html = ui.toast.innerHTML; hideToast(); toastQ.unshift([html, 3000]); } // shown again after it
   modalOpen = true;
   if (m.custom) { ui.modal.className = 'modal show ' + (m.cls ?? 'reveal-host'); m.custom(ui.modal, nextModal); return; }
   const btns = m.buttons || [{ label: tr('hooray') }];
@@ -373,7 +400,7 @@ function nextModal() {
   ui.modal.innerHTML = `<div class="modal-card">
     ${m.art ? `<div class="m-art">${m.art}</div>` : ''}
     <h2>${m.title}</h2>${m.text ? `<p>${m.text}</p>` : ''}
-    <div class="m-btns">${btns.map((b, i) => `<button class="btn ${i === 0 ? 'pink' : ''}" data-i="${i}">${b.label}</button>`).join('')}</div></div>`;
+    <div class="m-btns">${btns.map((b, i) => `<button class="btn ${i === 0 && !m.plain ? 'pink' : ''}" data-i="${i}">${b.label}</button>`).join('')}</div></div>`;
   ui.modal.querySelectorAll('button').forEach((b) => {
     b.onclick = () => { sfx.tap(); const fn = btns[b.dataset.i].onClick; nextModal(); fn?.(); };
   });
@@ -430,7 +457,7 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
   rewards.filter((r) => r.kind === 'decor').forEach((r) => placeNewDecor(r.id));
   if (rewards.some((r) => r.kind === 'decor')) renderDecor();
   if (main.kind === 'hearts') setTimeout(() => award(addH(5, 'giftBonus', 15)), 0);
-  ui.toast.classList.remove('show');
+  hideToast();
   st.save(S);
   sfx.levelup();
   host.innerHTML = `<div class="reveal">
@@ -672,7 +699,7 @@ function addItem(o) {
     if (el) hop(el, 'wiggle');
     return;
   }
-  if (items.filter(shownNow).length >= MAX_ITEMS) return toast(tr('editFull'), 2500); // hidden holiday stickers don't count
+  if (items.filter(shownNow).length >= MAX_ITEMS) return toast('✏️ ' + tr('editFull'), 2500); // hidden holiday stickers don't count
   const [x, y] = o.k === 'decor' && DECOR_POS[o.id] ? DECOR_POS[o.id] : sceneToArt(50 + Math.random() * 20 - 10, 55 + Math.random() * 16 - 8).map((v) => +v.toFixed(1));
   items.push({ k: o.k, id: o.id, x, y, s: 1, f: 0 });
   editSel = items.length - 1;
@@ -839,7 +866,7 @@ function renderLucky(force = false) {
   ui.lucky.classList.toggle('has-hat', !!wornNow()?.head);
 }
 
-const STAT_ICONS = { hunger: '🥕', fun: '💗', clean: '🫧', energy: '⚡' };
+const STAT_ICONS = { hunger: '🥕', fun: '🎈', clean: '🫧', energy: '⚡' }; // 💗 is the level's hearts
 
 function buildStats() {
   ui.stats.innerHTML = Object.keys(STAT_ICONS).map((k) => `<div class="stat" data-k="${k}">
@@ -879,6 +906,7 @@ function buildActions() {
   ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${typeof a.e === 'function' ? a.e() : a.e}</span><span class="a-name">${tr(a.id)}</span></button>`).join('');
   ui.actions.querySelectorAll('.act').forEach((b) => {
     b.onclick = () => {
+      finishWash(); // Wash looks like the main screen: a button there ends the wash and does its thing
       if (mode !== 'main') return;
       sfx.tap();
       ACTIONS.find((a) => a.id === b.dataset.id).fn();
@@ -888,6 +916,7 @@ function buildActions() {
 
 function renderBg() {
   ui.bg.innerHTML = art.scene(S.bg) + holidayLayers(S.bg);
+  ui.hunt.innerHTML = EV ? art.huntScene(EV.id, S.bg, EV.stage, EV.days <= 7) : '';
   antics.refreshEggs();
   shownSky = null;
   applyNinjaLook();
@@ -987,8 +1016,10 @@ function openCalendar() {
       const cls = open ? 'open' : now ? 'now' : can ? 'missed' : 'future';
       return `<button class="cal-day ${cls}${d.big ? ' big' : ''}" data-k="${d.key}" ${can ? '' : 'disabled'}><span class="cd-num">${d.day}</span><span class="cd-in">${open ? calTreat(cal, d) : can ? '🎁' : d.big ? EV.icon : '🔒'}</span></button>`;
     }).join('')}</div>${opened.includes(today) ? `<p class="done-note center">✅ ${tr('calOpened')}</p>` : ''}`;
-  openSheet(tr('calTitle'), html, (root) => {
+  openSheet('📅 ' + tr('calTitle'), html, (root) => {
     root.querySelectorAll('.cal-day.now, .cal-day.missed').forEach((b) => { b.onclick = () => openWindow(b, cal); });
+    // on a small phone today's window (or the holiday's own) may be below the fold
+    (root.querySelector('.cal-day.now') || root.querySelector('.cal-day.big.missed'))?.scrollIntoView({ block: 'center' });
   });
 }
 
@@ -1074,7 +1105,7 @@ const bi = (pair) => `<div class="bi"><div class="bi-main">${L(pair)}</div>${S.s
 
 function openFeed() {
   const T0 = st.today(S);
-  openSheet(tr('feedTitle'), `<div class="food-grid">${FOODS.map((f) => `<button class="food" data-id="${f.id}">
+  openSheet('🥕 ' + tr('feedTitle'), `<div class="food-grid">${FOODS.map((f) => `<button class="food" data-id="${f.id}">
       <span class="fe">${f.emoji}</span><span class="fn">${L(f.name)}</span>${f.treat ? '<i class="treat">★</i>' : ''}</button>`).join('')}</div>
     <p class="muted center">★ ${tr('treatsLeft', { n: T0.treats })}</p>`,
   (root) => root.querySelectorAll('.food').forEach((b) => {
@@ -1841,7 +1872,7 @@ function frogRiddle(f) {
       setTimeout(() => {
         frogLeave();
         if (mode === 'main') say(fresh(FROG.bye), 'frog');
-        if (s) showModal({ art: `<div class="big-emoji">${s}</div>`, title: tr('newSticker'), text: tr('fromFrog') });
+        if (s) showModal({ custom: (host, done) => revealGift(host, { title: tr('fromFrog'), rewards: [{ kind: 'sticker', id: s, name: P('rvSticker') }], line: LUCKY.levelUp }, done) });
       }, done + 300);
     });
   }, ms + 300);
@@ -1863,8 +1894,9 @@ function maybeMood(T0) {
   showModal({
     art: luckyPic({ face: 'ok', wear: S.wear }),
     title: tr('moodTitle'),
+    plain: true,
     buttons: MOODS.map(([id, e]) => ({
-      label: `${e} ${tr('mood_' + id)}`,
+      label: `${e} ${tr('mood_' + id)}${S.settings.translate ? `<small>${T(other(), 'mood_' + id)}</small>` : ''}`,
       onClick: () => {
         T0.mood = id;
         st.save(S);
@@ -1881,7 +1913,7 @@ function maybeMood(T0) {
 }
 
 function breathe() {
-  showModal({ custom: (host, done) => {
+  showModal({ cls: '', custom: (host, done) => {
     silence();
     host.innerHTML = `<div class="breath"><h2>${tr('breathTitle')}</h2><div class="b-circle"><span></span></div><p class="b-text"></p>
       <button class="btn ghost b-stop">${tr('close')}</button></div>`;
@@ -2057,7 +2089,7 @@ function openDojo() {
         <div class="row"><button class="btn purple go">${tr('missionStart')}</button></div>`}
     </div>
     <div class="row"><button class="btn ghost breath-go">${tr('breathBtn')}</button></div>`;
-  openSheet(tr('dojoTitle'), html, (root) => {
+  openSheet('🥷 ' + tr('dojoTitle'), html, (root) => {
     root.querySelectorAll('.m-pick').forEach((btn) => {
       btn.onclick = () => { sfx.tap(); closeSheet(); startMission(MISSIONS.find((m) => m.id === btn.dataset.id)); };
     });
@@ -2148,7 +2180,7 @@ function careComplete() {
   sfx.happy();
   const res = addH(8, 'care', 8);
   const s = giveSticker();
-  if (s) showModal({ art: `<div class="big-emoji">${s}</div>`, title: tr('newSticker'), text: tr('fromCare') });
+  if (s) showModal({ custom: (host, done) => revealGift(host, { title: tr('fromCare'), rewards: [{ kind: 'sticker', id: s, name: P('rvSticker') }], line: LUCKY.levelUp }, done) });
   award(res);
   st.save(S);
   openDojo();
@@ -2234,7 +2266,7 @@ function openCollection(tab = 'outfits') {
   const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'english'];
   const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}</p>
     <div class="tabs coll-tabs">${tabs.map((t) => `<button class="tab ${t === tab ? 'on' : ''}" data-t="${t}">${tr(t)}</button>`).join('')}</div>${collectionBody(tab)}`;
-  openSheet(tr('collection'), html, (root) => {
+  openSheet('🎀 ' + tr('collection'), html, (root) => {
     const again = () => { const y = root.scrollTop; openCollection(tab); ui.sheet.scrollTop = y; };
     root.querySelectorAll('.tab').forEach((b) => { b.onclick = () => { sfx.tap(); openCollection(b.dataset.t); }; });
     root.querySelectorAll('.chip[data-slot]').forEach((b) => { b.onclick = () => { sfx.tap(); wardSlot = b.dataset.slot; again(); }; });
@@ -2769,7 +2801,7 @@ function askPassword() {
     const done = () => { pwOpen = false; doneModal(); };
     const ask = () => {
       pwCard(host, tr('pwHint'), [''], ([a], err) => {
-        if (!passwordOk(a)) return err('');
+        if (!passwordOk(a)) return err(tr('pwWrong'));
         adminUntil = Date.now() + 10 * 60e3;
         done();
         openParent();
@@ -3179,10 +3211,10 @@ function start() {
     openDojo();
   };
   $('#sleepBtn').onclick = () => { sfx.tap(); askBed(); };
-  $('#wordBtn').onclick = () => { if (mode === 'main') { sfx.tap(); openPhrase(); } };
-  $('#editBtn').onclick = () => { sfx.tap(); startEdit(); };
-  $('#eventBtn').onclick = () => { if (mode === 'main') { sfx.tap(); openCalendar(); } };
-  $('#lvlCard').onclick = () => { if (mode === 'main') { sfx.tap(); openPlan(); } };
+  $('#wordBtn').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openPhrase(); } };
+  $('#editBtn').onclick = () => { finishWash(); sfx.tap(); startEdit(); };
+  $('#eventBtn').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openCalendar(); } };
+  $('#lvlCard').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openPlan(); } };
   bindParentGear($('#gearBtn'));
   lastSpeech = Date.now();
   loop();

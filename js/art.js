@@ -562,7 +562,7 @@ function newYearScene(world, stage, week) {
   front.push(partyBalloon(p.l[0] + 12, p.l[1] + 4, 0.8, '#FF5FA2'), partyBalloon(p.r[0] - 14, p.r[1] + 2, 0.75, '#FFD23F'));
   if (world !== 'winter') back.push(snow(12));
   if (week || stage >= 4) back.push(burst(130, p.sky + 10, '#9BE15D', -3.3, 0.7), burst(280, p.sky + 20, '#FF922E', -0.9, 0.75));
-  if (stage >= 4) front.push(`<text class="ev-year" x="200" y="${p.sky - 40}" text-anchor="middle" font-size="44" font-weight="900" fill="#FFD23F" stroke="#E2A800" stroke-width="1.5">${new Date().getFullYear()}</text>`);
+  if (stage >= 4 && world !== 'night') front.push(`<text class="ev-year" x="200" y="${p.sky - 40}" text-anchor="middle" font-size="44" font-weight="900" fill="#FFD23F" stroke="#E2A800" stroke-width="1.5">${new Date().getFullYear()}</text>`);
   return back.join('') + front.join('');
 }
 
@@ -604,8 +604,8 @@ function patrickScene(world, stage, week) {
   if (world === 'beach') front.push(leprechaunHat(338, 589, 0.42));
   front.push(clover3(p.l[0] + 8, p.l[1] + 6, 5), clover3(120, 676, 4), clover3(290, 682, 4));
   const hide = [[p.L[0] + 14, p.L[1] + 40], [p.r[0] - 30, p.r[1] + 6], [p.l[0] + 36, p.l[1] + 14], [96, 690], [306, 692]];
-  hide.slice(0, week || stage >= 4 ? 5 : 3).forEach(([x, y], i) => front.push(coin(x, y, i)));
-  return front.join('');
+  const hunt = hide.slice(0, week || stage >= 4 ? 5 : 3).map(([x, y], i) => coin(x, y, i));
+  return [front.join(''), hunt.join('')];
 }
 
 // ----- Easter: painted eggs hidden around the scene (an egg hunt: they can be found with a tap), a basket, chicks -----
@@ -629,11 +629,11 @@ function easterScene(world, stage, week) {
   // where the eggs hide: next to the big spots, in the corners, along the bottom
   const hide = [[p.L[0] + 22, p.L[1] + 28], [p.R[0] - 12, p.R[1] + 22], [p.l[0] + 6, p.l[1] + 10], [p.r[0] - 6, p.r[1] + 8], [118, 684], [286, 688]];
   const n = stage >= 4 ? 6 : week ? 5 : 4;
-  hide.slice(0, n).forEach(([x, y], i) => front.push(egg(x, y, 1, EGG_LOOKS[n === 6 && i === 5 ? 5 : i % 5], i)));
+  const hunt = hide.slice(0, n).map(([x, y], i) => egg(x, y, 1, EGG_LOOKS[n === 6 && i === 5 ? 5 : i % 5], i));
   front.push(basket(p.L[0] + 2, p.L[1] - 4, 0.9));
   front.push(tulip(p.R[0] + 4, p.R[1] + 6, '#FF5FA2'), tulip(p.R[0] + 16, p.R[1] + 10, '#FFD23F', 0.85), tulip(p.L[0] - 12, p.L[1] + 26, '#B78CFF', 0.85));
   front.push(chick(p.l[0] + 40, p.l[1] - 10, 0.9), chick(p.r[0] - 40, p.r[1] - 12, 0.8));
-  return back.join('') + front.join('');
+  return [back.join('') + front.join(''), hunt.join('')];
 }
 
 // things along the top edge of the scene (HTML, so they stay at the top on every phone); the spider and the lights
@@ -663,10 +663,15 @@ const TOPS = {
 const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene, valentine: valentineScene, patrick: patrickScene, easter: easterScene };
 
 // the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
+// A scene gives its things, and the things to find (Easter eggs, the leprechaun's coins) apart: those are drawn in a
+// layer above the decorations (main.js #hunt), so a decoration standing at its usual spot never hides one
+const sceneParts = (id, world, stage, week) => { const out = SCENES[id]?.(world, stage, week) || ''; return Array.isArray(out) ? out : [out, '']; };
+const layerSvg = (cls, svg) => (svg ? `<svg class="${cls}" viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${svg}</svg>` : '');
 export function eventScene(id, world, stage, week = false) {
-  const fn = SCENES[id];
-  const svg = fn ? fn(world, stage, week) : '';
-  return svg ? `<svg class="ev-layer" viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${svg}</svg>` : '';
+  return layerSvg('ev-layer', sceneParts(id, world, stage, week)[0]);
+}
+export function huntScene(id, world, stage, week = false) {
+  return layerSvg('ev-hunt', sceneParts(id, world, stage, week)[1]);
 }
 export function eventTop(id, stage) {
   const html = stage >= 2 ? TOPS[id]?.(stage) || '' : '';
