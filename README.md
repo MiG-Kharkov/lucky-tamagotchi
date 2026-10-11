@@ -70,11 +70,12 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 28 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings… mix and match |
 | 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle |
-| 🦋 **Visitors** | Different for each world: butterflies (with five different endings), a ladybird whose spots Lucky counts, a singing bird, a bee, a jumping fish, snowflakes, shooting stars, and now and then a unicorn or a baby dragon |
-| 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, and Lucky joins in with sunglasses, umbrellas, space helmets and more |
+| 🦋 **Visitors** | Different for each world: butterflies (with five different endings), a ladybird whose spots Lucky counts, a singing bird, a bee, a jumping fish, snowflakes, shooting stars, a UFO that beams Lucky up, a balloon that carries him off, and now and then a unicorn or a baby dragon |
+| 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, often in more than one way, and Lucky joins in with sunglasses, umbrellas, space helmets and more: a coconut that just misses him, a puddle to jump in, a crab he copies walking sideways, a planet that makes him dizzy, a sledge ride |
+| 🎃 **Holidays** | Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter: for a few weeks before each one the worlds slowly dress up (more every week), Lucky gets a holiday hat, holiday visitors and stickers come, and at Easter there are eggs to find. The game itself stays the same |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them. The tray is sorted into categories. ✨ **Super things** glow and have their own fun: keepy-uppy with the ball, fishing in the pond, a balloon ride, a UFO beam, a fairy's wishes, a rocket that brings back souvenirs… |
 | 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 37 badges, and an English tab with jokes, tongue twisters and sayings |
-| 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks |
+| 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks, and Lucky and Tali acting out their chats (a "WOOF!" in the middle of ninja training, a race, being scared of the dark) |
 | 🎭 **Fun English** | Lucky acts out English sayings literally ("it's raining cats and dogs": cats and dogs fall from the sky), then explains what they mean, with the Russian saying for the same thing. Tali asks for tongue twisters, and Lucky says them slowly, faster and super fast. Everything goes into the English tab of the collection |
 | 🐶 **Tali's jokes** | Over 100 kids' jokes, knock-knock jokes included. Lucky laughs, does something that fits and comments. Puns are explained in the translation, and heard jokes go into a joke book to retell at school |
 | 🌬️ **Feelings** | A daily *"How are you feeling?"* check-in and a guided ninja-breathing exercise |
@@ -203,7 +204,7 @@ static files, and all progress stays in the phone's local storage.
 
 ## 🛠️ Under the hood
 
-- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (~1250 clips, ~15 MB)
+- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (2,723 clips, ~28 MB, downloaded once for offline play)
 - A service worker for offline play (code network-first, voice clips cached once)
 - Deployed to GitHub Pages by [GitHub Actions](.github/workflows/pages.yml). The cache version is set from the commit automatically
 - Developer notes: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · game design: [`docs/DESIGN.md`](docs/DESIGN.md) · what's new: [`CHANGELOG.md`](CHANGELOG.md)

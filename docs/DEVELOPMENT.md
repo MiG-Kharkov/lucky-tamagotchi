@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)`, `mission(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`, `chat(i)` / `prank(i)` (a chat or prank with Tali, acted out), `event('halloween:3')` (show a holiday at a stage, `null` for the calendar)) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,
@@ -38,6 +38,7 @@ Offline mode needs https, so this is only for quick checks.
 | `js/missions.js` | Mission list, skills and the pick grids (with English words) |
 | `js/jokes.js` | Tali's jokes: question/answer and knock-knock, with Lucky's reaction and comment |
 | `js/english.js` | Sayings Lucky acts out (where each one fits, what it means, the Russian equivalent) and tongue twisters |
+| `js/events.js` | Holidays: dates (Easter is worked out), how many days before each one decorations start, stages, holiday stickers |
 | `js/state.js` | Saved state, stat decay, daily limits, levels, mood tiers, parent password storage, Turbo snapshot |
 | `js/i18n.js` | All texts as `[ru, en]` pairs: UI strings, Lucky's lines, jokes, missions, phrases, talk-game dialogues |
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |
@@ -86,13 +87,28 @@ The picture is drawn bottom-aligned and scaled to cover, and the decoration laye
 the same spot of the picture when the scene's height changes. In Decorate the whole scene is shown scaled down above
 the tray (`editScale`). Saves from before 1.6.1 (`layoutV` 1) are converted once at start.
 
+## Holidays
+
+`js/events.js` lists the holidays. Each one starts `lead` days before its date and stays `after` days after it; on the
+way there are stages: 1 (three weeks before: a few small things), 2 (two weeks: more), 3 (the last week: everything,
+including Lucky's hat, Tali's accessory, the interface, holiday visitors and stickers) and 4 (the day itself). `main.js`
+checks the calendar every minute (`updateEvent`) and sets `body.ev-<id>` plus `ev-s1`…`ev-s4`, so CSS can add things per
+stage. The pictures are drawn in `art.js` (`eventScene`, `eventTop`) as a layer over the world in the same 400×700
+picture, so they line up and taps go through to the world underneath (only Easter eggs can be tapped).
+
+- Nothing in the rules changes and no new voice is needed: holiday things reuse recorded lines. Lines that would need
+  new recordings are collected in [VOICE_PLAN.md](VOICE_PLAN.md).
+- Holiday stickers (Decorate gets a holiday category from stage 2) show only while their holiday is on and come back
+  next year; parents can switch the decorations off. In Turbo the 🎃 tool previews each holiday in turn.
+- New JS modules must also go into `ASSETS` in `sw.js`, or the game breaks offline.
+
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. About 1250 MP3 files, ~15 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 2,723 MP3 files, ~28 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
-- **After editing texts** in `js/i18n.js` or `js/dialogs.js`, run `node tools/gen-voices.mjs`.
+- **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
   It records only new and changed lines and removes clips that are no longer used.
   The Google key is read from `.env.local` (`GOOGLE_TTS_KEY=...`). This file is git-ignored.
   Never commit or share it.

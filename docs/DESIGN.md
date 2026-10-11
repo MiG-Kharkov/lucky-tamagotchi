@@ -78,7 +78,14 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   on his tongue, shooting stars, a UFO, a kite, a balloon, sweets, an owl in the evening, and rarely a unicorn or a
   baby dragon. The same visitor never comes twice in a row.
 - **Bunny habits:** in quiet moments (no taps for a while) Lucky grooms, stretches, flops over, sniffs, nibbles grass,
-  looks around or does zoomies, with a word about real rabbits now and then.
+  looks around, does zoomies, digs a little hole, scratches his ears or does a binky, with a word about real rabbits
+  now and then.
+- **Chats with Tali are acted out:** a "WOOF!" in the middle of ninja training makes Lucky jump with his ears up, the
+  scene goes dark when they talk about the dark, a bone pops up over Tali, they race, Lucky digs, sneaks and tries to
+  wag his tail. Rare gags: a boop that ends in a sneeze, a hug so tight he gets squashed, ears that start spinning from
+  a good pat, a thump that gives Tali a fright, a tickle that makes him flop over.
+- **Stickers come alive:** the ladybird is counted, the bee chases Lucky, fish splash him, the unicorn leaves a rainbow,
+  the rocket counts down, the telescope dreams of the moon, the sledge gives him a ride.
 - Petting, the daily present (different wrapping; it pops up, floats down on a parachute, is dropped by a bird or dug
   up) and Tali's arrival (runs, jumps, digs, spins or skates in) vary too.
 - **Riddle frog** 🐸: about 2 days in 3, after 3 minutes of play; a riddle with choices and a sticker for the right answer.
@@ -145,9 +152,18 @@ and a step towards the next belt (3 stamps per belt).
 - **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **37 badges**, the English tab (jokes, tongue twisters, sayings).
 - Pacing: stickers ~3.5 weeks, level items ~6 weeks, the last world ~1.5 months. Rewards arrive by days, not minutes.
 
+## Holidays
+
+Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter. For three weeks before (one week for New
+Year and Valentine's Day) the worlds slowly dress up: a few small things at first, more every week, everything in the
+last week (Lucky's holiday hat, Tali's accessory, the interface, holiday visitors and Decorate stickers), all out on the
+day. Some familiar things change for fun (a cloud rains sweets before Halloween, a bat brings the daily surprise).
+At Easter painted eggs hide in every world: Lucky praises each one she finds. Nothing in the rules or the pacing
+changes, and the voice stays the same. Parents can switch the decorations off.
+
 ## Parents' area
 
 ⚙️ → password (a default one until the parent sets their own inside; the recovery password from the README always works). Inside: session length,
 rest time, games per day, daily limit, bedtime, wake-up time, sound, voice, translation, "we have a real bunny",
-today's stats and mood, change the parent password, Wake Lucky (also cancels the rest of the night), invite Tali, sound test,
+holiday decorations, today's stats and mood, change the parent password, Wake Lucky (also cancels the rest of the night), invite Tali, sound test,
 **Standard / Turbo**, and Start over (double confirmation).

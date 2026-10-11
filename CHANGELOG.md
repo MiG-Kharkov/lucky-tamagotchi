@@ -3,6 +3,44 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.7.0] – 2026-10-11
+
+### Added
+- **Holidays:** Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter (its date is worked out).
+  For a few weeks before each one the worlds slowly dress up, a little more every week, and on the day it is all out:
+  - Halloween: pumpkins (lit at night and on the day), bats, ghosts, a cobweb and a spider, bunting, a witch hat for
+    Lucky, witch hats for the sheep and the crab, bats and ghosts among the visitors;
+  - Christmas: a tree and presents, fairy lights, snow everywhere, candy canes, a Santa hat, Santa among the visitors and
+    his sleigh in the sky on the day;
+  - New Year: tinsel, a New Year tree, fireworks, a party hat, and the new year's number in the sky;
+  - Valentine's Day: hearts drifting up, heart balloons, a heart headband, love letters;
+  - St Patrick's Day: green, white and orange bunting, shamrocks, a rainbow with a pot of gold, leprechaun hats;
+  - Easter: an egg hunt (eggs hide in every world; Lucky praises each find), chicks, tulips, a flower crown.
+  The interface joins in during the last week (an icon by the level and in titles, a decoration on the speech bubble,
+  the background, confetti, the present box, the mission screen), Decorate gets a holiday category whose stickers come
+  back next year, and some familiar things change for fun (a cloud rains sweets before Halloween, a bat or Santa
+  brings the daily surprise, Tali rides in on a broom or a sledge). Parents can switch it off; Turbo can preview each
+  holiday.
+- **Second ways for scene things,** each built around a recorded line that was never played: the coconut misses Lucky,
+  the crab runs sideways and he copies it, snow lands on his ears, he hugs the snowman, the planet spins and he gets
+  dizzy, a fountain of coins, the sheep says hello, a shamrock behind his ear, the castle bell, the bamboo in the wind,
+  the shell held out to listen, warming up in the sun, a puddle to jump in. Also a bee in a flower, a slide down Mount
+  Fuji, a fish jumping out of the sea, counting the stars, hiding in a moon crater.
+- **Ball:** a long keepy-uppy can end with a header into a goal; a long press throws it at the screen to catch.
+- **Chats and pranks with Tali are acted out** with little actions on every line.
+- **New visitor endings:** snowflakes on his nose, a shooting star on his head, a UFO beam, a balloon ride, a fish he
+  lets go, a lolly.
+- **24 more stickers come alive** (ladybird, bee, butterfly, fish, kite, unicorn, dragon, rainbow, gem, ninja, food,
+  rocket, telescope, fiddle, chick…), the sledge sticker gives a ride.
+- **Bunny habits:** digging, an ear scratch, a binky. **Rare gags** on familiar gestures.
+- Lucky cheers after a ninja mission, Tali says when his jokes are over for the visit, arriving in candy land and the
+  dojo has its own line, and "No more games today" is spoken.
+- [VOICE_PLAN.md](docs/VOICE_PLAN.md): the lines to record next.
+
+### Changed
+- All of this uses voice clips that were already recorded: no new recordings, no robot voice.
+- The rain cloud, the tree, the flowers and a few more things pick a different way to react each time.
+
 ## [1.6.1] – 2026-09-29
 
 ### Fixed
@@ -144,6 +182,7 @@ ninja dojo with real-world missions, 28-item wardrobe, 8 worlds, decorate mode, 
 34 badges, Tali the dog and the riddle frog, pre-recorded English/Russian voices, healthy-play limits and
 a password-protected parents' area with a recovery code and Turbo mode.
 
+[1.7.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.6.1...v1.7.0
 [1.6.1]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.6.0...v1.6.1
 [1.6.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/MiG-Kharkov/lucky-tamagotchi/compare/v1.4.0...v1.5.0
