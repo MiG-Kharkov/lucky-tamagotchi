@@ -1921,13 +1921,15 @@ function openPlay() {
   if (left > 0 && wait > 0) say(fresh(LUCKY.cooldown));
   if (left <= 0) say(P('noGames'));
   const note = left <= 0 ? tr('noGames') : wait > 0 ? `⏳ ${tr('gameCooldown', { n: wait })}` : tr('gamesLeft', { n: left });
-  // while a holiday is on, its own three games take the usual ones' place
-  const list = EV && EV.stage >= 3 && HOLIDAY_GAMES[EV.id] ? HOLIDAY_GAMES[EV.id] : GAMES, holiday = list !== GAMES;
+  // while a holiday is on, its own three games take the usual ones' place, and Chat with Lucky (the English
+  // questions and answers) stays as the fourth
+  const holiday = !!(EV && EV.stage >= 3 && HOLIDAY_GAMES[EV.id]);
+  const list = holiday ? [...HOLIDAY_GAMES[EV.id], GAMES.find((g) => g.id === 'talk')] : GAMES;
   const best = (g) => { const b = Math.max(0, ...Object.entries(S.games.best).filter(([k]) => k.startsWith(g.id + ':')).map(([, v]) => v)); return b ? `<i class="gi-best">🏆 ${b}</i>` : ''; };
   const html = `<p class="muted center">${note}</p>${holiday ? `<p class="center g-holi-head">${EV.icon} ${tr('holidayGames')}</p>` : ''}
     <div class="game-list">${list.map((g) => `<button class="game-item" data-id="${g.id}" ${can ? '' : 'disabled'}>
-      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${holiday ? best(g) : ''}</button>`).join('')}</div>`;
-  openSheet((holiday ? EV.icon + ' ' : '🎈 ') + tr('pickGame'), html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
+      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${g.target ? best(g) : ''}</button>`).join('')}</div>`;
+  openSheet((holiday ? '' : '🎈 ') + tr('pickGame'), html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
     b.onclick = () => { sfx.tap(); closeSheet(); startGame(list.find((g) => g.id === b.dataset.id)); };
   }));
 }
@@ -2286,7 +2288,8 @@ function openPhrase() {
 function quizStep(box) {
   const T0 = st.today(S);
   if (T0.quiz >= 3) { box.innerHTML = `<p class="done-note">✅ ${tr('quizDone')}</p>`; return; }
-  const q = pick(PHRASES);
+  // today's phrase, then the ones from 3 and 10 days ago: a phrase comes back just as it starts to fade
+  const q = PHRASES[st.phraseIndex(S, PHRASES.length, [0, 3, 10][T0.quiz] ?? 0)];
   const wrong = PHRASES.filter((x) => x !== q).sort(() => Math.random() - 0.5).slice(0, 2);
   const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
   const ask = say2(q, other());
