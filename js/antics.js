@@ -2010,6 +2010,11 @@ export function createAntics(api) {
         at(a, 1900, () => fly('🐠', paw(), [x, ground() + 10], 700, { arc: 80, spin: -200, size: 32 }));
         at(a, 2550, () => { sfx.splash(); api.fxAt(x, ground(), ['💦'], 4, 'spark'); });
       },
+      // Valentine's Day: Cupid shoots a heart at him
+      cupid: () => {
+        fly('💘', [x, y], head(), 700, { size: 30, spin: 20 });
+        at(a, 700, () => { sfx.kiss(); pose('hearts', 2200, 'hug'); api.hearts(...head(), 8); line('cupid', 1, 0); });
+      },
       // a lolly instead of a sweet
       lolly: () => {
         fly('🍭', [x, y], paw(), 600, { spin: 300, size: 28 });
@@ -2095,6 +2100,8 @@ export function createAntics(api) {
     decor: (kind, el, it, p) => run(forDecor(it), kind, el, p),
     line, prop, unprop, setSticky, clearProps, fly, popUp, spray, end,
     busy: () => !!act,
+    // New Year: Lucky counts down from five and the sky fills with fireworks
+    countdown: () => { if (api.free()) countdown(); },
     // the scene tools Lucky's tricks are made of (tricks.js)
     kit: { begin, end, at, hold, onEnd, pose, prop, unprop, line, lineWith, chatLine, fly, popUp, rainbow, spray, dark, sceneRect, head, nose, mouth, feet, paw, earPt },
     // Tali's joke: Lucky listens to the question, then laughs and does something that fits.

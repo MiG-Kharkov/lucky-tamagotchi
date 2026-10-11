@@ -898,7 +898,7 @@ function currentEvent() {
 function updateEvent(force = false) {
   const keyOf = (e) => (e ? e.id + e.stage + (e.days <= 7 ? 'w' : '') : ''); // the last week brings a few more things
   const ev = currentEvent(), key = keyOf(ev);
-  if (!force && key === keyOf(EV)) return;
+  if (!force && key === keyOf(EV)) { EV = ev; renderEventBtn(); return; } // a new day: only the days to go change
   EV = ev;
   const b = document.body;
   [...b.classList].filter((c) => c.startsWith('ev-')).forEach((c) => b.classList.remove(c));
@@ -909,11 +909,81 @@ function updateEvent(force = false) {
   } else b.style.removeProperty('--ev-icon');
   if (ui.props) antics.setSticky('season', ev && ev.stage >= 3 ? SEASON_HAT[ev.id] : null);
   buildActions();
+  renderEventBtn();
   renderBg();
   renderDecor();
   renderTop();
   if (mode === 'sleep') renderSleep(true);
   if (mode === 'edit') renderTray();
+}
+
+// ---------- the holiday calendar: one window a day until the holiday; the holiday's own window holds a present ----------
+const CAL_TREATS = {
+  halloween: ['🍬', '🍭', '🍫', '🎃', '👻', '🦇', '🕸️', '🧙', '🌙', '🧹'],
+  christmas: ['🎁', '🍪', '⛄', '🔔', '🧦', '⭐', '🦌', '🎄', '❄️', '🕯️'],
+  newyear: ['🎉', '✨', '🎈', '🎆', '🍰', '🎊', '🕛', '🪅'],
+  valentine: ['💌', '🍫', '🌹', '💝', '🧸', '💘', '🍓'],
+  patrick: ['🍀', '🪙', '🌈', '🎩', '🎻', '☘️', '🥔'],
+  easter: ['🥚', '🐣', '🌷', '🐰', '🧺', '🦋', '🐑'],
+};
+// the season's days, from the first day of decorations to the holiday (date arithmetic, so a clock change can't shift it)
+function calendarDays(ev) {
+  const n = new Date(), t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+  const target = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + ev.days);
+  const days = [];
+  for (let k = ev.lead; k >= 0; k--) {
+    const d = new Date(target.getFullYear(), target.getMonth(), target.getDate() - k);
+    days.push({ key: st.dayKey(d.getTime()), day: d.getDate(), offset: Math.round((d - t0) / 864e5), big: k === 0 });
+  }
+  return { id: ev.id + '-' + target.getFullYear(), days };
+}
+const calTreat = (cal, d) => { const list = CAL_TREATS[EV.id] || EV.stickers; return d.big ? EV.icon : list[st.hash(cal.id + d.key) % list.length]; };
+
+function renderEventBtn() {
+  const b = $('#eventBtn');
+  if (!b) return;
+  b.hidden = !(EV && EV.stage >= 3);
+  if (b.hidden) return;
+  const cal = calendarDays(EV), waiting = cal.days.some((d) => d.offset === 0) && !(S.calendar[cal.id] || []).includes(S.today?.date);
+  const html = `${EV.icon}<b>${EV.days > 0 ? EV.days : '!'}</b>`;
+  if (b.innerHTML !== html) b.innerHTML = html;
+  b.classList.toggle('waiting', waiting); // today's window hasn't been opened yet
+}
+
+function openCalendar() {
+  if (!EV || mode !== 'main') return;
+  const cal = calendarDays(EV), opened = (S.calendar[cal.id] ||= []), today = st.today(S).date;
+  const head = EV.days > 0 ? tr('calDays', { n: EV.days }) : EV.days === 0 ? tr('calToday', { x: L(EV.name) }) : tr('calAfter');
+  const html = `<p class="muted center cal-head">${head}<br><small>${tr('calHint')}</small></p>
+    <div class="cal-grid">${cal.days.map((d) => {
+      const open = opened.includes(d.key), now = d.key === today;
+      const cls = open ? 'open' : now ? 'now' : d.offset < 0 ? 'past' : 'future';
+      return `<button class="cal-day ${cls}${d.big ? ' big' : ''}" data-k="${d.key}" ${now && !open ? '' : 'disabled'}><span class="cd-num">${d.day}</span><span class="cd-in">${open ? calTreat(cal, d) : now ? '🎁' : d.offset < 0 ? '💤' : d.big ? EV.icon : '🔒'}</span></button>`;
+    }).join('')}</div>${opened.includes(today) ? `<p class="done-note center">✅ ${tr('calOpened')}</p>` : ''}`;
+  openSheet(tr('calTitle'), html, (root) => {
+    const b = root.querySelector('.cal-day.now:not(.open)');
+    if (b) b.onclick = () => openWindow(b, cal);
+  });
+}
+
+function openWindow(btn, cal) {
+  const opened = (S.calendar[cal.id] ||= []), today = st.today(S).date;
+  if (opened.includes(today)) return;
+  opened.push(today);
+  const d = cal.days.find((x) => x.key === today), big = !!d?.big;
+  btn.disabled = true;
+  btn.classList.remove('now');
+  btn.classList.add('opening');
+  sfx.sparkle();
+  setTimeout(() => { btn.classList.remove('opening'); btn.classList.add('open'); btn.querySelector('.cd-in').textContent = calTreat(cal, d); sfx.happy(); confetti(); }, 380);
+  const res = addH(big ? 5 : 2, 'calendar', big ? 5 : 2);
+  say(fresh(big && LUCKY.holiday[EV.id]?.greet ? LUCKY.holiday[EV.id].greet : LUCKY.holidayThings.calendar));
+  // the holiday's own window: a real present
+  if (big) setTimeout(() => { const g = rollGift(0.4, 0.15); closeSheet(); showModal({ custom: (host, done) => revealGift(host, { title: tr('calGift'), rewards: [g], line: LUCKY.levelUp }, done) }); }, 1500);
+  stat('calendar');
+  award(res);
+  st.save(S);
+  renderEventBtn();
 }
 
 // What Lucky says on arriving in a world (the dojo greets him with its gong)
@@ -1361,7 +1431,7 @@ const HOLIDAY_VISITORS = {
   halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
   christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['santa'], stage: 3 }],
   newyear: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '❄️', w: 1, path: 'fall', end: ['tongue', 'flakes'], stage: 3 }],
-  valentine: [{ e: '💌', w: 3, path: 'float', end: ['love'], stage: 3 }],
+  valentine: [{ e: '💌', w: 3, path: 'float', end: ['love'], stage: 3 }, { e: '👼', w: 2, path: 'glide', end: ['cupid'], stage: 3, flip: true }],
   patrick: [{ e: '🍀', w: 3, path: 'flutter', end: ['luck'], stage: 2 }],
   easter: [{ e: '🐣', w: 3, path: 'jump', end: ['chick'], stage: 2 }, { e: '🦋', w: 2, path: 'flutter', end: ['nose', 'ear', 'circle', 'family'], stage: 2 }],
 };
@@ -1403,6 +1473,7 @@ function maybeVisitor(now) {
   ui.scene.appendChild(b);
   const ms = FLIGHT[v.path];
   b.animate(frames, { duration: ms, easing: v.path === 'streak' || v.path === 'jump' ? 'ease-in-out' : 'linear', fill: 'forwards' });
+  if (v.e === '👻') antics.kit.dark(ms); // a ghost going by: the scene goes dim
   b.onclick = (e) => {
     e.stopPropagation();
     const [x, y] = sceneXY(e);
@@ -2253,7 +2324,10 @@ function dogArrive() {
     sfx.bark();
     if (!dogHere || !userActive() || mode !== 'main' || ask) return;
     const sad = tier() === 'low';
-    const hello = S.dog.met ? [timed('dog', fresh(DOG.arrive)), timed('lucky', fresh(sad ? LUCKY.dogSad : LUCKY.dogHappy))] : [timed('lucky', pick(LUCKY.meetDog), 1500)];
+    let hello = S.dog.met ? [timed('dog', fresh(DOG.arrive)), timed('lucky', fresh(sad ? LUCKY.dogSad : LUCKY.dogHappy))] : [timed('lucky', pick(LUCKY.meetDog), 1500)];
+    // at Halloween he comes trick-or-treating, and Lucky gives him a sweet
+    if (S.dog.met && EV?.id === 'halloween' && EV.stage >= 3) hello = [timed('dog', DOG.trickOrTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) { const r = d.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); antics.fly('🍬', luckyPoint(0.7, 0.6), [r.left - sc.left + r.width / 2, r.top - sc.top + r.height * 0.45], 700, { arc: 50, spin: 300, size: 26 }); } sfx.pop(); return 200; },
+      timed('lucky', LUCKY.holidayThings.trickTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) hop(d, 'hop'); sfx.crunch(); return 300; }, timed('dog', DOG.sweetThanks[0])];
     S.dog.met = true;
     taliJoke(sad ? DOG.cheer : DOG.jokeNew, hello);
   }, 700);
@@ -2965,7 +3039,12 @@ function holidayGreeting() {
 
 function greet(gap) {
   const hol = holidayGreeting();
-  if (hol) { setTemp('happy', 1500); sayAuto(fresh(hol)); return; }
+  if (hol) {
+    setTemp('happy', 1500);
+    sayAuto(fresh(hol));
+    if (EV.id === 'newyear' && EV.stage >= 4) setTimeout(() => { if (mode === 'main' && !antics.busy() && !ask) antics.countdown(); }, 4200);
+    return;
+  }
   const h = new Date().getHours();
   if (h < 12 && gap > 6 * 3600e3 && maybeIdiom(h < 8 ? 'early' : 'morning', 0.5)) return;
   setTemp('happy', 1500);
@@ -3014,6 +3093,7 @@ function start() {
   $('#sleepBtn').onclick = () => { sfx.tap(); askBed(); };
   $('#wordBtn').onclick = () => { if (mode === 'main') { sfx.tap(); openPhrase(); } };
   $('#editBtn').onclick = () => { sfx.tap(); startEdit(); };
+  $('#eventBtn').onclick = () => { if (mode === 'main') { sfx.tap(); openCalendar(); } };
   $('#lvlCard').onclick = () => { if (mode === 'main') { sfx.tap(); openPlan(); } };
   bindParentGear($('#gearBtn'));
   lastSpeech = Date.now();

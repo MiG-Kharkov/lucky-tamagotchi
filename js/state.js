@@ -71,6 +71,8 @@ function fresh() {
     playedMs: {},
     viewMs: {},
     lastGameAt: 0,
+    // the holiday calendars: the days whose window was opened, per holiday and year ('halloween-2026')
+    calendar: {},
   };
 }
 

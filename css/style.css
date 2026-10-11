@@ -1602,3 +1602,22 @@ body.ev-easter.ev-s3 {
 @media (prefers-reduced-motion: reduce) {
   .ev-brew circle, .ev-coin { animation: none !important; }
 }
+/* the holiday calendar: a button on the scene with the days to go, and a sheet of windows, one a day */
+.ev-btn { left: auto; right: 12px; width: auto; min-width: 48px; padding: 0 9px; display: flex; align-items: center; justify-content: center; gap: 2px; font-size: 22px; animation-delay: -.6s; }
+.ev-btn[hidden] { display: none; }
+.ev-btn b { font-size: 15px; color: var(--ev-ink, var(--pink-d)); }
+.ev-btn.waiting { box-shadow: 0 0 0 3px var(--ev-1, var(--pink)), var(--shadow); }
+.ev-btn.waiting::after { content: ""; position: absolute; right: -3px; top: -3px; width: 12px; height: 12px; border-radius: 50%; background: #FF3B4E; box-shadow: 0 0 0 2px #fff; }
+.cal-head small { color: var(--muted); }
+.cal-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 8px; margin-top: 10px; }
+.cal-day { position: relative; aspect-ratio: 1; border-radius: 14px; background: #fff; box-shadow: 0 3px 0 var(--ev-line, #F0D8E8), var(--shadow); display: grid; place-items: center; }
+.cal-day .cd-num { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 800; color: var(--muted); }
+.cal-day .cd-in { font-size: 26px; line-height: 1; }
+.cal-day.future { opacity: .55; }
+.cal-day.past { opacity: .45; filter: grayscale(.7); }
+.cal-day.now { background: var(--ev-card, #FFF0F7); box-shadow: 0 0 0 3px var(--ev-1, var(--pink)), 0 3px 0 var(--ev-line, #F0D8E8); animation: pulse 1.1s ease-in-out infinite; }
+.cal-day.open { background: var(--ev-card, #FFF8FB); opacity: 1; filter: none; }
+.cal-day.big { grid-column: span 2; aspect-ratio: auto; box-shadow: 0 0 0 3px #FFD23F, 0 3px 0 #E6A800; }
+.cal-day.big .cd-in { font-size: 34px; }
+.cal-day.opening { animation: calOpen .38s ease-in; }
+@keyframes calOpen { 50% { transform: rotateY(90deg) scale(1.1); } }

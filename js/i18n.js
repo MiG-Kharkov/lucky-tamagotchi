@@ -115,6 +115,8 @@ export const STR = {
     resetTitle2: 'Точно-точно?', resetText2: 'Это нельзя отменить. Лаки начнёт с самого начала.', resetYes2: 'Удалить всё',
     tool_level: '+1 уровень', tool_full: 'Всё 100%', tool_sad: 'Грустный', tool_dog: 'Тали', tool_frog: 'Лягушка', tool_bug: 'Бабочка', tool_ask: 'Вопрос', tool_day: 'Новый день', tool_nap: 'Сон', tool_idiom: 'Выражение', tool_holiday: 'Праздник', tool_trick: 'Трюк',
     holidays: 'Праздничные украшения', holidayAuto: 'Праздники по календарю',
+    calTitle: 'Праздничный календарь', calDays: 'До праздника осталось дней: {n}', calToday: 'Сегодня {x}! Открой главное окошко!',
+    calHint: 'Каждый день открывается одно окошко.', calOpened: 'Сегодняшнее окошко открыто. Приходи завтра!', calGift: 'Подарок на праздник', calAfter: 'Праздник прошёл, но окошки остались!',
     newDay: 'Новый день: лимиты сброшены', testSound: 'Проверить звук', wokeByParent: 'Лаки разбужен до утра ({time}). Следующей ночью он уснёт по расписанию.', dailyMax: 'Игры в день максимум', noLimit: 'Без лимита',
     dayDoneTitle: 'Большой день!', dayDoneSub: 'Лаки сегодня много играл и отдыхает до утра. Проснётся в {time}. Пора заняться чем-то другим!', fromFrog: 'Подарок от лягушки!',
     parentHold: 'Раздел для родителей: удерживай ⚙️ 2 секунды',
@@ -244,6 +246,8 @@ export const STR = {
     resetTitle2: 'Are you really sure?', resetText2: "This can't be undone. Lucky will start from the very beginning.", resetYes2: 'Delete everything',
     tool_level: '+1 level', tool_full: 'All 100%', tool_sad: 'Sad', tool_dog: 'Tali', tool_frog: 'Frog', tool_bug: 'Butterfly', tool_ask: 'Question', tool_day: 'New day', tool_nap: 'Nap', tool_idiom: 'Saying', tool_holiday: 'Holiday', tool_trick: 'Trick',
     holidays: 'Holiday decorations', holidayAuto: 'Holidays by the calendar',
+    calTitle: 'Holiday calendar', calDays: 'Days to go: {n}', calToday: "It's {x} today! Open the big window!",
+    calHint: 'One window opens every day.', calOpened: "Today's window is open. Come back tomorrow!", calGift: 'A holiday present', calAfter: 'The holiday is over, but the windows are still here!',
     newDay: 'New day: limits reset', testSound: 'Test sound', wokeByParent: 'Lucky is awake until the morning ({time}). Next night he sleeps as usual.', dailyMax: 'Max play per day', noLimit: 'No limit',
     dayDoneTitle: 'What a big day!', dayDoneSub: 'Lucky played a lot today and is resting until morning. He wakes up at {time}. Time for something else!', fromFrog: 'A present from the frog!',
     parentHold: 'Parents: hold ⚙️ for 2 seconds',
@@ -966,6 +970,8 @@ export const LUCKY = {
     lights: [['Мигают огоньки!', 'The lights are twinkling!']],
     roseGift: [['Эта розочка для тебя!', 'This rose is for you!']],
     coin: [['Золотая монетка! Это лепрекон спрятал!', 'A gold coin! The leprechaun hid it!']],
+    calendar: [['Что за сегодняшним окошком? Смотри!', "What's behind today's window? Look!"]],
+    trickTreat: [['Держи конфетку, {dog}!', 'Here is a sweet for you, {dog}!']],
   },
   // ---------- Lucky's tricks (tricks.js): new ways to answer a touch, and the rare big tricks ----------
   tricks: {
@@ -1121,6 +1127,8 @@ export const DOG = {
   play: [['Бежим наперегонки!', "Let's race!"], ['Кто быстрее до дерева?', "Who's faster to the tree?"]],
   bye: [['Мне пора домой. Пока!', 'Time to go home. Bye!'], ['Пока-пока! Я ещё приду!', "Bye-bye! I'll come back!"], ['Я побежал домой, но ещё вернусь!', "I'm running home, but I'll be back!"]],
   thumped: [['Ой! Кто стучит?', "Eek! Who's knocking?"]],
+  trickOrTreat: [['Сладость или гадость?', 'Trick or treat!']],
+  sweetThanks: [['Ням! Спасибо! Ты самый лучший друг!', 'Yum! Thank you! You are the best friend ever!']],
   // holidays: now and then in the last week
   holiday: {
     halloween: [['Гав! Я самый страшный пёс! Хи-хи.', "Woof! I'm the spookiest dog! Hee-hee."]],
