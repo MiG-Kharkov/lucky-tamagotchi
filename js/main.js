@@ -185,8 +185,11 @@ function prank(p) {
   }
   if (p.fx === 'sneeze' && dogEl) { hop(dogEl, 'sneeze'); sfx.sneeze(); }
   if (p.fx === 'dance') setTimeout(() => { hop(ui.lucky, 'zoom'); if (dogEl) hop(dogEl, 'zoom'); sfx.happy(); }, 1500);
-  talk(p.lines);
+  talk(acted(p.lines));
 }
+
+// A chat with Tali acted out: before each line, the little action that goes with it (antics.js)
+const acted = (lines) => lines.flatMap((l) => [() => { antics.chat(l[2]); return 0; }, l]);
 
 function riddle(r) {
   talk([['lucky', ...r[0]], ['lucky', ...r[1]]].map((x, i) => (i === 1 ? ['lucky', '🤔 … ' + x[1], '🤔 … ' + x[2]] : x)));
@@ -1000,14 +1003,17 @@ function pet(part, p) {
   if (tier() === 'low' && LUCKY.sulk[need] && S.pet[need] < 30 && Math.random() < 0.35) { sulk(need); return; }
   sfx.pop();
   setTemp(part === 'head' ? 'happy' : pick(['laugh', 'laugh', 'happy']), 1100);
-  if (part === 'head') hop(ui.lucky, 'pat', 600);
+  // now and then he is patted so well that his ears start spinning (the helicopter says its own line)
+  const heli = part === 'head' && Math.random() < 0.05;
+  if (heli) helicopter();
+  else if (part === 'head') hop(ui.lucky, 'pat', 600);
   else if (part === 'tummy') hop(ui.lucky, 'jiggle', 700);
   else hop(ui.lucky, pick(PET_MOVES), 1400);
   heartsBurst(x, y - 20);
   st.boost(S, 'fun', 3);
   tapCount++;
   if (tapCount % 3 === 0) award(addH(1, 'pet', 8));
-  if (tapCount % 2 === 1) {
+  if (tapCount % 2 === 1 && !heli) {
     const special = part === 'head' ? antics.line('pat', 0.5, 20000) : part === 'tummy' ? antics.line('giggle', 0.7, 20000) : 0;
     if (!special) say(fresh(byTier(LUCKY.tapLow, LUCKY.tap, LUCKY.tapMax)));
   }
@@ -1016,7 +1022,10 @@ function pet(part, p) {
 
 function luckyDouble(part) {
   if (part === 'ear') return; // ear taps count towards the helicopter
-  if (part === 'nose') { setTemp('laugh', 1000); hop(ui.lucky, 'boop', 800); sfx.squeak(); antics.line('boop', 0.9); return; }
+  if (part === 'nose') {
+    if (Math.random() < 0.15) { sneeze(); return; } // a boop on the nose… and it tickles: achoo!
+    setTemp('laugh', 1000); hop(ui.lucky, 'boop', 800); sfx.squeak(); antics.line('boop', 0.9); return;
+  }
   if (part === 'tummy') { setTemp('laugh', 1200); hop(ui.lucky, 'drum', 1000); sfx.drum(); antics.line('drum', 0.9); st.boost(S, 'fun', 2); renderStats(); return; }
   if (part === 'feet') { thump(); return; }
   binky();
@@ -1057,6 +1066,9 @@ function thump() {
   const [x, y] = luckyPoint(0.5, 0.95);
   fxAt(x, y, ['💨'], 3, 'spark');
   antics.line('thump', 0.9);
+  // the thump gives Tali a fright
+  const dogEl = dogHere && ui.dog.querySelector('.dog-body');
+  if (dogEl) setTimeout(() => { hop(dogEl, 'hop'); sfx.bark(); }, 300);
 }
 
 // Stroking Lucky with a finger: he purrs (bunnies really do, by gently grinding their teeth)
@@ -1088,6 +1100,8 @@ function hug() {
   st.boost(S, 'fun', 5);
   award(addH(1, 'pet', 8));
   say(fresh(byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
+  // now and then the hug is so tight he gets squashed
+  if (Math.random() < 0.12) setTimeout(() => { hop(ui.lucky, 'squash', 700); heartsBurst(x, y, 6); sfx.boing(); }, 900);
   stat('hugs');
   renderStats();
 }
@@ -1147,6 +1161,8 @@ function tickle() {
   st.boost(S, 'fun', 6);
   award(addH(1, 'pet', 8));
   say(fresh(LUCKY.tickle));
+  // sometimes he laughs so much he flops over
+  if (Math.random() < 0.2) setTimeout(() => { if (mode === 'main') hop(ui.lucky, 'flop', 2600); }, 1400);
   stat('tickles');
   renderStats();
 }
@@ -1189,13 +1205,13 @@ const VISITORS = [
   { e: '🐞', w: 2, in: 'garden irish dojo castle', path: 'flutter', end: ['spots'] },
   { e: '🐝', w: 2, in: 'garden candy irish castle', path: 'zigzag', end: ['bee'] },
   { e: '🐦', w: 2, in: 'garden irish winter castle dojo', path: 'glide', end: ['sing', 'feather'], flip: true },
-  { e: '🐠', w: 3, in: 'beach', path: 'jump', end: ['splash'], flip: true },
-  { e: '❄️', w: 3, in: 'winter', path: 'fall', end: ['tongue'] },
-  { e: '🌠', w: 3, in: 'space', path: 'streak', end: ['wish'] },
-  { e: '🛸', w: 2, in: 'space', path: 'glide', end: ['alien'] },
+  { e: '🐠', w: 3, in: 'beach', path: 'jump', end: ['splash', 'release'], flip: true },
+  { e: '❄️', w: 3, in: 'winter', path: 'fall', end: ['tongue', 'flakes'] },
+  { e: '🌠', w: 3, in: 'space', path: 'streak', end: ['wish', 'starhead'] },
+  { e: '🛸', w: 2, in: 'space', path: 'glide', end: ['alien', 'beam'] },
   { e: '🪁', w: 1, in: 'garden beach irish dojo castle', path: 'float', end: ['kite'] },
-  { e: '🎈', w: 1, in: 'garden candy beach irish castle', path: 'rise', end: ['pop'] },
-  { e: '🍬', w: 3, in: 'candy', path: 'float', end: ['sweet'] },
+  { e: '🎈', w: 1, in: 'garden candy beach irish castle', path: 'rise', end: ['pop', 'ride'] },
+  { e: '🍬', w: 3, in: 'candy', path: 'float', end: ['sweet', 'lolly'] },
   { e: '🦉', w: 1.5, in: 'garden irish winter castle dojo', path: 'glide', end: ['owl'], evening: true, flip: true },
   { e: '🦄', w: 0.15, in: 'all', path: 'glide', end: ['unicorn'], flip: true },
   { e: '🐉', w: 0.15, in: 'dojo castle space winter', path: 'glide', end: ['dragon'], flip: true },
@@ -2600,7 +2616,7 @@ function idleTalk() {
   if (Math.random() < 0.08 && maybeIdiom(Math.random() < 0.3 ? 'idle' : 'any', 1)) return;
   if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
-  if (dogHere && Math.random() < 0.45) return talk(fresh(CHATS));
+  if (dogHere && Math.random() < 0.45) return talk(acted(fresh(CHATS)));
   const needs = Object.keys(NEED_LINES).filter((k) => p[k] < 40);
   if (needs.length && Math.random() < 0.7) return sayAuto(fresh(LUCKY[NEED_LINES[pick(needs)]]));
   if (st.minutesToBed(Date.now(), S.settings) <= 60 && Math.random() < 0.4) return sayAuto(fresh(LUCKY.evening));
@@ -2824,6 +2840,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget() };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]) };
 
 start();

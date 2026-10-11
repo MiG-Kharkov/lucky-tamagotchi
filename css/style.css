@@ -1115,3 +1115,15 @@ body.editing .bubble { pointer-events: none; opacity: .88; }
 @keyframes toss { 30% { transform: translateY(-140%) scale(1.7); } 55% { transform: translateY(-90%) scale(3.2); } 78% { transform: translateY(-60%) scale(2); } }
 .lucky.sled { animation: sledBump .35s ease-in-out infinite; }
 @keyframes sledBump { 50% { translate: 0 -2%; rotate: -3deg; } }
+/* acted-out chats and new bunny habits */
+.lucky.dig { transform-origin: 50% 100%; animation: dig 1.8s ease-in-out; }
+@keyframes dig { 10%, 40%, 70% { rotate: 9deg; translate: 0 5%; scale: 1.04 .94; } 25%, 55%, 85% { rotate: 5deg; translate: 0 2%; scale: 1 1; } }
+.lucky.sneak { animation: sneak 2.3s ease-in-out; }
+@keyframes sneak { 20% { translate: -5% 3%; scale: 1 .9; rotate: -3deg; } 40% { translate: -9% 3%; scale: 1 .9; rotate: 2deg; } 60% { translate: -13% 3%; scale: 1 .9; rotate: -3deg; } 80% { translate: -8% 2%; scale: 1 .95; } }
+.lucky.wagtry { transform-origin: 50% 100%; animation: wagtry 1.9s ease-in-out; }
+@keyframes wagtry { 15%, 45%, 75% { rotate: -6deg; translate: -2% 0; } 30%, 60%, 90% { rotate: 6deg; translate: 2% 0; } }
+.dog-body .ear { transform-box: fill-box; transform-origin: 50% 100%; }
+.dog-body.perk .ear { animation: perkEar .45s ease-in-out 3; }
+@keyframes perkEar { 50% { transform: scaleY(1.18) translateY(-3px); } }
+.fx-dark { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 74%, transparent 24%, #1B1740d9 64%); animation: fxDark var(--ms, 5s) ease-in-out forwards; }
+@keyframes fxDark { 0% { opacity: 0; } 18%, 78% { opacity: 1; } 100% { opacity: 0; } }

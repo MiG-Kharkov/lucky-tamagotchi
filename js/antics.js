@@ -2,7 +2,7 @@
 // He walks over, puts on props, gets wet and shakes dry, runs away from the crab, hides and waits to be found.
 // Lines live in LUCKY.antics; each line has its own cooldown so Lucky comments without chattering.
 
-import { LUCKY, DOG } from './i18n.js';
+import { LUCKY, DOG, CHATS } from './i18n.js';
 import { sfx } from './sound.js';
 import { PROPS, decor as decorArt } from './art.js';
 
@@ -80,6 +80,8 @@ export function createAntics(api) {
   }
   // The recorded line that contains these English words, as a one-line list ([] if it has been changed)
   const lineWith = (list, words) => list.filter((x) => x[1].includes(words)).slice(0, 1);
+  // the same for a line Lucky says in one of his chats with Tali
+  const chatLine = (words) => CHATS.flat().filter((l) => l[0] === 'lucky' && l[2].includes(words)).slice(0, 1).map((l) => [l[1], l[2]]);
 
   // Some things react in several ways: a different one each time, never the same twice in a row
   const lastWay = {};
@@ -395,15 +397,18 @@ export function createAntics(api) {
     long: who((c) => hideGame(begin('hide'), c.el)),
   };
 
+  const flowerSniff = (c) => {
+    const a = begin('sniff');
+    go(nextTo(c.el), 600);
+    at(a, 650, () => { api.setTemp('happy', 1500); api.hop(L, 'sniff', 1500); sfx.sniff(); line([...LUCKY.antics.sniff, ...LUCKY.flowers], 0.8); });
+    if (Math.random() < 0.3) at(a, 1700, () => { api.setTemp('sleep', 400); at(a, 400, () => { sfx.sneeze(); pose('laugh', 1200, 'sneeze'); line('pollen', 1); }); });
+    at(a, 2900, end);
+  };
+  // now and then a bee was asleep in the flower… and it chases Lucky
+  const flowerBee = (c) => { sfx.buzz(); visitor('bee', c.x, c.y); };
   R.flower = {
     press: (c) => { sfx.pop(); api.floatFx(c.x, c.y - 10, '🦋', 'fly-up'); },
-    tap: who((c) => {
-      const a = begin('sniff');
-      go(nextTo(c.el), 600);
-      at(a, 650, () => { api.setTemp('happy', 1500); api.hop(L, 'sniff', 1500); sfx.sniff(); line([...LUCKY.antics.sniff, ...LUCKY.flowers], 0.8); });
-      if (Math.random() < 0.3) at(a, 1700, () => { api.setTemp('sleep', 400); at(a, 400, () => { sfx.sneeze(); pose('laugh', 1200, 'sneeze'); line('pollen', 1); }); });
-      at(a, 2900, end);
-    }),
+    tap: who(oneOf('flower', flowerSniff, flowerSniff, flowerBee)),
     double: (c) => {
       api.hop(c.el, 'bloom', 1800);
       sfx.magic();
@@ -440,7 +445,14 @@ export function createAntics(api) {
   R.fuji = {
     press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['❄️', '✨'], 5, 'spark'); },
     tap: who(() => { pose('happy', 1500, 'hop'); line('fuji', 0.8); }),
-    double: who(() => { pose('laugh', 1800, 'climb', 1800); line('climb'); }),
+    double: who(oneOf('fuji',
+      () => { pose('laugh', 1800, 'climb', 1800); line('climb'); },
+      // halfway up… and down he slides
+      () => {
+        pose('laugh', 1300, 'climb', 1800);
+        line('climb', 1);
+        setTimeout(() => { if (!api.free()) return; pose('ok', 700, 'slip', 1800); setTimeout(() => { sfx.bonk(); api.fxAt(...head(), ['💫'], 3, 'spark'); api.setTemp('laugh', 1400); line('slip', 1, 0); }, 650); }, 1500);
+      })),
     long: who(() => {
       const a = begin('snow');
       api.fxAt(...head(), ['❄️'], 7, 'drop');
@@ -550,7 +562,10 @@ export function createAntics(api) {
 
   R.sea = {
     press: (c) => { sfx.splash(); api.floatFx(c.x, c.y, '💦', 'spark'); },
-    tap: who(() => { api.fxAt(...feet(), ['💦', '💧'], 5, 'spark'); pose('laugh', 1200, 'hop'); line('splash', 0.8); }),
+    tap: who(oneOf('sea',
+      () => { api.fxAt(...feet(), ['💦', '💧'], 5, 'spark'); pose('laugh', 1200, 'hop'); line('splash', 0.8); },
+      // a fish jumps out and splashes him
+      (c) => visitor('splash', c.x, c.y))),
     double: who(() => {
       pose('laugh', 1800, 'paddle', 1800);
       [0, 500, 1000].forEach((d) => setTimeout(() => { api.fxAt(...feet(), ['💦'], 3, 'spark'); sfx.splash(); }, d));
@@ -661,7 +676,19 @@ export function createAntics(api) {
 
   R.star = {
     press: (c) => { sfx.note([988, 1175, 1319][Math.floor(Math.random() * 3)]); api.floatFx(c.x, c.y, '⭐', 'spark'); },
-    tap: who(() => { api.setTemp('happy', 2500); api.fxAt(...head(), ['✨'], 4, 'spark'); sfx.chime(); line('wish', 0.7); }),
+    tap: who(oneOf('star',
+      () => { api.setTemp('happy', 2500); api.fxAt(...head(), ['✨'], 4, 'spark'); sfx.chime(); line('wish', 0.7); },
+      // he counts the stars: one, two, three!
+      () => {
+        const a = begin('stars'), [hx, hy] = head();
+        [[-90, -70], [10, -120], [100, -60]].forEach(([dx, dy], i) => at(a, i * 750, () => {
+          popUp('⭐', hx + dx, Math.max(30, hy + dy), 1500, 28);
+          sfx.note([988, 1175, 1319][i]);
+          api.say([count(i + 1)]);
+        }));
+        at(a, 2400, () => { pose('happy', 1500, 'clap'); api.fxAt(...head(), ['✨'], 4, 'spark'); });
+        at(a, 3200, end);
+      })),
     double: who((c) => { fly('⭐', [c.x, c.y], head(), 700, { size: 28, spin: 360 }); setTimeout(() => { prop('star', 5000); sfx.sparkle(); line('starHead'); }, 700); }),
     long: who(() => {
       const w = sceneRect().width;
@@ -679,7 +706,10 @@ export function createAntics(api) {
       sfx.magic();
       if (api.free()) { pose('happy', 1500, 'wave', 1200); line('alien'); }
     },
-    long: who(() => { prop('cheese', 3500); api.setTemp('happy', 1800); sfx.pop(); line('moonCheese', 1); }),
+    long: who(oneOf('crater',
+      () => { prop('cheese', 3500); api.setTemp('happy', 1800); sfx.pop(); line('moonCheese', 1); },
+      // hide and seek in the crater
+      (c) => hideGame(begin('hide'), c.el))),
   };
 
   const sheepBaa = () => { setTimeout(() => { sfx.baa(); pose('laugh', 1200, 'hop'); line('baa', 0.8); }, 650); };
@@ -1077,9 +1107,24 @@ export function createAntics(api) {
   const EMOJI = {
     '🌷': 'flower', '🌼': 'flower', '🪷': 'flower', '🌸': 'flower', '🌻': 'flower', '🦀': 'crab', '🐑': 'sheep', '🍭': 'lolly', '🍬': 'lolly', '🧁': 'lolly',
     '🐚': 'shell', '☃️': 'snowman', '🌲': 'pine', '🎄': 'pine', '🪐': 'planet', '🌟': 'star', '⭐': 'star', '☘️': 'clover', '🍀': 'clover',
-    '🏮': 'lamp', '🎋': 'bamboo', '🌴': 'palm', '❄️': 'pine', '🏯': 'pagoda', '⛩️': 'pagoda', '🍓': 'lolly', '🍩': 'lolly', '🍪': 'lolly', '🎂': 'lolly', '🍦': 'lolly',
+    '🏮': 'lamp', '🎋': 'bamboo', '🌴': 'palm', '❄️': 'pine', '🏯': 'pagoda', '⛩️': 'pagoda', '🍩': 'lolly', '🍪': 'lolly', '🎂': 'lolly', '🍦': 'lolly',
+    '🌧️': 'cloud', '🌠': 'star', '☄️': 'star', '🌍': 'planet', '🏰': 'castle', '🌙': 'crater',
   };
   const say1 = (key, sound) => ({ press: (c) => { sound(); api.hop(c.el, 'wiggle'); }, tap: who(() => { pose('happy', 1400, 'hop'); line(key, 0.9); }) });
+  // a sticker that plays a visitor's scene (several kinds: a different one each time)
+  const visitorSticker = (kinds, sound = () => sfx.sparkle()) => ({
+    press: () => sound(),
+    tap: who((c) => visitor(Array.isArray(kinds) ? kinds[pickWay('sticker' + kinds[0], kinds.length)] : kinds, c.x, c.y)),
+  });
+  // something to eat: it flies into his mouth
+  const eatSticker = (emoji, list) => ({
+    press: () => sfx.pop(),
+    tap: who((c) => { fly(emoji, [c.x, c.y], mouth(), 500, { size: 26 }); setTimeout(() => { api.setTemp('eat', 1600); sfx.crunch(); line(list, 1); }, 500); }),
+  });
+  const kickSticker = {
+    press: () => sfx.whoosh(),
+    tap: who(() => { pose('laugh', 1200, 'kick', 1000); setTimeout(() => { const [x, y] = api.luckyPoint(0.95, 0.55); api.floatFx(x, y, '💥', 'spark'); sfx.bonk(); }, 380); line('kick', 1); }),
+  };
 
   // ⭐ fairy's wishes: something different every time
   const W0 = () => sceneRect().width, H0 = () => sceneRect().height;
@@ -1206,6 +1251,33 @@ export function createAntics(api) {
       }),
     },
     '🎐': { press: (c) => { sfx.chime(); api.hop(c.el, 'wiggle'); }, tap: () => {} },
+    // stickers that do what the visitor they show does
+    '🐞': visitorSticker('spots'),
+    '🐝': visitorSticker('bee', () => sfx.buzz()),
+    '🦋': visitorSticker(['nose', 'ear', 'circle', 'family']),
+    '🐠': visitorSticker(['splash', 'release'], () => sfx.splash()),
+    '🐬': visitorSticker('splash', () => sfx.splash()),
+    '🐳': visitorSticker('splash', () => sfx.splash()),
+    '🪁': visitorSticker('kite', () => sfx.whoosh()),
+    '🦄': visitorSticker('unicorn', () => sfx.magic()),
+    '🐉': visitorSticker('dragon', () => sfx.magic()),
+    '🌈': { press: (c) => sfx.chime(), tap: who(() => { rainbow(); pose('happy', 1500, 'hop'); line('rainbow', 1); }) },
+    '💎': { press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['✨', '💎'], 4, 'spark'); }, tap: who(() => { pose('laugh', 1500, 'proud', 1200); api.fxAt(...head(), ['✨'], 4, 'spark'); line('fishGem', 1); }) },
+    '🥷': kickSticker, '🥋': kickSticker,
+    '🍓': eatSticker('🍓', LUCKY.food.strawberry), '🍙': eatSticker('🍙', LUCKY.eat),
+    // a little rocket: three, two, one… off it goes (a double tap: fireworks)
+    '🚀': {
+      press: (c) => sfx.tap(),
+      tap: (c) => {
+        [0, 600, 1200].forEach((d) => setTimeout(() => sfx.beep(false), d));
+        if (api.free()) { line('countdown', 1, 15000); pose('ok', 2000, 'listen', 2000); }
+        setTimeout(() => { sfx.beep(true); sfx.launch(); fly('🚀', [c.x, c.y], [c.x + 30, -60], 1300, { size: 34 }); if (api.free()) pose('laugh', 1400, 'clap'); }, 1800);
+      },
+      double: (c) => D.rocket.double(c),
+    },
+    '🔭': { press: (c) => sfx.tap(), tap: who(() => { pose('happy', 2600, 'listen', 2600); api.fxAt(...head(), ['🌙', '⭐'], 3, 'spark'); line([...lineWith(LUCKY.rare, 'on the Moon'), ...lineWith(LUCKY.rare, 'space bunny')], 1); }) },
+    '🎻': { press: (c) => sfx.note(659), tap: who(() => { sfx.jig(); pose('laugh', 2200, 'dance', 2200); api.fxAt(...head(), ['🎵', '🎶'], 5, 'spark'); }) },
+    '🐣': { press: (c) => sfx.pop(), tap: who((c) => { api.hop(c.el, 'bounce', 800); api.hearts(c.x, c.y, 3); pose('happy', 1500, 'clap'); sfx.happy(); }) },
   };
 
   function forDecor(it) {
@@ -1379,6 +1451,219 @@ export function createAntics(api) {
   // a pose class for a while, outside a scene
   function hold2(cls, ms) { L.classList.add(cls); setTimeout(() => L.classList.remove(cls), ms); }
 
+  // A caught visitor: what happens depends on who it is (and for butterflies, on luck). x, y: where it was caught.
+  function visitor(kind, x, y) {
+    if (!api.free()) return false;
+    const a = begin('visitor'), w = sceneRect().width, off = [w + 40, 30];
+    const away = (e, from, ms = 1100) => fly(e, from, off, ms, { arc: 60, size: 28 });
+    const V = {
+      nose: () => {
+        prop('net', 1300);
+        sfx.whoosh();
+        api.hop(L, 'hop');
+        at(a, 500, () => { prop('butterfly', 2600); api.setTemp('laugh', 2500); line('noseFly', 0.9, 20000); });
+        at(a, 3000, () => { unprop('nose', true); away('🦋', nose()); });
+      },
+      ear: () => {
+        fly('🦋', [x, y], earPt(), 700, { arc: 40, size: 26, stay: 2200 });
+        at(a, 700, () => { pose('happy', 2100, 'listen', 2100); line('earFly', 1, 0); });
+        at(a, 2900, () => away('🦋', earPt()));
+      },
+      circle: () => {
+        const [hx, hy] = head(), pts = [[hx - 90, hy + 10], [hx, hy - 60], [hx + 90, hy + 10], [hx, hy + 70], [hx - 90, hy + 10]];
+        let from = [x, y];
+        pts.forEach((p, i) => { const f = from; at(a, i * 450, () => fly('🦋', f, p, 450, { size: 26 })); from = p; });
+        at(a, 300, () => { pose('laugh', 2400, 'pirouette', 1500); line('dizzyFly', 1, 0); });
+        at(a, pts.length * 450, () => { away('🦋', pts[pts.length - 1]); prop('dizzy', 2000); });
+      },
+      miss: () => {
+        prop('net', 1400);
+        sfx.whoosh();
+        at(a, 300, () => { pose('ok', 700, 'slip', 1800); });
+        at(a, 1000, () => sfx.bonk());
+        at(a, 1700, () => { prop('butterfly', 2400); api.setTemp('laugh', 2200); line('missFly', 1, 0); });
+        at(a, 4000, () => { unprop('nose', true); away('🦋', nose()); });
+      },
+      family: () => {
+        const [hx, hy] = head();
+        [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy], i) => at(a, i * 250, () => fly('🦋', [x, y], [hx + dx, hy + dy], 800, { arc: 40, size: 26, stay: 1600 })));
+        at(a, 700, () => { pose('happy', 2000, 'clap'); api.hearts(hx, hy, 5); line('family', 1, 0); });
+        at(a, 2700, () => [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy]) => away('🦋', [hx + dx, hy + dy])));
+      },
+      spots: () => {
+        fly('🐞', [x, y], paw(), 700, { size: 24, stay: 4300 });
+        at(a, 700, () => pose('happy', 3600, 'listen', 3400));
+        for (let i = 1; i <= 7; i++) at(a, 500 + i * 430, () => api.say([count(i)]));
+        at(a, 4000, () => { line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
+        at(a, 5000, () => away('🐞', paw()));
+      },
+      bee: () => {
+        const [hx, hy] = head();
+        sfx.buzz();
+        [[hx - 80, hy], [hx + 80, hy - 40], [hx - 60, hy + 60]].forEach((p, i) => at(a, i * 350, () => fly('🐝', i ? [hx, hy] : [x, y], p, 350, { size: 24 })));
+        at(a, 300, () => { api.setTemp('ok', 1800); go(Math.random() < 0.5 ? 30 : 70, 450); hold(a, 'scared', 1500); line('beeChase', 1, 0); });
+        at(a, 1100, () => away('🐝', [hx - 60, hy + 60], 800));
+      },
+      sing: () => {
+        const top = api.luckyPoint(0.5, 0.02);
+        fly('🐦', [x, y], top, 700, { arc: 40, size: 30, stay: 2600 });
+        at(a, 700, () => {
+          [784, 988, 880, 1175, 988].forEach((f, i) => setTimeout(() => sfx.note(f), i * 260));
+          api.fxAt(top[0], top[1] - 10, ['🎵', '🎶'], 5, 'spark');
+          pose('happy', 2400, 'sway', 1300);
+          line('birdSong', 1, 0);
+        });
+        at(a, 3300, () => away('🐦', top));
+      },
+      feather: () => {
+        away('🐦', [x, y], 900);
+        fly('🪶', [x, y], nose(), 1700, { arc: -20, spin: 90, size: 26 });
+        at(a, 1700, () => api.setTemp('sleep', 450));
+        at(a, 2150, () => { sfx.sneeze(); pose('laugh', 1300, 'sneeze'); api.fxAt(...nose(), ['💨', '🪶'], 3, 'spark'); line('feather', 1, 0); });
+      },
+      splash: () => {
+        fly('🐠', [x, y], api.luckyPoint(0.5, 0.35), 600, { arc: 70, spin: 200, size: 32 });
+        at(a, 600, () => { sfx.splash(); spray(...api.luckyPoint(0.5, 0.35)); line('fishSplash', 1, 0); getWet(a, 1800); });
+      },
+      tongue: () => {
+        fly('❄️', [x, y], mouth(), 900, { spin: 180, size: 26 });
+        at(a, 200, () => api.setTemp('eat', 1800));
+        at(a, 900, () => { sfx.lick(); api.fxAt(...mouth(), ['✨'], 3, 'spark'); line('snowflake', 1, 0); });
+      },
+      wish: () => { api.setTemp('happy', 2600); api.fxAt(...head(), ['✨', '🌟'], 6, 'spark'); sfx.chime(); line('wish', 1, 0); },
+      alien: () => { popUp('👽', x, y + 20, 2400, 36, 'pop-rise'); sfx.magic(); pose('happy', 1600, 'wave', 1200); line('alien', 1, 0); },
+      kite: () => { popUp('🪁', x, Math.max(40, y - 30), 3200, 42, 'kite-loop'); pose('laugh', 2200, 'sway', 1300); sfx.whoosh(); line('kite', 1, 0); },
+      pop: () => { sfx.bonk(); api.fxAt(x, y, ['🎉', '🎊', '✨'], 9, 'spark'); pose('ok', 800, 'startle', 1100); at(a, 900, () => api.setTemp('laugh', 1400)); line('balloonPop', 1, 0); },
+      sweet: () => { fly('🍬', [x, y], mouth(), 600, { spin: 300, size: 26 }); at(a, 600, () => { api.setTemp('eat', 1600); sfx.crunch(); line('sweetCatch', 1, 0); }); },
+      unicorn: () => {
+        rainbow(4600);
+        fly('🦄', [x, y], [w + 50, 50], 1500, { arc: 70, size: 44 });
+        for (let i = 0; i < 6; i++) at(a, i * 200, () => api.floatFx(x + (w - x) * (i / 6), y - 10 * i, '✨', 'spark'));
+        sfx.magic();
+        pose('laugh', 1500, 'binky');
+        line('unicorn', 1, 0);
+        api.reward();
+      },
+      dragon: () => {
+        popUp('🐉', x, y, 2200, 46);
+        at(a, 500, () => { api.fxAt(x, y, ['✨', '🎇', '💫'], 10, 'spark'); sfx.sneeze(); });
+        pose('ok', 900, 'startle', 1100);
+        at(a, 1100, () => { api.setTemp('laugh', 1500); line('dragon', 1, 0); });
+        api.reward();
+      },
+      owl: () => { popUp('🦉', x, y, 2600, 42); sfx.note(330); setTimeout(() => sfx.note(294), 450); pose('happy', 1800, 'listen', 1800); line('owl', 1, 0); },
+      // snowflakes settle on his nose: brr
+      flakes: () => {
+        fly('❄️', [x, y], nose(), 900, { spin: 180, size: 24 });
+        at(a, 250, () => fly('❄️', [x + 40, y - 20], nose(), 900, { spin: -180, size: 18 }));
+        at(a, 900, () => { pose('ok', 1600, 'shiver', 1200); sfx.bubble(); line('snowFlakes', 1, 0); });
+      },
+      // the shooting star lands right on his head
+      starhead: () => {
+        fly('⭐', [x, y], head(), 800, { arc: 40, size: 28, spin: 360 });
+        at(a, 800, () => { prop('star', 5000); sfx.sparkle(); pose('happy', 1500, 'proud', 1200); line('starHead', 1, 0); });
+      },
+      // the UFO hovers over Lucky and lifts him up with its beam, then puts him back
+      beam: () => {
+        const [hx, hy] = head(), uy = Math.max(40, hy - 120);
+        fly('🛸', [x, y], [hx, uy], 700, { size: 46, stay: 2900 });
+        at(a, 700, () => {
+          const b = document.createElement('div');
+          b.className = 'beam';
+          b.style.left = hx + 'px';
+          b.style.top = uy + 'px';
+          b.style.height = Math.max(60, api.luckyPoint(0.5, 0.98)[1] - uy) + 'px';
+          ui.fx.appendChild(b);
+          setTimeout(() => b.remove(), 2400);
+          sfx.whirr();
+          hold(a, 'beamup');
+          api.setTemp('ok', 2000);
+          line('beamUp', 1, 0);
+        });
+        at(a, 3100, () => { L.classList.remove('beamup'); a.cls.delete('beamup'); pose('laugh', 1500, 'land', 900); line('beamDown', 1, 0); fly('🛸', [hx, uy], [w + 60, 20], 900, { size: 46 }); });
+      },
+      // he grabs the balloon's string and floats up… then the balloon pops: umbrella!
+      ride: () => {
+        prop('balloonUp', 2600);
+        hold(a, 'balloonfly');
+        api.setTemp('laugh', 2000);
+        sfx.whoosh();
+        line('balloonFly', 1, 0);
+        at(a, 2300, () => {
+          unprop('hand', true);
+          sfx.bonk();
+          api.fxAt(...head(), ['💥', '🎉'], 4, 'spark');
+          prop('umbrella', 3000);
+          L.classList.remove('balloonfly');
+          a.cls.delete('balloonfly');
+          hold(a, 'parachute', 2700);
+          api.setTemp('ok', 1500);
+          line('parachute', 1, 0);
+        });
+      },
+      // the fish jumps into his paws, and he lets it go again
+      release: () => {
+        fly('🐠', [x, y], paw(), 600, { arc: 70, spin: 200, size: 32, stay: 1300 });
+        at(a, 600, () => { sfx.splash(); pose('happy', 1600, 'clap'); line('fishFish', 1, 0); });
+        at(a, 1900, () => fly('🐠', paw(), [x, ground() + 10], 700, { arc: 80, spin: -200, size: 32 }));
+        at(a, 2550, () => { sfx.splash(); api.fxAt(x, ground(), ['💦'], 4, 'spark'); });
+      },
+      // a lolly instead of a sweet
+      lolly: () => {
+        fly('🍭', [x, y], paw(), 600, { spin: 300, size: 28 });
+        at(a, 600, () => { prop('lolly', 3500); api.setTemp('eat', 1600); sfx.lick(); line('lolly', 1, 0); });
+      },
+    };
+    (V[kind] || V.nose)();
+    at(a, 5600, end);
+    return true;
+  }
+
+  // ---------- chats with Tali acted out: an action starts with a line (keyed by its English words) ----------
+  const dogEl = () => ui.dog.querySelector('.dog-body');
+  const dogDo = (cls, ms) => { const d = dogEl(); if (d) api.hop(d, cls, ms); };
+  const dogAt = (fx = 0.5, fy = 0.3) => { const d = dogEl(); if (!d) return null; const r = d.getBoundingClientRect(), s = sceneRect(); return [r.left - s.left + r.width * fx, r.top - s.top + r.height * fy]; };
+  // the scene goes dark around them for a moment
+  function dark(ms) {
+    const d = document.createElement('div');
+    d.className = 'fx-dark';
+    d.style.setProperty('--ms', ms + 'ms');
+    ui.fx.appendChild(d);
+    setTimeout(() => d.remove(), ms);
+  }
+  const CHAT_FX = {
+    'Lucky, you look so happy today!': () => pose('laugh', 1400, 'binky'),
+    'That is because {name} takes care of me!': () => api.hearts(...head(), 5),
+    'No, but I can chase my tail!': () => { sfx.bark(); dogDo('dogspin', 1400); },
+    "Let's do it together: a hop and a spin!": () => { sfx.sparkle(); pose('laugh', 1400, 'binky'); setTimeout(() => dogDo('dogspin', 1400), 250); },
+    'Bunnies are the best diggers!': () => { pose('happy', 1800, 'dig', 1800); [0, 450, 900, 1350].forEach((d) => setTimeout(() => { api.fxAt(...feet(), ['💨', '🌱'], 2, 'spark'); sfx.puff(); }, d)); },
+    "Then you dig and I'll keep guard!": () => dogDo('hop'),
+    'Hay! Lots and lots of hay.': () => { popUp('🌾', ...api.luckyPoint(0.92, 0.72), 1800, 40); api.setTemp('eat', 1500); sfx.crunch(); },
+    'I love bones!': () => { const p = dogAt(0.5, 0.1); if (p) popUp('🦴', ...p, 1900, 36, 'pop-rise'); dogDo('hop'); },
+    "Eww! Bunnies don't eat those.": () => { sfx.note(196); pose('sad', 1300, 'sulk'); },
+    'We have to sneak up very quietly…': () => pose('ok', 2300, 'sneak', 2300),
+    'WOOF!': () => { sfx.bark(); dogDo('hop'); pose('ok', 1000, 'startle', 1100); api.fxAt(...head(), ['💥'], 1, 'spark'); },
+    "Oh {dog}! Ninjas don't bark!": () => pose('laugh', 1500, 'look', 1500),
+    "I'm a lop! Why do yours stick up?": () => { api.setTemp('happy', 1300); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); },
+    'So I can hear everything!': () => dogDo('perk', 1300),
+    '{dog}, are you scared of the dark?': () => dark(6200),
+    "Not when you're with me!": () => { pose('happy', 1500, 'hug'); api.hearts(...head(), 5); },
+    'Bet I can run faster!': () => { sfx.whoosh(); dogDo('zoom', 2200); },
+    'But I can jump higher!': () => { sfx.boing(); pose('laugh', 1400, 'bigjump', 1100); },
+    "Let's be friends, not argue!": () => { api.hearts(...head(), 4); const p = dogAt(); if (p) api.hearts(...p, 4); },
+    'Lucky, can you wag your tail?': () => pose('ok', 1900, 'wagtry', 1900),
+    "My tail is a fluffy pom-pom. It doesn't wag!": () => pose('laugh', 1500, 'look', 1500),
+    "But it's very cute!": () => { dogDo('hop'); api.hearts(...head(), 3); },
+    '{name} is so kind!': () => dogDo('hop'),
+    "Yes! She's my best friend.": () => api.hearts(...head(), 5),
+    "That's right! You're a clever dog.": () => { dogDo('hop'); sfx.happy(); },
+    // Tali's pranks
+    'Achoo! Oops, I sneezed on your ears!': () => setTimeout(() => { prop('wet', 2600); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); api.setTemp('sad', 1200); }, 500),
+    "Ew! Never mind, I'll wash them.": () => { pose('happy', 1600, 'groom', 1600); setTimeout(() => { sfx.shake(); api.hop(L, 'shakeOff', 1200); unprop('body'); }, 1500); },
+    'OK, OK, here you go!': () => { const p = dogAt(0.5, 0.55); if (p) fly('🥕', p, mouth(), 600, { arc: 50, spin: 200, size: 28 }); setTimeout(() => { api.setTemp('eat', 1500); sfx.crunch(); }, 600); },
+    "That's not a ball, it's my carrot!": () => pose('laugh', 1500, 'look', 1500),
+  };
+
   // ---------- wiring ----------
   function run(table, kind, el, p) {
     const fn = table?.[kind];
@@ -1396,6 +1681,13 @@ export function createAntics(api) {
   return {
     // a tap on Lucky while he hides: 'You found me!' (true if handled)
     luckyTap: () => !!act?.onLuckyTap?.(),
+    // a chat line is starting: act it out (main.js calls this before each line of a chat or a prank)
+    chat(en) {
+      const fx = CHAT_FX[en];
+      if (!fx || !api.free()) return false;
+      fx();
+      return true;
+    },
     // decorations: main.js passes the layout item
     decor: (kind, el, it, p) => run(forDecor(it), kind, el, p),
     line, prop, unprop, setSticky, clearProps, fly, popUp, spray, end,
@@ -1437,116 +1729,11 @@ export function createAntics(api) {
       if (on) { prop('specs', Infinity); L.classList.add('think'); }
       else { L.classList.remove('think'); if (worn.eyes?.id === 'specs') unprop('eyes'); }
     },
-    // A caught visitor: what happens depends on who it is (and for butterflies, on luck). x, y: where it was caught.
-    visitor(kind, x, y) {
-      if (!api.free()) return false;
-      const a = begin('visitor'), w = sceneRect().width, off = [w + 40, 30];
-      const away = (e, from, ms = 1100) => fly(e, from, off, ms, { arc: 60, size: 28 });
-      const V = {
-        nose: () => {
-          prop('net', 1300);
-          sfx.whoosh();
-          api.hop(L, 'hop');
-          at(a, 500, () => { prop('butterfly', 2600); api.setTemp('laugh', 2500); line('noseFly', 0.9, 20000); });
-          at(a, 3000, () => { unprop('nose', true); away('🦋', nose()); });
-        },
-        ear: () => {
-          fly('🦋', [x, y], earPt(), 700, { arc: 40, size: 26, stay: 2200 });
-          at(a, 700, () => { pose('happy', 2100, 'listen', 2100); line('earFly', 1, 0); });
-          at(a, 2900, () => away('🦋', earPt()));
-        },
-        circle: () => {
-          const [hx, hy] = head(), pts = [[hx - 90, hy + 10], [hx, hy - 60], [hx + 90, hy + 10], [hx, hy + 70], [hx - 90, hy + 10]];
-          let from = [x, y];
-          pts.forEach((p, i) => { const f = from; at(a, i * 450, () => fly('🦋', f, p, 450, { size: 26 })); from = p; });
-          at(a, 300, () => { pose('laugh', 2400, 'pirouette', 1500); line('dizzyFly', 1, 0); });
-          at(a, pts.length * 450, () => { away('🦋', pts[pts.length - 1]); prop('dizzy', 2000); });
-        },
-        miss: () => {
-          prop('net', 1400);
-          sfx.whoosh();
-          at(a, 300, () => { pose('ok', 700, 'slip', 1800); });
-          at(a, 1000, () => sfx.bonk());
-          at(a, 1700, () => { prop('butterfly', 2400); api.setTemp('laugh', 2200); line('missFly', 1, 0); });
-          at(a, 4000, () => { unprop('nose', true); away('🦋', nose()); });
-        },
-        family: () => {
-          const [hx, hy] = head();
-          [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy], i) => at(a, i * 250, () => fly('🦋', [x, y], [hx + dx, hy + dy], 800, { arc: 40, size: 26, stay: 1600 })));
-          at(a, 700, () => { pose('happy', 2000, 'clap'); api.hearts(hx, hy, 5); line('family', 1, 0); });
-          at(a, 2700, () => [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy]) => away('🦋', [hx + dx, hy + dy])));
-        },
-        spots: () => {
-          fly('🐞', [x, y], paw(), 700, { size: 24, stay: 4300 });
-          at(a, 700, () => pose('happy', 3600, 'listen', 3400));
-          for (let i = 1; i <= 7; i++) at(a, 500 + i * 430, () => api.say([count(i)]));
-          at(a, 4000, () => { line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
-          at(a, 5000, () => away('🐞', paw()));
-        },
-        bee: () => {
-          const [hx, hy] = head();
-          sfx.buzz();
-          [[hx - 80, hy], [hx + 80, hy - 40], [hx - 60, hy + 60]].forEach((p, i) => at(a, i * 350, () => fly('🐝', i ? [hx, hy] : [x, y], p, 350, { size: 24 })));
-          at(a, 300, () => { api.setTemp('ok', 1800); go(Math.random() < 0.5 ? 30 : 70, 450); hold(a, 'scared', 1500); line('beeChase', 1, 0); });
-          at(a, 1100, () => away('🐝', [hx - 60, hy + 60], 800));
-        },
-        sing: () => {
-          const top = api.luckyPoint(0.5, 0.02);
-          fly('🐦', [x, y], top, 700, { arc: 40, size: 30, stay: 2600 });
-          at(a, 700, () => {
-            [784, 988, 880, 1175, 988].forEach((f, i) => setTimeout(() => sfx.note(f), i * 260));
-            api.fxAt(top[0], top[1] - 10, ['🎵', '🎶'], 5, 'spark');
-            pose('happy', 2400, 'sway', 1300);
-            line('birdSong', 1, 0);
-          });
-          at(a, 3300, () => away('🐦', top));
-        },
-        feather: () => {
-          away('🐦', [x, y], 900);
-          fly('🪶', [x, y], nose(), 1700, { arc: -20, spin: 90, size: 26 });
-          at(a, 1700, () => api.setTemp('sleep', 450));
-          at(a, 2150, () => { sfx.sneeze(); pose('laugh', 1300, 'sneeze'); api.fxAt(...nose(), ['💨', '🪶'], 3, 'spark'); line('feather', 1, 0); });
-        },
-        splash: () => {
-          fly('🐠', [x, y], api.luckyPoint(0.5, 0.35), 600, { arc: 70, spin: 200, size: 32 });
-          at(a, 600, () => { sfx.splash(); spray(...api.luckyPoint(0.5, 0.35)); line('fishSplash', 1, 0); getWet(a, 1800); });
-        },
-        tongue: () => {
-          fly('❄️', [x, y], mouth(), 900, { spin: 180, size: 26 });
-          at(a, 200, () => api.setTemp('eat', 1800));
-          at(a, 900, () => { sfx.lick(); api.fxAt(...mouth(), ['✨'], 3, 'spark'); line('snowflake', 1, 0); });
-        },
-        wish: () => { api.setTemp('happy', 2600); api.fxAt(...head(), ['✨', '🌟'], 6, 'spark'); sfx.chime(); line('wish', 1, 0); },
-        alien: () => { popUp('👽', x, y + 20, 2400, 36, 'pop-rise'); sfx.magic(); pose('happy', 1600, 'wave', 1200); line('alien', 1, 0); },
-        kite: () => { popUp('🪁', x, Math.max(40, y - 30), 3200, 42, 'kite-loop'); pose('laugh', 2200, 'sway', 1300); sfx.whoosh(); line('kite', 1, 0); },
-        pop: () => { sfx.bonk(); api.fxAt(x, y, ['🎉', '🎊', '✨'], 9, 'spark'); pose('ok', 800, 'startle', 1100); at(a, 900, () => api.setTemp('laugh', 1400)); line('balloonPop', 1, 0); },
-        sweet: () => { fly('🍬', [x, y], mouth(), 600, { spin: 300, size: 26 }); at(a, 600, () => { api.setTemp('eat', 1600); sfx.crunch(); line('sweetCatch', 1, 0); }); },
-        unicorn: () => {
-          rainbow(4600);
-          fly('🦄', [x, y], [w + 50, 50], 1500, { arc: 70, size: 44 });
-          for (let i = 0; i < 6; i++) at(a, i * 200, () => api.floatFx(x + (w - x) * (i / 6), y - 10 * i, '✨', 'spark'));
-          sfx.magic();
-          pose('laugh', 1500, 'binky');
-          line('unicorn', 1, 0);
-          api.reward();
-        },
-        dragon: () => {
-          popUp('🐉', x, y, 2200, 46);
-          at(a, 500, () => { api.fxAt(x, y, ['✨', '🎇', '💫'], 10, 'spark'); sfx.sneeze(); });
-          pose('ok', 900, 'startle', 1100);
-          at(a, 1100, () => { api.setTemp('laugh', 1500); line('dragon', 1, 0); });
-          api.reward();
-        },
-        owl: () => { popUp('🦉', x, y, 2600, 42); sfx.note(330); setTimeout(() => sfx.note(294), 450); pose('happy', 1800, 'listen', 1800); line('owl', 1, 0); },
-      };
-      (V[kind] || V.nose)();
-      at(a, 5600, end);
-      return true;
-    },
+    visitor,
     // Real bunny habits for quiet moments: grooming, a stretch, a flop, sniffing, nibbling, zoomies
     fidget() {
       if (!api.free() || act) return;
-      const all = ['groom', 'stretch', 'flop', 'sniff', 'nibble', 'look', 'zoomies'];
+      const all = ['groom', 'stretch', 'flop', 'sniff', 'nibble', 'look', 'zoomies', 'dig', 'earscratch', 'binky'];
       let k;
       do { k = all[Math.floor(Math.random() * all.length)]; } while (k === lastFidget);
       lastFidget = k;
@@ -1558,6 +1745,16 @@ export function createAntics(api) {
       if (k === 'nibble') { pose('eat', 1600, 'squash', 700); sfx.crunch(); api.fxAt(...feet(), ['🌱'], 2, 'spark'); if (talk) line('nibble', 1, 60000); }
       if (k === 'look') { pose('ok', 1500, 'look', 1500); }
       if (k === 'zoomies') { pose('laugh', 2300, 'zoom', 2300); sfx.whoosh(); if (talk) line('zoomies', 1, 60000); }
+      // digging a little hole, earth flying (bunnies really love to dig)
+      if (k === 'dig') {
+        pose('happy', 1800, 'dig', 1800);
+        [0, 450, 900, 1350].forEach((d) => setTimeout(() => { api.fxAt(...feet(), ['💨', '🌱'], 2, 'spark'); sfx.puff(); }, d));
+        if (talk) line(chatLine('best diggers'), 1, 60000);
+      }
+      // a scratch behind the ears: they wiggle
+      if (k === 'earscratch') { pose('happy', 1600, 'groom', 1600); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); }
+      // a little happy jump, just because
+      if (k === 'binky') { sfx.sparkle(); pose('laugh', 1400, 'binky'); api.fxAt(...head(), ['✨'], 3, 'spark'); }
     },
     // Tali: double tap - spins after his tail, long press - belly rub
     dog(kind, body) {
