@@ -426,7 +426,60 @@ function halloweenScene(world, stage) {
   return back.join('') + front.join('');
 }
 
+// Christmas and New Year
+const xmasTree = (x, y, s = 1, star = false, garland = false) => at(x, y, s, `<ellipse cy="40" rx="30" ry="5" fill="#000" opacity=".12"/>
+  <rect x="-5" y="26" width="10" height="14" fill="#8C5A3C"/>
+  <path d="M0 -46 L22 -12 L12 -12 L30 14 L18 14 L36 30 L-36 30 L-18 14 L-30 14 L-12 -12 L-22 -12Z" fill="#2E9E4E"/>
+  <path d="M0 -46 L12 -28 Q0 -24 -12 -28Z" fill="#3DBA63"/>
+  ${garland ? '<path d="M-16 -6 Q2 2 18 -8 M-26 20 Q0 30 28 18" stroke="#FFD23F" stroke-width="2.4" fill="none"/>' : ''}
+  <g class="ev-orn"><circle cx="-10" cy="-2" r="3.6" fill="#E2313B"/><circle cx="12" cy="6" r="3.6" fill="#FFD23F"/><circle cx="-16" cy="22" r="3.6" fill="#4D9BFF"/><circle cx="18" cy="24" r="3.6" fill="#E2313B"/><circle cx="2" cy="16" r="3.2" fill="#FF5FA2"/></g>
+  ${star ? `<g class="ev-star">${starPath(0, -50, 0.62)}</g>` : ''}`);
+const present = (x, y, s, c, r) => at(x, y, s, `<ellipse cy="14" rx="18" ry="3.5" fill="#000" opacity=".12"/><rect x="-15" y="-12" width="30" height="26" rx="3" fill="${c}"/><rect x="-17" y="-16" width="34" height="8" rx="2" fill="${c}"/>
+  <rect x="-3" y="-16" width="6" height="30" fill="${r}"/><path d="M0 -16 q-12 -12 -12 -2 q0 4 12 2 M0 -16 q12 -12 12 -2 q0 4 -12 2" stroke="${r}" stroke-width="3" fill="none"/>`);
+const cane = (x, y, s = 1) => at(x, y, s, `<path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#E2313B" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="4 5"/>`);
+const santaHat = (x, y, s = 1) => at(x, y, s, `<path d="M-14 0 Q-4 -26 16 -22 Q8 -14 12 -2Z" fill="#E2313B"/><rect x="-16" y="-3" width="30" height="7" rx="3.5" fill="#fff"/><circle cx="17" cy="-22" r="4.5" fill="#fff"/>`);
+// ornaments on the pines of the winter world (they are drawn in the world itself)
+const pineBaubles = (x, y, s) => at(x, y, s, `<g class="ev-orn"><circle cx="-8" cy="-8" r="3.2" fill="#E2313B"/><circle cx="10" cy="4" r="3.2" fill="#FFD23F"/><circle cx="-16" cy="22" r="3.2" fill="#4D9BFF"/><circle cx="16" cy="26" r="3.2" fill="#FF5FA2"/><circle cx="2" cy="14" r="3" fill="#FFD23F"/></g>`);
+// a firework burst in the sky: rays that open and fade, again and again (d: its delay)
+const burst = (x, y, c, d, s = 1) => at(x, y, s, `<g class="ev-burst" style="--delay:${d}s">${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${(Math.cos(a) * 6).toFixed(1)} ${(Math.sin(a) * 6).toFixed(1)} L${(Math.cos(a) * 26).toFixed(1)} ${(Math.sin(a) * 26).toFixed(1)}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`; }).join('')}<circle r="3" fill="#fff"/></g>`);
+// Santa's sleigh crossing the sky now and then
+const sleigh = (y) => `<g class="ev-sleigh" style="--y:${y}px"><text font-size="30" dominant-baseline="central">🦌🦌🛷</text></g>`;
+
+function christmasScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
+  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 0.9, stage >= 4, stage >= 2), present(p.L[0] + 34, p.L[1] + 18, 0.7, '#E2313B', '#FFD23F'));
+  if (stage >= 2) {
+    if (world !== 'winter') back.push(snow(18));
+    if (world === 'winter') front.push(pineBaubles(40, 412, 1.1), pineBaubles(355, 398, 1.3), pineBaubles(300, 434, 0.8));
+    front.push(present(...p.R, 0.85, '#2E9E4E', '#E2313B'), present(p.R[0] - 26, p.R[1] + 14, 0.6, '#4D9BFF', '#fff'), cane(p.l[0] + 4, p.l[1] - 20, 0.8), cane(p.r[0] - 8, p.r[1] - 22, 0.7));
+  }
+  if (stage >= 3) {
+    if (world === 'irish') front.push(santaHat(52, 457, 0.55), santaHat(270, 518, 0.5));
+    if (world === 'beach') front.push(santaHat(338, 588, 0.4));
+    front.push(present(p.l[0] + 30, p.l[1] + 8, 0.55, '#FF5FA2', '#fff'));
+  }
+  if (stage >= 4) back.push(sleigh(p.sky - 20));
+  return back.join('') + front.join('');
+}
+
+function newYearScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
+  back.push(burst(70, p.sky - 30, '#FFD23F', -0.5), burst(330, p.sky - 50, '#FF5FA2', -1.7, 0.9), burst(210, p.sky - 70, '#6FD3FF', -2.6, 0.8));
+  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 0.95, true, true), present(p.L[0] + 34, p.L[1] + 18, 0.7, '#8B6CFF', '#FFD23F'), present(...p.R, 0.8, '#E2313B', '#fff'));
+  if (world !== 'winter') back.push(snow(12));
+  if (stage >= 4) {
+    back.push(burst(130, p.sky + 10, '#9BE15D', -3.3, 0.7), burst(280, p.sky + 20, '#FF922E', -0.9, 0.75));
+    front.push(`<text class="ev-year" x="200" y="${p.sky - 40}" text-anchor="middle" font-size="44" font-weight="900" fill="#FFD23F" stroke="#E2A800" stroke-width="1.5">${new Date().getFullYear()}</text>`);
+  }
+  return back.join('') + front.join('');
+}
+
 // things along the top edge of the scene (HTML, so they stay at the top on every phone)
+// a string of fairy lights: the bulbs twinkle one after another
+const lights = (colors) => `<svg class="ev-lights" viewBox="0 0 400 34" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q50 18 100 6 T200 6 T300 6 T400 6" stroke="#2E5E3A" stroke-width="1.6" fill="none"/>${
+  Array.from({ length: 16 }, (_, i) => { const x = 12 + i * 25, y = 7 + Math.abs(Math.sin(((x % 100) / 100) * Math.PI)) * 9; return `<g transform="translate(${x} ${y.toFixed(1)})"><rect x="-2.5" y="-1" width="5" height="4" fill="#556"/><ellipse class="ev-bulb b${i % 3}" cy="8" rx="4.2" ry="6" fill="${colors[i % colors.length]}"/></g>`; }).join('')}</svg>`;
+const tinsel = '<svg class="ev-tinsel" viewBox="0 0 400 26" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q25 22 50 6 T100 6 T150 6 T200 6 T250 6 T300 6 T350 6 T400 6" stroke="#FFD23F" stroke-width="5" fill="none" stroke-dasharray="2 2"/><path d="M0 4 Q25 18 50 4 T100 4 T150 4 T200 4 T250 4 T300 4 T350 4 T400 4" stroke="#D9DEE8" stroke-width="3" fill="none" stroke-dasharray="1 3"/></svg>';
 const bunting = (colors) => {
   const fw = 30, w = colors.length * fw;
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="30" viewBox="0 0 ${w} 30"><path d="M0 4 Q${w / 2} 9 ${w} 4" stroke="#8C5A3C" stroke-width="1.5" fill="none"/>${colors.map((c, i) => `<path d="M${i * fw + 2} 4 L${i * fw + fw - 2} 4 L${i * fw + fw / 2} 26Z" fill="${c}"/>`).join('')}</svg>`;
@@ -435,8 +488,10 @@ const bunting = (colors) => {
 const cobweb = '<svg class="ev-web" viewBox="0 0 100 100" aria-hidden="true"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9"><path d="M0 0 L100 32 M0 0 L80 80 M0 0 L32 100 M0 0 L100 0 M0 0 L0 100"/><path d="M22 0 Q19 13 18 18 Q12 19 0 22 M46 0 Q40 26 37 37 Q26 40 0 46 M72 0 Q64 40 57 57 Q40 64 0 72"/></g></svg>';
 const TOPS = {
   halloween: (stage) => (stage >= 2 ? cobweb + '<div class="ev-spider"><span>🕷️</span></div>' : '') + (stage >= 3 ? bunting(['#FF8A1F', '#3A2246', '#7B3FB8']) : ''),
+  christmas: (stage) => (stage >= 2 ? lights(['#E2313B', '#FFD23F', '#2E9E4E', '#4D9BFF']) : ''),
+  newyear: () => tinsel + lights(['#FFD23F', '#FF5FA2', '#6FD3FF', '#9BE15D']),
 };
-const SCENES = { halloween: halloweenScene };
+const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene };
 
 // the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
 export function eventScene(id, world, stage) {
@@ -503,6 +558,11 @@ export const PROPS = {
   // holiday hats (slot 'season': hidden while he wears a hat or has something on his head)
   witchHat: { slot: 'season', art: () => `<g transform="rotate(-8 100 48)"><ellipse cx="100" cy="49" rx="46" ry="9" fill="#5B2A86"/><path d="M75 47 Q90 -6 118 -28 Q110 6 125 47Z" fill="#6E35A0"/>
     <path d="M77 40 Q100 47 124 40 L125 47 Q100 54 76 47Z" fill="#FF922E"/><circle cx="118" cy="-26" r="4.5" fill="#FFE066"/><path d="M94 22 l3 -6 3 6 -6 -4 h6z" fill="#FFE066" opacity=".9"/></g>` },
+  santaHat: { slot: 'season', art: () => `<g transform="rotate(-10 100 46)"><path d="M70 46 Q84 -4 124 -6 Q150 -4 156 26 Q140 8 128 16 Q132 32 130 46Z" fill="#E2313B"/>
+    <path d="M100 4 Q112 -2 124 4" stroke="#FF6B73" stroke-width="3" fill="none" opacity=".7"/><rect x="66" y="40" width="70" height="14" rx="7" fill="#fff"/><circle cx="156" cy="28" r="9" fill="#fff"/></g>` },
+  partyHat: { slot: 'season', art: () => `<g transform="rotate(12 100 44)"><path d="M84 46 L104 -14 L124 46Z" fill="#8B6CFF"/><path d="M94 16 L114 16 M89 31 L119 31" stroke="#FFD23F" stroke-width="5"/>
+    <path d="M80 44 Q104 52 128 44" stroke="#FF5FA2" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="104" cy="-16" r="6" fill="#FF5FA2"/>
+    <path d="M104 -22 l-6 -10 M104 -22 l6 -10 M104 -22 v-12" stroke="#FFD23F" stroke-width="2.4" stroke-linecap="round"/></g>` },
   ball: { slot: 'hand', art: () => `<g transform="translate(100 18)"><circle r="20" fill="#FF5FA2"/><path d="M0 0 L0 -20 A20 20 0 0 1 20 0Z M0 0 L0 20 A20 20 0 0 1 -20 0Z" fill="#fff"/><path d="M0 0 L20 0 A20 20 0 0 1 0 20Z" fill="#FFD23F"/><circle r="3.5" fill="#fff" stroke="#FF5FA2" stroke-width="1.5"/></g>` },
   clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
   hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },

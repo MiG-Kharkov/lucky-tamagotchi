@@ -1108,7 +1108,7 @@ export function createAntics(api) {
     '🌷': 'flower', '🌼': 'flower', '🪷': 'flower', '🌸': 'flower', '🌻': 'flower', '🦀': 'crab', '🐑': 'sheep', '🍭': 'lolly', '🍬': 'lolly', '🧁': 'lolly',
     '🐚': 'shell', '☃️': 'snowman', '🌲': 'pine', '🎄': 'pine', '🪐': 'planet', '🌟': 'star', '⭐': 'star', '☘️': 'clover', '🍀': 'clover',
     '🏮': 'lamp', '🎋': 'bamboo', '🌴': 'palm', '❄️': 'pine', '🏯': 'pagoda', '⛩️': 'pagoda', '🍩': 'lolly', '🍪': 'lolly', '🎂': 'lolly', '🍦': 'lolly',
-    '🌧️': 'cloud', '🌠': 'star', '☄️': 'star', '🌍': 'planet', '🏰': 'castle', '🌙': 'crater',
+    '🌧️': 'cloud', '🌠': 'star', '☄️': 'star', '🌍': 'planet', '🏰': 'castle', '🌙': 'crater', '⛄': 'snowman',
   };
   const say1 = (key, sound) => ({ press: (c) => { sound(); api.hop(c.el, 'wiggle'); }, tap: who(() => { pose('happy', 1400, 'hop'); line(key, 0.9); }) });
   // a sticker that plays a visitor's scene (several kinds: a different one each time)
@@ -1121,6 +1121,14 @@ export function createAntics(api) {
     press: () => sfx.pop(),
     tap: who((c) => { fly(emoji, [c.x, c.y], mouth(), 500, { size: 26 }); setTimeout(() => { api.setTemp('eat', 1600); sfx.crunch(); line(list, 1); }, 500); }),
   });
+  // a present: it jumps, bursts open in confetti, and Lucky is delighted
+  const presentOpen = (c) => {
+    const a = begin('present');
+    go(nextTo(c.el), 600);
+    at(a, 650, () => { api.hop(c.el, 'bounce', 800); sfx.pop(); });
+    at(a, 1200, () => { api.fxAt(c.x, c.y - 10, ['🎉', '✨', '🎊', '⭐'], 10, 'spark'); sfx.sparkle(); pose('laugh', 1500, 'binky'); line(lineWith(LUCKY.levelUp, 'what a present'), 1, 0); });
+    at(a, 2800, end);
+  };
   // Halloween stickers
   const pumpkinPeek = (c) => {
     const a = begin('pumpkin');
@@ -1288,6 +1296,18 @@ export function createAntics(api) {
     '🦇': visitorSticker('batloop', () => sfx.whoosh()),
     '🕸️': { press: () => sfx.tap(), tap: who(() => { pose('ok', 1400, 'shiver', 900); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); }) },
     '🧹': { press: () => sfx.whoosh(), tap: who((c) => broomRide(c)) },
+    // Christmas and New Year
+    '🎁': { press: () => sfx.pop(), tap: who((c) => presentOpen(c)) },
+    '🧦': { press: () => sfx.tap(), tap: who(() => { pose('laugh', 1500, 'hop'); line('fishSock', 1); }) },
+    '🔔': { press: () => sfx.ding(), tap: who(() => { sfx.ding(); setTimeout(() => sfx.ding(), 420); pose('ok', 900, 'startle', 1100); setTimeout(() => { if (api.free()) api.setTemp('laugh', 1300); }, 600); }) },
+    '🎅': { press: () => sfx.magic(), tap: who(() => { api.setTemp('happy', 2600); api.fxAt(...head(), ['✨', '🌟'], 6, 'spark'); sfx.chime(); line('wish', 1); }) },
+    '🦌': { press: () => sfx.gallop(), tap: who(() => { pose('laugh', 1900, 'jig', 1900); sfx.gallop(); }) },
+    '🍪': eatSticker('🍪', LUCKY.eat),
+    '🎆': { press: () => sfx.launch(), tap: (c) => D.rocket.double(c) },
+    '🎉': { press: () => sfx.pop(), tap: who((c) => { sfx.bonk(); api.fxAt(c.x, c.y - 10, ['🎉', '🎊', '✨'], 12, 'spark'); pose('laugh', 1500, 'bigjump', 1100); line(lineWith(LUCKY.tier.max, 'Hooray, hooray'), 1); }) },
+    '🎊': { press: () => sfx.pop(), tap: who((c) => { api.fxAt(c.x, c.y, ['🎊', '✨', '🎉'], 10, 'spark'); pose('laugh', 1400, 'binky'); sfx.sparkle(); }) },
+    '🕛': { press: () => sfx.tick(), tap: (c) => { [0, 500, 1000].forEach((d) => setTimeout(() => sfx.tick(), d)); setTimeout(() => D.rocket.double(c), 1500); } },
+    '✨': { press: () => sfx.sparkle(), tap: who(() => { const a = begin('sparkle'); hold(a, 'glow', 2000); api.fxAt(...head(), ['✨', '⭐'], 8, 'spark'); sfx.magic(); pose('happy', 2000, 'proud', 1200); at(a, 2100, end); }) },
     // stickers that do what the visitor they show does
     '🐞': visitorSticker('spots'),
     '🐝': visitorSticker('bee', () => sfx.buzz()),

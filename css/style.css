@@ -1133,7 +1133,7 @@ body.editing .bubble { pointer-events: none; opacity: .88; }
 .ev-top { position: absolute; left: 0; right: 0; top: 0; height: 0; pointer-events: none; }
 .ev-bunting { position: absolute; left: -10px; right: -10px; top: 0; height: 30px; background-repeat: repeat-x; filter: drop-shadow(0 2px 2px #0002); transform-origin: 50% 0; animation: evSway 5s ease-in-out infinite alternate; }
 @keyframes evSway { to { transform: translateY(2px) rotate(.5deg); } }
-.ev-web { position: absolute; right: 0; top: 0; width: 84px; height: 84px; transform: scaleX(-1); }
+.bg svg.ev-web { position: absolute; inset: 0 0 auto auto; width: 84px; height: 84px; transform: scaleX(-1); }
 .ev-spider { position: absolute; left: 34%; top: 0; width: 1.5px; height: 60px; background: #ffffffcc; transform-origin: 50% 0; animation: evSpider 6s ease-in-out infinite; }
 .ev-spider span { position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); font-size: 22px; line-height: 1; }
 @keyframes evSpider { 0%, 100% { height: 40px; } 50% { height: 96px; } }
@@ -1160,3 +1160,31 @@ body.ev-halloween.ev-s3 { --ev-deco: "🕸️"; background: radial-gradient(circ
 .ev-halloween.ev-s2 .pl.dec-hutch .pl-in::after, .ev-halloween.ev-s2 .pl.dec-igloo .pl-in::after, .ev-halloween.ev-s2 .pl.dec-tent .pl-in::after,
 .ev-halloween.ev-s2 .pl.dec-castle .pl-in::after { content: "🎃"; position: absolute; left: -8%; bottom: -4%; font-size: calc(var(--w) * .26cqw); pointer-events: none; }
 .ev-halloween.ev-s3 .pl.dec-rocket .pl-in::after, .ev-halloween.ev-s3 .pl.dec-snowman .pl-in::after { content: "🦇"; position: absolute; left: 40%; top: -10%; font-size: calc(var(--w) * .5cqw); pointer-events: none; }
+/* Christmas and New Year */
+.bg svg.ev-lights { position: absolute; inset: 0 0 auto 0; width: 100%; height: 34px; }
+.bg svg.ev-tinsel { position: absolute; inset: 2px 0 auto 0; width: 100%; height: 26px; }
+.ev-bulb { animation: evBulb 1.8s ease-in-out infinite; }
+.ev-bulb.b1 { animation-delay: -.6s; } .ev-bulb.b2 { animation-delay: -1.2s; }
+@keyframes evBulb { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+.ev-burst { transform-box: fill-box; transform-origin: center; animation: evBurst 3.6s ease-out var(--delay, 0s) infinite; }
+@keyframes evBurst { 0%, 55% { transform: scale(.1); opacity: 0; } 60% { opacity: 1; } 85% { transform: scale(1); opacity: .9; } 100% { transform: scale(1.15); opacity: 0; } }
+.ev-sleigh { animation: evSleigh 24s linear infinite; }
+@keyframes evSleigh { 0%, 70% { transform: translate(470px, var(--y)); opacity: 0; } 71% { opacity: 1; } 100% { transform: translate(-170px, calc(var(--y) - 40px)); opacity: 1; } }
+.ev-star { transform-box: fill-box; transform-origin: center; animation: evStar 2.4s ease-in-out infinite; }
+@keyframes evStar { 50% { transform: scale(1.18) rotate(8deg); } }
+.ev-year { animation: evYear 2.4s ease-in-out infinite; }
+@keyframes evYear { 50% { opacity: .7; } }
+body.ev-christmas.ev-s3 { --ev-deco: "❄️"; background: radial-gradient(circle at 20% 0%, #FFFFFF, #E4F3FF 55%, #FFE3EC); }
+.ev-christmas.ev-s3 .dog-body::after { content: "🔔"; position: absolute; left: 44%; top: 58%; font-size: min(6vw, 24px); pointer-events: none; }
+.ev-christmas.ev-s2 .pl.dec-hutch .pl-in::after, .ev-christmas.ev-s2 .pl.dec-igloo .pl-in::after, .ev-christmas.ev-s2 .pl.dec-tent .pl-in::after,
+.ev-christmas.ev-s2 .pl.dec-castle .pl-in::after { content: "🎄"; position: absolute; left: -8%; bottom: -2%; font-size: calc(var(--w) * .26cqw); pointer-events: none; }
+.ev-christmas.ev-s3 .pl.dec-rocket .pl-in::after { content: "⭐"; position: absolute; left: 30%; top: -14%; font-size: calc(var(--w) * .45cqw); pointer-events: none; }
+.ev-christmas.ev-s3 .pl.dec-snowman .pl-in::after { content: "🧣"; position: absolute; left: 22%; top: 36%; font-size: calc(var(--w) * .5cqw); pointer-events: none; }
+body.ev-newyear.ev-s3 { --ev-deco: "✨"; background: radial-gradient(circle at 20% 0%, #FFFBEA, #FFF0C2 55%, #E9E4FF); }
+.ev-newyear.ev-s3 .dog-body::after { content: "🎉"; position: absolute; left: 40%; top: -4%; font-size: min(7vw, 28px); pointer-events: none; }
+.ev-newyear.ev-s3 .pl.dec-hutch .pl-in::after, .ev-newyear.ev-s3 .pl.dec-igloo .pl-in::after, .ev-newyear.ev-s3 .pl.dec-tent .pl-in::after,
+.ev-newyear.ev-s3 .pl.dec-castle .pl-in::after { content: "🎁"; position: absolute; left: -6%; bottom: -2%; font-size: calc(var(--w) * .24cqw); pointer-events: none; }
+@media (prefers-reduced-motion: reduce) {
+  .ev-bat, .ev-sleigh, .ev-burst { display: none; }
+  .ev-ghost, .ev-bunting, .ev-spider, .ev-bulb, .ev-star, .ev-year, .ev-pumpkin .ev-face { animation: none !important; }
+}

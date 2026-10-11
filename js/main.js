@@ -817,7 +817,7 @@ function goPlace(id) {
 // ---------- holidays (events.js): the same game, decorated for a few weeks before each holiday ----------
 
 let EV = null; // the holiday that is on (with its stage), or null
-const SEASON_HAT = { halloween: 'witchHat' };
+const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat' };
 const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
 const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage) + art.eventTop(EV.id, EV.stage) : '');
 
@@ -1260,6 +1260,8 @@ const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 
 // holiday visitors come in every world from their stage on
 const HOLIDAY_VISITORS = {
   halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
+  christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['wish'], stage: 3 }],
+  newyear: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '❄️', w: 1, path: 'fall', end: ['tongue', 'flakes'], stage: 3 }],
 };
 
 // A flight path as keyframes in % of the scene, a little different every time
