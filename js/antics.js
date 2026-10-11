@@ -542,7 +542,7 @@ export function createAntics(api) {
     api.hop(c.el, 'scuttle', 2600);
     [0, 350, 700, 1050].forEach((d) => setTimeout(() => sfx.tap(), d));
     pose('laugh', 2300, 'sidestep', 2300);
-    line(LUCKY.worldTap.crab, 1);
+    line([...LUCKY.worldTap.crab, ...LUCKY.antics.sidestep], 1);
   };
   R.crab = {
     press: () => sfx.tap(),
@@ -624,7 +624,8 @@ export function createAntics(api) {
     go(nextTo(c.el, 16), 700);
     at(a, 750, () => { pose('happy', 1800, 'hug'); api.hearts(...head(), 4); sfx.happy(); line(LUCKY.worldTap.snowman, 1); });
     at(a, 2300, () => { hold(a, 'shiver', 1000); sfx.bubble(); api.fxAt(...head(), ['❄️'], 3, 'spark'); });
-    at(a, 3400, end);
+    at(a, 4000, () => { hold(a, 'shiver', 900); line('snowmanCold', 1, 0); });
+    at(a, 5000, end);
   };
   R.snowman = {
     press: () => sfx.pop(),
@@ -689,7 +690,7 @@ export function createAntics(api) {
           sfx.note([988, 1175, 1319][i]);
           api.say([count(i + 1)]);
         }));
-        at(a, 2400, () => { pose('happy', 1500, 'clap'); api.fxAt(...head(), ['✨'], 4, 'spark'); });
+        at(a, 2400, () => { pose('happy', 1500, 'clap'); api.fxAt(...head(), ['✨'], 4, 'spark'); line('starsWish', 1, 0); });
         at(a, 3200, end);
       })),
     double: who((c) => { fly('⭐', [c.x, c.y], head(), 700, { size: 28, spin: 360 }); setTimeout(() => { prop('star', 5000); sfx.sparkle(); line('starHead'); }, 700); }),
@@ -863,7 +864,7 @@ export function createAntics(api) {
       if (!api.free()) return;
       pose('laugh', 1400, 'clap');
       if (!left) line(LUCKY.sensei.huntDone, 1, 0);
-      else line(gold ? 'fishGem' : LUCKY.sensei.found, 1, 0);
+      else line(gold ? 'goldenEgg' : LUCKY.sensei.found, 1, 0);
     },
   };
   // the world was drawn again: eggs found before stay found
@@ -930,7 +931,7 @@ export function createAntics(api) {
         sfx.catch();
         api.hearts(c.x, c.y, 5);
         pose('happy', 1500, 'clap');
-        line(lineWith(LUCKY.gameAfter, 'Well done'), 1, 0);
+        line('caught', 1, 0);
         api.reward();
         return;
       }
@@ -1162,8 +1163,8 @@ export function createAntics(api) {
     const a = begin('pumpkin');
     go(nextTo(c.el), 650);
     at(a, 700, () => { pose('ok', 1200, 'sniff', 1200); sfx.sniff(); });
-    at(a, 1500, () => { popUp('👻', c.x, c.y - 26, 1700, 44, 'pop-rise'); sfx.boing(); pose('ok', 1000, 'startle', 1100); });
-    at(a, 2800, () => { pose('laugh', 1500, 'hop'); line(lineWith(LUCKY.antics.boo, 'Boo!'), 1, 0); api.reward(); });
+    at(a, 1500, () => { popUp('👻', c.x, c.y - 26, 1700, 44, 'pop-rise'); sfx.boing(); pose('ok', 1000, 'startle', 1100); line('pumpkinGhost', 1, 0); });
+    at(a, 2800, () => { pose('laugh', 1500, 'hop'); api.reward(); });
     at(a, 3800, end);
   };
   const ghostTale = (c) => {
@@ -1183,7 +1184,7 @@ export function createAntics(api) {
       hold(a, 'balloonfly');
       api.setTemp('laugh', 2200);
       sfx.whoosh();
-      line('balloonFly', 1, 0);
+      line('broom', 1, 0);
     });
     at(a, 2700, () => { L.classList.remove('balloonfly'); a.cls.delete('balloonfly'); unprop('feet'); pose('laugh', 1500, 'land', 900); api.reward(); });
     at(a, 3700, end);
@@ -1322,26 +1323,26 @@ export function createAntics(api) {
     '🎃': { press: () => sfx.pop(), tap: who((c) => pumpkinPeek(c)), double: (c) => { api.hop(c.el, 'bounce', 800); sfx.magic(); api.fxAt(c.x, c.y, ['✨', '🍬'], 6, 'spark'); } },
     '👻': { press: () => sfx.magic(), tap: who((c) => ghostTale(c)) },
     '🦇': visitorSticker('batloop', () => sfx.whoosh()),
-    '🕸️': { press: () => sfx.tap(), tap: who(() => { pose('ok', 1400, 'shiver', 900); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); }) },
+    '🕸️': { press: () => sfx.tap(), tap: who(() => { pose('ok', 1400, 'shiver', 900); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); line('cobweb', 1); }) },
     '🧹': { press: () => sfx.whoosh(), tap: who((c) => broomRide(c)) },
     // Christmas and New Year
     '🎁': { press: () => sfx.pop(), tap: who((c) => presentOpen(c)) },
     '🧦': { press: () => sfx.tap(), tap: who(() => { pose('laugh', 1500, 'hop'); line('fishSock', 1); }) },
-    '🔔': { press: () => sfx.ding(), tap: who(() => { sfx.ding(); setTimeout(() => sfx.ding(), 420); pose('ok', 900, 'startle', 1100); setTimeout(() => { if (api.free()) api.setTemp('laugh', 1300); }, 600); }) },
-    '🎅': { press: () => sfx.magic(), tap: who(() => { api.setTemp('happy', 2600); api.fxAt(...head(), ['✨', '🌟'], 6, 'spark'); sfx.chime(); line('wish', 1); }) },
-    '🦌': { press: () => sfx.gallop(), tap: who(() => { pose('laugh', 1900, 'jig', 1900); sfx.gallop(); }) },
+    '🔔': { press: () => sfx.ding(), tap: who(() => { sfx.ding(); setTimeout(() => sfx.ding(), 420); pose('ok', 900, 'startle', 1100); setTimeout(() => { if (api.free()) { api.setTemp('laugh', 1300); line('bell', 1); } }, 600); }) },
+    '🎅': { press: () => sfx.magic(), tap: who(() => { api.setTemp('happy', 2600); api.fxAt(...head(), ['✨', '🌟'], 6, 'spark'); sfx.chime(); line('santa', 1); }) },
+    '🦌': { press: () => sfx.gallop(), tap: who(() => { pose('laugh', 1900, 'jig', 1900); sfx.gallop(); line('reindeer', 1); }) },
     '🍪': eatSticker('🍪', LUCKY.eat),
     '🎆': { press: () => sfx.launch(), tap: (c) => D.rocket.double(c) },
     '🎉': { press: () => sfx.pop(), tap: who((c) => { sfx.bonk(); api.fxAt(c.x, c.y - 10, ['🎉', '🎊', '✨'], 12, 'spark'); pose('laugh', 1500, 'bigjump', 1100); line(lineWith(LUCKY.tier.max, 'Hooray, hooray'), 1); }) },
-    '🎊': { press: () => sfx.pop(), tap: who((c) => { api.fxAt(c.x, c.y, ['🎊', '✨', '🎉'], 10, 'spark'); pose('laugh', 1400, 'binky'); sfx.sparkle(); }) },
-    '🕛': { press: () => sfx.tick(), tap: (c) => { [0, 500, 1000].forEach((d) => setTimeout(() => sfx.tick(), d)); setTimeout(() => D.rocket.double(c), 1500); } },
-    '✨': { press: () => sfx.sparkle(), tap: who(() => { const a = begin('sparkle'); hold(a, 'glow', 2000); api.fxAt(...head(), ['✨', '⭐'], 8, 'spark'); sfx.magic(); pose('happy', 2000, 'proud', 1200); at(a, 2100, end); }) },
+    '🎊': { press: () => sfx.pop(), tap: who((c) => { api.fxAt(c.x, c.y, ['🎊', '✨', '🎉'], 10, 'spark'); pose('laugh', 1400, 'binky'); sfx.sparkle(); line('confetti', 1); }) },
+    '🕛': { press: () => sfx.tick(), tap: (c) => { [0, 500, 1000].forEach((d) => setTimeout(() => sfx.tick(), d)); if (api.free()) line('midnight', 1); setTimeout(() => D.rocket.double(c), 1500); } },
+    '✨': { press: () => sfx.sparkle(), tap: who(() => { const a = begin('sparkle'); hold(a, 'glow', 2000); api.fxAt(...head(), ['✨', '⭐'], 8, 'spark'); sfx.magic(); pose('happy', 2000, 'proud', 1200); line('sparkly', 1); at(a, 2100, end); }) },
     // Valentine's Day, St Patrick's Day and Easter
     '💌': visitorSticker('love', () => sfx.pop()),
     '💝': { press: () => sfx.pop(), tap: who((c) => { presentOpen(c); setTimeout(() => api.hearts(c.x, c.y, 6), 1250); }) },
-    '💘': { press: () => sfx.whoosh(), tap: who((c) => { fly('💘', [c.x, c.y], head(), 600, { size: 30 }); setTimeout(() => { sfx.happy(); api.hearts(...head(), 8); pose('happy', 1600, 'hug'); }, 600); }) },
+    '💘': { press: () => sfx.whoosh(), tap: who((c) => { fly('💘', [c.x, c.y], head(), 600, { size: 30 }); setTimeout(() => { sfx.happy(); api.hearts(...head(), 8); pose('happy', 1600, 'hug'); line('cupid', 1); }, 600); }) },
     '🧸': { press: () => sfx.tap(), tap: who(() => { sfx.happy(); pose('happy', 1600, 'hug'); api.hearts(...head(), 5); line(LUCKY.hug, 1); }) },
-    '🎩': { press: () => sfx.pop(), tap: who(() => { prop('tophat', 8000); sfx.pop(); pose('happy', 1600, 'proud', 1200); }) },
+    '🎩': { press: () => sfx.pop(), tap: who(() => { prop('tophat', 8000); sfx.pop(); pose('happy', 1600, 'proud', 1200); line('leprechaunHat', 1); }) },
     '🥚': { press: () => sfx.pop(), tap: who((c) => { api.hop(c.el, 'wiggle', 600); setTimeout(() => { popUp('🐣', c.x, c.y - 16, 1900, 30, 'pop-rise'); sfx.happy(); pose('laugh', 1400, 'clap'); line(LUCKY.sensei.found, 1); }, 600); }) },
     '🧺': { press: () => sfx.pop(), tap: who((c) => { ['🥚', '🐣', '🥚'].forEach((e, i) => setTimeout(() => fly(e, [c.x, c.y], [c.x + (i - 1) * 50, c.y - 70], 700, { arc: 40, size: 24 }), i * 200)); sfx.sparkle(); pose('happy', 1500, 'clap'); line(LUCKY.sensei.found, 1); }) },
     '🐰': { press: () => sfx.boing(), tap: who(() => { pose('laugh', 1400, 'binky'); setTimeout(() => line(lineWith(LUCKY.facts, 'love company'), 1), 400); }) },
@@ -1370,8 +1371,8 @@ export function createAntics(api) {
       double: (c) => D.rocket.double(c),
     },
     '🔭': { press: (c) => sfx.tap(), tap: who(() => { pose('happy', 2600, 'listen', 2600); api.fxAt(...head(), ['🌙', '⭐'], 3, 'spark'); line([...lineWith(LUCKY.rare, 'on the Moon'), ...lineWith(LUCKY.rare, 'space bunny')], 1); }) },
-    '🎻': { press: (c) => sfx.note(659), tap: who(() => { sfx.jig(); pose('laugh', 2200, 'dance', 2200); api.fxAt(...head(), ['🎵', '🎶'], 5, 'spark'); }) },
-    '🐣': { press: (c) => sfx.pop(), tap: who((c) => { api.hop(c.el, 'bounce', 800); api.hearts(c.x, c.y, 3); pose('happy', 1500, 'clap'); sfx.happy(); }) },
+    '🎻': { press: (c) => sfx.note(659), tap: who(() => { sfx.jig(); pose('laugh', 2200, 'dance', 2200); api.fxAt(...head(), ['🎵', '🎶'], 5, 'spark'); line('fiddle', 1); }) },
+    '🐣': { press: (c) => sfx.pop(), tap: who((c) => { api.hop(c.el, 'bounce', 800); api.hearts(c.x, c.y, 3); pose('happy', 1500, 'clap'); sfx.happy(); line('chick', 1); }) },
   };
 
   function forDecor(it) {
@@ -1659,12 +1660,20 @@ export function createAntics(api) {
         popUp('👻', x, y, 1700, 54, 'pop-rise');
         sfx.boing();
         pose('ok', 1000, 'startle', 1100);
-        at(a, 1400, () => { pose('laugh', 1500, 'hop'); line(lineWith(LUCKY.antics.boo, 'Boo!'), 1, 0); });
+        at(a, 1400, () => { pose('laugh', 1500, 'hop'); line('ghostBoo', 1, 0); });
+      },
+      // Christmas: Santa flies by, and Lucky makes a wish
+      santa: () => {
+        fly('🎅', [x, y], [w + 60, Math.max(30, y - 60)], 1600, { arc: 50, size: 40 });
+        api.fxAt(x, y, ['✨', '🌟', '❄️'], 8, 'spark');
+        sfx.magic();
+        pose('happy', 2400, 'wave', 1200);
+        line('santa', 1, 0);
       },
       // Valentine's Day: a love letter flies to him: hearts, a hug, "I love you!"
       love: () => {
         fly('💌', [x, y], api.luckyPoint(0.6, 0.55), 800, { arc: 40, size: 30, stay: 900 });
-        at(a, 800, () => { sfx.happy(); pose('happy', 1800, 'hug'); api.hearts(...head(), 7); line(lineWith(LUCKY.tap, 'I love you'), 1, 0); });
+        at(a, 800, () => { sfx.happy(); pose('happy', 1800, 'hug'); api.hearts(...head(), 7); line([...LUCKY.antics.loveLetter, ...lineWith(LUCKY.tap, 'I love you')], 1, 0); });
       },
       // St Patrick's Day: a four-leaf clover lands behind his ear
       luck: () => {
@@ -1675,7 +1684,7 @@ export function createAntics(api) {
       chick: () => {
         const to = api.luckyPoint(1.02, 0.9);
         fly('🐣', [x, y], to, 900, { arc: 50, size: 30, stay: 2400 });
-        at(a, 900, () => { sfx.happy(); pose('happy', 1800, 'clap'); api.hearts(...to, 4); });
+        at(a, 900, () => { sfx.happy(); pose('happy', 1800, 'clap'); api.hearts(...to, 4); line('chick', 1, 0); });
         at(a, 3300, () => fly('🐣', to, [w + 40, to[1]], 1000, { arc: 30, size: 30 }));
       },
       // snowflakes settle on his nose: brr
@@ -1876,7 +1885,7 @@ export function createAntics(api) {
       if (k === 'dig') {
         pose('happy', 1800, 'dig', 1800);
         [0, 450, 900, 1350].forEach((d) => setTimeout(() => { api.fxAt(...feet(), ['💨', '🌱'], 2, 'spark'); sfx.puff(); }, d));
-        if (talk) line(chatLine('best diggers'), 1, 60000);
+        if (talk) line('burrow', 1, 60000);
       }
       // a scratch behind the ears: they wiggle
       if (k === 'earscratch') { pose('happy', 1600, 'groom', 1600); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); }

@@ -204,7 +204,7 @@ static files, and all progress stays in the phone's local storage.
 
 ## 🛠️ Under the hood
 
-- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (2,723 clips, ~28 MB, downloaded once for offline play)
+- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (2,809 clips, ~29 MB, downloaded once for offline play)
 - A service worker for offline play (code network-first, voice clips cached once)
 - Deployed to GitHub Pages by [GitHub Actions](.github/workflows/pages.yml). The cache version is set from the commit automatically
 - Developer notes: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · game design: [`docs/DESIGN.md`](docs/DESIGN.md) · what's new: [`CHANGELOG.md`](CHANGELOG.md)

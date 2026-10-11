@@ -96,8 +96,8 @@ checks the calendar every minute (`updateEvent`) and sets `body.ev-<id>` plus `e
 stage. The pictures are drawn in `art.js` (`eventScene`, `eventTop`) as a layer over the world in the same 400×700
 picture, so they line up and taps go through to the world underneath (only Easter eggs can be tapped).
 
-- Nothing in the rules changes and no new voice is needed: holiday things reuse recorded lines. Lines that would need
-  new recordings are collected in [VOICE_PLAN.md](VOICE_PLAN.md).
+- Nothing in the rules changes. Holiday lines live in `LUCKY.holiday` and `DOG.holiday` (greetings in the last week, on
+  the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`.
 - Holiday stickers (Decorate gets a holiday category from stage 2) show only while their holiday is on and come back
   next year; parents can switch the decorations off. In Turbo the 🎃 tool previews each holiday in turn.
 - New JS modules must also go into `ASSETS` in `sw.js`, or the game breaks offline.
@@ -105,7 +105,7 @@ picture, so they line up and taps go through to the world underneath (only Easte
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 2,723 MP3 files, ~28 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 2,809 MP3 files, ~29 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
@@ -113,6 +113,8 @@ Tali is **Orus**, the frog is **Charon**. 2,723 MP3 files, ~28 MB. If a line has
   The Google key is read from `.env.local` (`GOOGLE_TTS_KEY=...`). This file is git-ignored.
   Never commit or share it.
 - **Google returned 429** (per-minute quota): wait a minute and run the script again.
+- A word in the other language ("Привет!" on the English side) is read by that language's voice (`voiceLang` in
+  `tools/tts.mjs`).
 - **Change a voice or pitch:** `js/voicekey.js` → `VOICES`. `rate` is the playback speed-up; higher means a higher voice.
   If you change `voice`, delete `audio/` and record everything again.
 - **Compare voices:** `node tools/voice-trial.mjs`, then open `/voice-trial/`.

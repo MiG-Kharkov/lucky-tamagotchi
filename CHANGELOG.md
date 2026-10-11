@@ -35,11 +35,21 @@ and versions follow [semantic versioning](https://semver.org).
 - **Bunny habits:** digging, an ear scratch, a binky. **Rare gags** on familiar gestures.
 - Lucky cheers after a ninja mission, Tali says when his jokes are over for the visit, arriving in candy land and the
   dojo has its own line, and "No more games today" is spoken.
-- [VOICE_PLAN.md](docs/VOICE_PLAN.md): the lines to record next.
+- **New voice lines** (86 clips): holiday greetings for the last week, the eve and the day ("Happy Halloween, {name}!
+  Trick or treat?", "Santa is coming tonight! Shh!"), holiday chatter for Lucky and Tali, words for the holiday things
+  (the ghost in the pumpkin, the broom, the bells, the reindeer, Santa, the midnight clock, the love letter, the
+  leprechaun hat, the chick, the golden egg…) and for the new scenes (a ball caught, three stars to wish on, walking
+  sideways with the crab, the cold snowman, a hug that's too tight, a flop from laughing, Tali startled by a thump,
+  digging a burrow).
 
 ### Changed
-- All of this uses voice clips that were already recorded: no new recordings, no robot voice.
 - The rain cloud, the tree, the flowers and a few more things pick a different way to react each time.
+
+### Fixed
+- Lucky's pink-colour comment after the cats' joke said the name in the wrong Russian case; Tali's "no more jokes"
+  line said "today" in Russian although it is per visit.
+- In the "how do you say hello" chat each word was read by the other language's voice: the voice generator now reads
+  a word in the other language with that language's voice.
 
 ## [1.6.1] – 2026-09-29
 

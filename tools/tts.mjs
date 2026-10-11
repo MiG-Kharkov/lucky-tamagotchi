@@ -14,8 +14,13 @@ export function apiKey() {
 
 export const LANG = { ru: 'ru-RU', en: 'en-GB' };
 
+// A word in the other language is read by that language's voice: "Привет!" on the English side
+// (Tali teaching Lucky Russian) by the Russian voice, "Hello!" on the Russian side by the English one.
+const CYR = /[А-Яа-яЁё]/, LAT = /[A-Za-z]/;
+export const voiceLang = (text, lang) => (lang === 'en' && CYR.test(text) ? 'ru' : lang === 'ru' && !CYR.test(text) && LAT.test(text) ? 'en' : lang);
+
 export async function synth(text, lang, voice, { rate = 1 } = {}, key = apiKey()) {
-  const code = LANG[lang];
+  const code = LANG[voiceLang(text, lang)];
   for (let attempt = 1; ; attempt++) {
     const r = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${key}`, {
       method: 'POST',

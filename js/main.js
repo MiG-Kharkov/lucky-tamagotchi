@@ -1110,10 +1110,10 @@ function thump() {
   sfx.thump();
   const [x, y] = luckyPoint(0.5, 0.95);
   fxAt(x, y, ['💨'], 3, 'spark');
-  antics.line('thump', 0.9);
-  // the thump gives Tali a fright
+  // the thump gives Tali a fright ("Eek! Who's knocking?"); without him Lucky explains it
   const dogEl = dogHere && ui.dog.querySelector('.dog-body');
-  if (dogEl) setTimeout(() => { hop(dogEl, 'hop'); sfx.bark(); }, 300);
+  if (dogEl) setTimeout(() => { hop(dogEl, 'hop'); sfx.bark(); say(fresh(DOG.thumped), 'dog'); }, 300);
+  else antics.line('thump', 0.9);
 }
 
 // Stroking Lucky with a finger: he purrs (bunnies really do, by gently grinding their teeth)
@@ -1144,9 +1144,10 @@ function hug() {
   heartsBurst(x, y, 7);
   st.boost(S, 'fun', 5);
   award(addH(1, 'pet', 8));
-  say(fresh(byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
-  // now and then the hug is so tight he gets squashed
-  if (Math.random() < 0.12) setTimeout(() => { hop(ui.lucky, 'squash', 700); heartsBurst(x, y, 6); sfx.boing(); }, 900);
+  // now and then the hug is so tight he gets squashed: "Oof! Too tight!"
+  const tight = Math.random() < 0.12;
+  say(fresh(tight ? LUCKY.antics.squeeze : byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
+  if (tight) setTimeout(() => { hop(ui.lucky, 'squash', 700); heartsBurst(x, y, 6); sfx.boing(); }, 900);
   stat('hugs');
   renderStats();
 }
@@ -1205,9 +1206,10 @@ function tickle() {
   fxAt(x, y, ['😂', '💕'], 3, 'spark');
   st.boost(S, 'fun', 6);
   award(addH(1, 'pet', 8));
-  say(fresh(LUCKY.tickle));
-  // sometimes he laughs so much he flops over
-  if (Math.random() < 0.2) setTimeout(() => { if (mode === 'main') hop(ui.lucky, 'flop', 2600); }, 1400);
+  // sometimes he laughs so much he flops over: "That's it… I fell over laughing!"
+  const flop = Math.random() < 0.2;
+  say(fresh(flop ? LUCKY.antics.flopLaugh : LUCKY.tickle));
+  if (flop) setTimeout(() => { if (mode === 'main') hop(ui.lucky, 'flop', 2600); }, 1400);
   stat('tickles');
   renderStats();
 }
@@ -1265,7 +1267,7 @@ const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 
 // holiday visitors come in every world from their stage on
 const HOLIDAY_VISITORS = {
   halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
-  christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['wish'], stage: 3 }],
+  christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['santa'], stage: 3 }],
   newyear: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '❄️', w: 1, path: 'fall', end: ['tongue', 'flakes'], stage: 3 }],
   valentine: [{ e: '💌', w: 3, path: 'float', end: ['love'], stage: 3 }],
   patrick: [{ e: '🍀', w: 3, path: 'flutter', end: ['luck'], stage: 2 }],
@@ -2679,6 +2681,9 @@ function idleTalk() {
   if (t === 'low' && maybeIdiom('low', 0.25)) return;
   if ((S.playedMs[S.today.date] || 0) > 40 * 60e3 && maybeIdiom('playedLong', 0.3)) return;
   if (Math.random() < 0.08 && maybeIdiom(Math.random() < 0.3 ? 'idle' : 'any', 1)) return;
+  // holidays: a word about it now and then (Tali has his own in the last week)
+  if (EV && EV.stage >= 2 && LUCKY.holiday[EV.id] && Math.random() < 0.1) return sayAuto(fresh(LUCKY.holiday[EV.id].idle));
+  if (dogHere && EV && EV.stage >= 3 && DOG.holiday[EV.id] && Math.random() < 0.15) return sayAuto(fresh(DOG.holiday[EV.id]), 'dog');
   if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
   if (dogHere && Math.random() < 0.45) return talk(acted(fresh(CHATS)));
@@ -2837,7 +2842,17 @@ function greetList(gap) {
   return LUCKY.evening;
 }
 
+// In a holiday's last week the day's first greeting is about it: on the eve its own line, on the day the greeting
+function holidayGreeting() {
+  const H = EV && EV.stage >= 3 && LUCKY.holiday[EV.id], T0 = st.today(S);
+  if (!H || T0.holidayHi === EV.id) return null;
+  T0.holidayHi = EV.id;
+  return EV.stage >= 4 ? H.greet : EV.days === 1 && H.eve ? H.eve : H.idle;
+}
+
 function greet(gap) {
+  const hol = holidayGreeting();
+  if (hol) { setTemp('happy', 1500); sayAuto(fresh(hol)); return; }
   const h = new Date().getHours();
   if (h < 12 && gap > 6 * 3600e3 && maybeIdiom(h < 8 ? 'early' : 'morning', 0.5)) return;
   setTemp('happy', 1500);

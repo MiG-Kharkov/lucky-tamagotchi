@@ -927,6 +927,60 @@ export const LUCKY = {
     purr: [['Мур… Кролики мурлычут, тихонько скрипя зубками.', 'Purr… Bunnies purr by gently grinding their teeth.'], ['М-м, погладь ещё.', 'Mmm, more strokes, please.']],
     net: [['Поймал! Только на секундочку.', 'Got you! Just for a second.']],
     noseFly: [['Она села мне на нос! Хи-хи, щекотно!', "It's sitting on my nose! Hee-hee, it tickles!"]],
+    // new scenes (1.7.0)
+    caught: [['Поймала! Отличный бросок!', 'You caught it! Great catch!']],
+    starsWish: [['Три звезды! Загадывай желание!', 'Three stars! Make a wish!']],
+    sidestep: [['Смотри, я тоже хожу боком!', 'Look, I can walk sideways too!']],
+    snowmanCold: [['Брр! Снеговик такой холодный!', 'Brr! The snowman is so cold!']],
+    squeeze: [['Ой! Слишком крепко!', 'Oof! Too tight!']],
+    flopLaugh: [['Всё… я упал от смеха!', "That's it… I fell over laughing!"]],
+    burrow: [['Копаю норку! Кролики так делают.', "I'm digging a burrow! Bunnies do that."]],
+    // holiday things
+    pumpkinGhost: [['Кто там в тыкве? Ой, привидение!', "Who's in the pumpkin? Oh, a little ghost!"]],
+    ghostBoo: [['Ой! Привидение! Ну, я тебя тоже напугаю: бу!', "Eek! A ghost! Well, I'll scare you too: boo!"]],
+    broom: [['Я лечу на метле! Ух!', "I'm flying on a broom! Whee!"]],
+    cobweb: [['Ой, паутина! Липкая!', "Eek, a cobweb! It's sticky!"]],
+    bell: [['Динь-дон! Колокольчик звенит!', 'Ding-dong! Jingle bells!']],
+    reindeer: [['Олень! А можно мне в сани к Санте?', 'A reindeer! Can I ride with Santa?']],
+    santa: [['Санта! Я загадаю желание!', "Santa! I'll make a wish!"]],
+    midnight: [['Тик-так… С Новым годом!', 'Tick-tock… Happy New Year!']],
+    confetti: [['Конфетти! Это праздник!', "Confetti! It's a party!"]],
+    sparkly: [['Я весь сверкаю!', "I'm all sparkly!"]],
+    cupid: [['Сердечко прилетело прямо ко мне!', 'A heart flew right to me!']],
+    loveLetter: [['Письмо! Тут написано: «Я тебя люблю»!', 'A letter! It says "I love you"!']],
+    leprechaunHat: [['Новая шляпа! Я похож на лепрекона?', 'A new hat! Do I look like a leprechaun?']],
+    fiddle: [['Сыграем ирландскую мелодию!', "Let's play an Irish tune!"]],
+    chick: [['Пи-пи! Привет, цыплёнок!', 'Peep-peep! Hello, little chick!']],
+    goldenEgg: [['Золотое яйцо! Вот это находка!', 'A golden egg! What a find!']],
+  },
+  // ---------- holidays (events.js): greetings in the last week and on the day, now and then a word ----------
+  holiday: {
+    halloween: {
+      greet: [['С Хэллоуином, {name}! Сладость или гадость?', 'Happy Halloween, {name}! Trick or treat?']],
+      idle: [['Смотри, тыквы мне улыбаются!', 'Look, the pumpkins are smiling at me!'], ['Я кролик-ведьма! Бу-у!', "I'm a witch bunny! Boo-oo!"]],
+    },
+    christmas: {
+      greet: [['С Рождеством, {name}!', 'Merry Christmas, {name}!']],
+      eve: [['Сегодня ночью придёт Санта! Тсс!', 'Santa is coming tonight! Shh!']],
+      idle: [['Смотри, снег идёт! Всё стало белым.', "Look, it's snowing! Everything is white."]],
+    },
+    newyear: {
+      greet: [['С Новым годом, {name}!', 'Happy New Year, {name}!']],
+      eve: [['Сегодня ночью Новый год! Ура!', 'The New Year is tonight! Hooray!']],
+      idle: [['Давай загадаем желание на Новый год!', "Let's make a wish for the new year!"]],
+    },
+    valentine: {
+      greet: [['С Днём святого Валентина! Я тебя люблю!', "Happy Valentine's Day! I love you!"]],
+      idle: [['Это сердечко для тебя!', 'This heart is for you!']],
+    },
+    patrick: {
+      greet: [['С Днём святого Патрика, {name}!', "Happy St Patrick's Day, {name}!"]],
+      idle: [['Я кролик-лепрекон! Где моё золото?', "I'm a leprechaun bunny! Where's my gold?"]],
+    },
+    easter: {
+      greet: [['С Пасхой! Давай искать яйца!', "Happy Easter! Let's look for eggs!"]],
+      idle: [['Где-то спрятаны яйца. Найдёшь?', 'Some eggs are hidden somewhere. Can you find them?']],
+    },
   },
   // ---------- ninja missions: Lucky is the sensei ----------
   sensei: {
@@ -1022,13 +1076,21 @@ export const DOG = {
   jokeNew: [['Я выучил новую шутку!', "I've learnt a new joke!"], ['Хотите шутку? Слушайте!', 'Want a joke? Listen!'], ['Лаки, послушай, что я знаю!', 'Lucky, listen to this one!']],
   jokeMore: [['Вот ещё одна!', "Here's another one!"], ['Ещё шутка? Легко!', 'Another joke? Easy!'], ['Слушайте, это моя любимая!', "Listen, this one's my favourite!"]],
   cheer: [['Лаки, не грусти! Вот тебе шутка!', "Don't be sad, Lucky! Here's a joke for you!"], ['Я знаю, что тебя развеселит!', 'I know what will cheer you up!']],
-  jokesOut: [['Все шутки на сегодня кончились! Выучу новые.', "That's all my jokes for now! I'll learn some new ones."]],
+  jokesOut: [['Шутки пока кончились! Выучу новые.', "That's all my jokes for now! I'll learn some new ones."]],
   knock: [['Тук-тук!', 'Knock, knock!']],
   // tongue twisters
   twisterAsk: [['Лаки, скажи скороговорку! Три раза, всё быстрее!', 'Lucky, say a tongue twister! Three times, faster and faster!'], ['Спорим, ты не скажешь это быстро?', "Bet you can't say this one fast!"], ['Лаки, испытание для языка!', 'Lucky, here is a challenge for your tongue!']],
   twisterLaugh: [['Ха-ха! У тебя язык завязался узелком!', 'Ha-ha! Your tongue is in a knot!'], ['Тяв! Вот это скорость!', 'Yip! That was fast!']],
   play: [['Бежим наперегонки!', "Let's race!"], ['Кто быстрее до дерева?', "Who's faster to the tree?"]],
   bye: [['Мне пора домой. Пока!', 'Time to go home. Bye!'], ['Пока-пока! Я ещё приду!', "Bye-bye! I'll come back!"], ['Я побежал домой, но ещё вернусь!', "I'm running home, but I'll be back!"]],
+  thumped: [['Ой! Кто стучит?', "Eek! Who's knocking?"]],
+  // holidays: now and then in the last week
+  holiday: {
+    halloween: [['Гав! Я самый страшный пёс! Хи-хи.', "Woof! I'm the spookiest dog! Hee-hee."]],
+    christmas: [['Я попросил у Санты большую косточку!', 'I asked Santa for a big bone!']],
+    patrick: [['Гав! Сегодня я зелёный пёс!', "Woof! Today I'm a green dog!"]],
+    easter: [['А я нашёл яйцо… и съел. Шучу!', 'I found an egg… and ate it. Only joking!']],
+  },
 };
 
 // Tali's pranks: a scene plus a funny action
