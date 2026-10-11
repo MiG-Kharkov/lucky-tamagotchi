@@ -43,11 +43,11 @@ export const STR = {
     g_ea_hop: 'Кроличьи прыжки', g_ea_hop_hint: 'Нажимай, чтобы перепрыгнуть брёвна и камни (ещё раз в воздухе — выше). Собирай яйца!',
     g_ea_hunt: 'Охота за яйцами', g_ea_hunt_hint: 'Нажимай на яйца и цыплят, когда они выглядывают из травы. Пчёлок не трогай!',
     lvl_easy: 'Легко', lvl_normal: 'Средне', lvl_hard: 'Сложно',
-    gBest: 'Рекорд: {n}', gWave: 'Волна {n}!', gNewBest: 'Новый рекорд!', gPoints: '{n} очков', gPerfect: 'Отлично!', holidayGames: 'Праздничные игры',
+    gBest: 'Рекорд: {n}', gWave: 'Волна {n}!', gNewBest: 'Новый рекорд!', gPoints: '{n} {n|очко|очка|очков}', gPerfect: 'Отлично!', holidayGames: 'Праздничные игры',
     bossPumpkin: 'Тыквенный король!', bossCloud: 'Снежная туча!', bossPinata: 'Пиньята!', bossHeart: 'Большое сердце!', bossPot: 'Горшок с золотом!',
     rushPresents: 'Подарочный дождь!', rushLetters: 'Письма летят!', rushEggs: 'Яичный дождь!',
     memMoves: 'Ходов: {n}',
-    memEnd: 'Все пары найдены за {n} ходов!',
+    memEnd: 'Все пары найдены за {n} {n|ход|хода|ходов}!',
     simonWatch: 'Смотри и слушай…',
     simonYour: 'Твоя очередь!',
     simonEnd: 'Ты запомнила {n}!',
@@ -197,7 +197,7 @@ export const STR = {
     g_ea_hop: 'Bunny Hop', g_ea_hop_hint: 'Tap to hop over logs and stones (tap again in the air to hop higher). Collect the eggs!',
     g_ea_hunt: 'Egg Hunt', g_ea_hunt_hint: 'Tap the eggs and chicks when they peek out of the grass. Leave the bees alone!',
     lvl_easy: 'Easy', lvl_normal: 'Normal', lvl_hard: 'Hard',
-    gBest: 'Best: {n}', gWave: 'Wave {n}!', gNewBest: 'A new record!', gPoints: '{n} points', gPerfect: 'Perfect!', holidayGames: 'Holiday games',
+    gBest: 'Best: {n}', gWave: 'Wave {n}!', gNewBest: 'A new record!', gPoints: '{n} {n|point|points}', gPerfect: 'Perfect!', holidayGames: 'Holiday games',
     bossPumpkin: 'The Pumpkin King!', bossCloud: 'The Snow Cloud!', bossPinata: 'The piñata!', bossHeart: 'The Big Heart!', bossPot: 'The pot of gold!',
     rushPresents: 'A present shower!', rushLetters: 'A flurry of letters!', rushEggs: 'An egg shower!',
     memMoves: 'Moves: {n}',
@@ -313,9 +313,19 @@ export const STR = {
   },
 };
 
+// {n|очко|очка|очков}: the word that goes with the number (Russian: one, few, many; English: one, other)
+function plural(lang, n, forms) {
+  const f = forms.split('|'), a = Math.abs(Number(n)) % 100, b = a % 10;
+  if (lang !== 'ru') return a === 1 ? f[0] : f[1] ?? f[0];
+  return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b >= 2 && b <= 4 ? 1 : 2] ?? f[f.length - 1];
+}
+
 export function T(lang, key, vars = {}) {
   let s = STR[lang]?.[key] ?? STR.ru[key] ?? key;
-  for (const k in vars) s = s.replaceAll(`{${k}}`, vars[k]);
+  for (const k in vars) {
+    s = s.replace(new RegExp(`\\{${k}\\|([^}]+)\\}`, 'g'), (_, forms) => plural(lang, vars[k], forms));
+    s = s.replaceAll(`{${k}}`, vars[k]);
+  }
   return s;
 }
 

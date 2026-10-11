@@ -11,7 +11,7 @@ const CATCH_POWERS = [{ e: '🧲', kind: 'magnet' }, { e: '✨', kind: 'double' 
 
 export const HOLIDAY_GAMES = {
   halloween: [
-    { id: 'hw_zapper', emoji: '👻', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 4000 }, theme: {
+    { id: 'hw_zapper', emoji: '👻', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 3500 }, theme: {
       bg: ['#1E1233', '#4A2B80', '#B5568C', '#FF9A4D'], moon: true, stars: 30, far: { e: ['🦇'], n: 5, alpha: 0.3 }, ground: '#2E1F4A',
       shot: '⭐', hit: ['✨', '⭐', '💜'], killSfx: 'boing',
       targets: [{ e: '👻', pts: 10, move: 'drift', v: 62, w: 5 }, { e: '🦇', pts: 15, move: 'zigzag', v: 80, w: 3, size: 40 }, { e: '🎃', pts: 25, hp: 3, move: 'fall', v: 46, w: 1.4, size: 50 }],
@@ -30,7 +30,7 @@ export const HOLIDAY_GAMES = {
     } },
   ],
   christmas: [
-    { id: 'xm_storm', emoji: '❄️', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 4000 }, theme: {
+    { id: 'xm_storm', emoji: '❄️', kind: shooter, energy: 14, target: { easy: 1800, normal: 2000, hard: 2300 }, theme: {
       bg: ['#0F2A4A', '#2B5A8C', '#9CC8EE', '#EAF6FF'], stars: 18, far: { e: ['❄️'], n: 9, alpha: 0.5 }, ground: '#F4FAFF',
       shot: '⭐', hit: ['❄️', '✨'], killSfx: 'pop',
       targets: [{ e: '☁️', pts: 10, hp: 2, move: 'drift', v: 55, w: 4, size: 50, drops: 0.8 }, { e: '❄️', pts: 8, move: 'zigzag', v: 85, w: 3, size: 34 }, { e: '🌨️', pts: 25, hp: 3, move: 'fall', v: 44, w: 1.4, size: 52, drops: 1 }],
@@ -56,7 +56,7 @@ export const HOLIDAY_GAMES = {
     { id: 'ny_fireworks', emoji: '🎆', kind: fireworks, energy: 12, target: { easy: 3500, normal: 5500, hard: 8000 }, theme: {
       bg: ['#070B26', '#1B1F5C', '#4A3290'], stars: 40, far: { e: ['✨', '⭐'], n: 12, alpha: 0.45 },
     } },
-    { id: 'ny_balloons', emoji: '🎈', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 4000 }, theme: {
+    { id: 'ny_balloons', emoji: '🎈', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 3400 }, theme: {
       bg: ['#1B1F5C', '#6B3FA0', '#FF7AB8', '#FFD9A8'], stars: 24, far: { e: ['✨', '🎊'], n: 8, alpha: 0.4 }, ground: '#3B2A6E',
       shot: '✨', hit: ['🎊', '✨', '🎉'], killSfx: 'pop',
       targets: [{ e: '🎈', pts: 10, move: 'drift', v: 58, w: 5 }, { e: '🎁', pts: 20, hp: 2, move: 'fall', v: 50, w: 2, drops: 0.9 }, { e: '⭐', pts: 15, move: 'zigzag', v: 85, w: 2.2, size: 36 }],
@@ -71,7 +71,7 @@ export const HOLIDAY_GAMES = {
     } },
   ],
   valentine: [
-    { id: 'vl_cupid', emoji: '💘', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 4000 }, theme: {
+    { id: 'vl_cupid', emoji: '💘', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 3400 }, theme: {
       bg: ['#5A1F45', '#C2477E', '#FF9EC0', '#FFE3EC'], far: { e: ['💗', '✨'], n: 8, alpha: 0.35 }, ground: '#FFC2D6',
       shot: '💘', hit: ['💗', '💖', '✨'], killSfx: 'kiss',
       targets: [{ e: '💗', pts: 10, move: 'drift', v: 60, w: 5 }, { e: '💖', pts: 15, move: 'zigzag', v: 85, w: 3 }, { e: '💝', pts: 25, hp: 2, move: 'fall', v: 48, w: 1.5, size: 48, drops: 1 }],
@@ -98,7 +98,7 @@ export const HOLIDAY_GAMES = {
       items: [{ e: '🪙', pts: 5, w: 6 }, { e: '☘️', pts: 10, w: 2 }, { e: '🍀', pts: 20, w: 0.6 }],
       powers: [{ e: '🌈', power: 'star' }, { e: '🧲', power: 'magnet' }, { e: '🎈', power: 'fly' }], hit: ['✨', '🍀'],
     } },
-    { id: 'sp_gold', emoji: '🪙', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 4000 }, theme: {
+    { id: 'sp_gold', emoji: '🪙', kind: shooter, energy: 14, target: { easy: 1800, normal: 2800, hard: 2400 }, theme: {
       bg: ['#4AA6E8', '#9AD8FF', '#D9F5DD', '#7CCB5C'], far: { e: ['☁️'], n: 4, alpha: 0.6 }, ground: '#4CA64C',
       shot: '✨', hit: ['🪙', '✨', '🍀'], killSfx: 'pop',
       targets: [{ e: '☁️', pts: 10, hp: 2, move: 'drift', v: 55, w: 4, size: 50, drops: 0.85 }, { e: '🍀', pts: 15, move: 'zigzag', v: 85, w: 2.5, size: 36 }, { e: '🎩', pts: 25, hp: 2, move: 'fall', v: 50, w: 1.4, drops: 1 }],
@@ -115,13 +115,13 @@ export const HOLIDAY_GAMES = {
   ],
   easter: [
     { id: 'ea_catch', emoji: '🥚', kind: catcher, energy: 12, target: { easy: 1500, normal: 2300, hard: 3400 }, theme: {
-      bg: ['#BDE6FF', '#E3F4FF', '#FFF6D6'], far: { e: ['☁️', '🦋'], n: 6, alpha: 0.5 }, ground: '#9BDB82',
+      bg: ['#5FB8F0', '#8ED0FA', '#BFE6FF'], far: { e: ['☁️', '🦋'], n: 6, alpha: 0.5 }, ground: '#9BDB82', // a deeper sky: the white eggs show
       dropper: '🐔', dropperFlip: true, basket: '🧺', rushText: 'rushEggs',
       good: [{ e: '🥚', pts: 5, w: 6 }, { e: '🐣', pts: 10, w: 2 }, { e: '🌷', pts: 5, w: 1.5 }, { e: '🌟', pts: 20, w: 0.5 }],
       bad: [{ e: '🪨', size: 30 }], powers: CATCH_POWERS, hit: ['✨', '🌸'],
     } },
     { id: 'ea_hop', emoji: '🐰', kind: runner, energy: 14, target: { easy: 1000, normal: 1600, hard: 2400 }, theme: {
-      bg: ['#A8DCFF', '#DDF1FF', '#FFF6E0'], far: { e: ['☁️', '🦋'], n: 5, alpha: 0.55 }, ground: '#8CD67A', ground2: '#7CC56A', hills: ['#CDEFC0', '#A8DE98'], path: '#F2E2B8',
+      bg: ['#5FB8F0', '#8ED0FA', '#C4E8FF'], far: { e: ['☁️', '🦋'], n: 5, alpha: 0.55 }, ground: '#8CD67A', ground2: '#7CC56A', hills: ['#CDEFC0', '#A8DE98'], path: '#F2E2B8',
       obstacles: [{ e: '🪵', w: 2.5, size: 44 }, { e: '🪨', w: 2.5, size: 40 }, { e: '🦔', w: 1.5, size: 38 }, { e: '🐝', w: 1, size: 32, air: true }],
       items: [{ e: '🥚', pts: 5, w: 6 }, { e: '🐣', pts: 10, w: 2 }, { e: '🌟', pts: 20, w: 0.6 }],
       powers: [{ e: '🦋', power: 'fly' }, { e: '🧲', power: 'magnet' }, { e: '🌈', power: 'star' }], hit: ['✨', '🌸'],

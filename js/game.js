@@ -4,7 +4,7 @@
 // Those have a difficulty to choose (easy, normal, hard), count points and end with ctx.finish(points): stars, the best
 // score at that difficulty, a record; the game's 0-30 score (for hearts) is the points against the game's target.
 
-import { PHRASES, DIALOGS } from './i18n.js';
+import { PHRASES, DIALOGS, T } from './i18n.js';
 import { speak } from './sound.js';
 import { LEVEL_IDS } from './arcade.js';
 import { HOLIDAY_GAMES } from './holigames.js';
@@ -33,13 +33,16 @@ export const starsOf = (points, target) => (points >= target ? 3 : points >= tar
 const scoreOf = (points, target) => Math.round(30 * Math.min(1, points / target));
 
 // level: the difficulty chosen last time; bestOf(level): the best points there; onLevel(level): remember the choice;
-// onRecord(level, points): true when it's a new best
-export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onCancel, onEnd }) {
+// onRecord(level, points): true when it's a new best. onStart(): the game has begun (it counts from here);
+// onScore(score): the game is over, keep what it earned (right away, before the end card is closed);
+// onEnd(score): the end card is closed (or the game was left)
+export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onStart, onScore, onCancel, onEnd }) {
   const holiday = !!game.target;
+  const hint = 'g_' + game.id + '_hint', hintSub = translate ? T(lang === 'ru' ? 'en' : 'ru', hint) : '';
   host.innerHTML = `<div class="game g-${game.id}${holiday ? ' g-holiday' : ''}">
     <div class="game-stage"></div>
     <div class="game-hud"><button class="g-exit" aria-label="close">✕</button><span class="g-info" hidden></span></div>
-    <div class="game-card"><div class="game-emoji">${game.emoji}</div><h2>${tr('g_' + game.id)}</h2><p>${tr('g_' + game.id + '_hint')}</p>
+    <div class="game-card"><div class="game-emoji">${game.emoji}</div><h2>${tr('g_' + game.id)}</h2><p>${tr(hint)}${hintSub ? `<small class="g-sub">${hintSub}</small>` : ''}</p>
       ${holiday ? `<div class="g-levels">${LEVEL_IDS.map((l) => `<button class="g-level${l === level ? ' on' : ''}" data-l="${l}"><b>${LEVEL_ICON[l]}</b>${tr('lvl_' + l)}</button>`).join('')}</div><p class="g-best"></p>` : ''}
       <div class="row"><button class="btn big pink g-start">${tr('start')}</button></div>
       <div class="row"><button class="btn ghost g-cancel">${tr('back')}</button></div>
@@ -49,6 +52,8 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, l
   const card = host.querySelector('.game-card');
   const info = host.querySelector('.g-info');
   let inst = null, ended = false, final = 0;
+  // the end card's button wakes up after a moment, so a tap meant for the game doesn't close it unseen
+  const doneButton = () => { const b = card.querySelector('.row .btn'); b.disabled = true; setTimeout(() => { b.disabled = false; }, 700); b.onclick = () => onEnd(final); };
   const showBest = () => { const el = card.querySelector('.g-best'), b = bestOf(level); if (el) el.textContent = b ? `🏆 ${tr('gBest', { n: b })}` : ''; };
   showBest();
   card.querySelectorAll('.g-level').forEach((b) => {
@@ -66,6 +71,7 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, l
       const target = game.target[level];
       final = scoreOf(points, target);
       inst?.cleanup();
+      onScore?.(final);
       const stars = starsOf(points, target), record = onRecord?.(level, points);
       sfx.levelup();
       card.innerHTML = `<div class="g-stars">${[1, 2, 3].map((i) => `<i class="${i <= stars ? 'on' : ''}">⭐</i>`).join('')}</div>
@@ -73,29 +79,32 @@ export function openGame(host, game, { tr, sfx, lang, svgOk, svgHappy, svgSad, l
         ${record ? `<p class="g-record">🏆 ${tr('gNewBest')}</p>` : `<p class="g-best">🏆 ${tr('gBest', { n: bestOf(level) })}</p>`}
         <div class="row"><button class="btn big pink">${tr('done')}</button></div>`;
       card.hidden = false;
-      card.querySelector('button').onclick = () => onEnd(final);
+      doneButton();
     },
     end: (score, msg) => {
       if (ended) return;
       ended = true;
       final = score;
       inst?.cleanup();
+      onScore?.(final);
       sfx.happy();
       card.innerHTML = `<div class="game-emoji">🎉</div><h2>${msg}</h2><div class="row"><button class="btn big pink">${tr('done')}</button></div>`;
       card.hidden = false;
-      card.querySelector('button').onclick = () => onEnd(final);
+      doneButton();
     },
   };
 
-  card.querySelector('.g-start').onclick = () => { card.hidden = true; sfx.happy(); inst = game.run(ctx); };
+  card.querySelector('.g-start').onclick = () => { if (inst) return; card.hidden = true; sfx.happy(); onStart?.(); inst = game.run(ctx); };
   card.querySelector('.g-cancel').onclick = () => { sfx.tap(); onCancel(); };
   host.querySelector('.g-exit').onclick = () => {
     sfx.tap();
     if (!inst) return onCancel();          // not started yet: the attempt is not used up
     if (ended) return onEnd(final);
     ended = true;
-    const got = inst.stop();               // left mid-game: count the score so far
-    onEnd(holiday ? scoreOf(got, game.target[level]) : got);
+    const got = inst.stop();               // left mid-game: the score so far counts
+    final = holiday ? scoreOf(got, game.target[level]) : got;
+    onScore?.(final);
+    onEnd(final);
   };
 }
 
@@ -233,6 +242,16 @@ function runMemory(ctx, theme = null) {
   let open = [], moves = 0, found = 0, lock = false, points = 0, streak = 0;
   const t0 = performance.now();
   const timers = [];
+  // the time bonus counts only the time the cards are on the screen (not in the background, not turned sideways)
+  const sideways = matchMedia('(orientation: landscape) and (max-height: 540px)');
+  let away = 0, awaySince = 0;
+  const onAway = () => {
+    const off = document.hidden || sideways.matches;
+    if (off && !awaySince) awaySince = performance.now();
+    else if (!off && awaySince) { away += performance.now() - awaySince; awaySince = 0; }
+  };
+  document.addEventListener('visibilitychange', onAway);
+  sideways.addEventListener?.('change', onAway);
   stage.innerHTML = `<div class="mem mem-${pairs}">${cards.map((e, i) => `<button class="mem-card" data-i="${i}"><span class="mc-back">${theme ? theme.back : '🐾'}</span><span class="mc-face">${e}</span></button>`).join('')}</div>`;
   const hud = () => ctx.info(theme ? `⭐ ${points} &nbsp;${ctx.tr('memMoves', { n: moves })}` : ctx.tr('memMoves', { n: moves }));
   hud();
@@ -257,8 +276,9 @@ function runMemory(ctx, theme = null) {
         hud();
         if (++found === set.length) {
           if (theme) {
-            const secs = (performance.now() - t0) / 1000;
+            const secs = (performance.now() - t0 - away) / 1000;
             points += Math.max(0, pairs * 30 - (moves - pairs) * 10) + Math.max(0, Math.round(pairs * 25 - secs * 2));
+            hud(); // the bonus shows in the pill too, so it matches the end card
             timers.push(setTimeout(() => ctx.finish(points), 700));
           } else timers.push(setTimeout(() => ctx.end(Math.max(6, Math.min(30, 30 - (moves - 6) * 2)), ctx.tr('memEnd', { n: moves })), 700));
         }
@@ -269,7 +289,7 @@ function runMemory(ctx, theme = null) {
       }
     };
   });
-  const cleanup = () => timers.forEach(clearTimeout);
+  const cleanup = () => { timers.forEach(clearTimeout); document.removeEventListener('visibilitychange', onAway); sideways.removeEventListener?.('change', onAway); };
   return { cleanup, stop: () => { cleanup(); return theme ? points : found * 2; } };
 }
 
@@ -297,10 +317,18 @@ function runSimon(ctx, theme = null) {
   const hud = () => ctx.info(theme ? `⭐ ${points} &nbsp;🎵 ${best}` : `🎵 ${best}`);
   hud();
 
-  function flash(i) {
-    btns[i].classList.add('lit');
+  // a pad lights up for its note. Each pad has one timer and lights again from the start, and while Lucky plays
+  // the flash is shorter than the gap: seven E's in a row are seven flashes, not one long glow
+  const off = [];
+  function flash(i, ms = 380) {
+    const b = btns[i];
+    clearTimeout(off[i]);
+    b.classList.remove('lit');
+    void b.offsetWidth;
+    b.classList.add('lit');
     sfx.note(pads[i].f);
-    later(() => btns[i].classList.remove('lit'), 380);
+    off[i] = setTimeout(() => b.classList.remove('lit'), ms);
+    timers.push(off[i]);
   }
 
   function nextRound() {
@@ -309,7 +337,7 @@ function runSimon(ctx, theme = null) {
     accepting = false;
     msg.textContent = ctx.tr('simonWatch');
     const gap = Math.max(300, (700 - seq.length * 25) * pace);
-    seq.forEach((i, k) => later(() => flash(i), 500 + k * gap));
+    seq.forEach((i, k) => later(() => flash(i, Math.min(380, gap - 120)), 500 + k * gap));
     later(() => { accepting = true; msg.textContent = ctx.tr('simonYour'); }, 500 + seq.length * gap);
   }
 

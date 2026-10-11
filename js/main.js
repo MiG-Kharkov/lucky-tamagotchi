@@ -1939,7 +1939,7 @@ function startGame(game) {
   ui.overlay.className = 'overlay show game-ov';
   cover(true);
   openGame(ui.overlay, game, {
-    tr, sfx, lang: S.lang,
+    tr, sfx, lang: S.lang, translate: S.settings.translate,
     svgOk: luckyPic({ face: 'ok', wear: S.wear }),
     svgHappy: luckyPic({ face: 'laugh', wear: S.wear }),
     svgSad: luckyPic({ face: 'sad', wear: S.wear }),
@@ -1949,21 +1949,23 @@ function startGame(game) {
     onLevel: (lv) => { S.games.level[game.id] = lv; st.save(S); },
     onRecord: (lv, pts) => { const k = game.id + ':' + lv; if (pts <= (S.games.best[k] || 0)) return false; S.games.best[k] = pts; st.save(S); return true; },
     onCancel: closeGame,
-    onEnd: (score) => {
-      const T0 = st.today(S);
-      T0.games++;
-      S.lastGameAt = Date.now();
-      stat('games');
+    // a game counts from its start (a reload can't get round the day's games), and what it earned is kept the
+    // moment it ends, before the end card is closed (iOS may close the app in the background meanwhile)
+    onStart: () => { st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S); },
+    onScore: (score) => {
       if (score >= game.great) stat('gamesGreat');
       if (game.id === 'talk') stat('talkRight', Math.floor(score / 3));
-      closeGame();
       st.boost(S, 'fun', 20);
       st.boost(S, 'energy', -game.energy);
+      award(addH(Math.min(10, Math.ceil(score / 3)), 'game', 20)); // a new level's window waits for the game to close
+      st.save(S);
+    },
+    onEnd: (score) => {
+      closeGame();
       renderStats();
       setTemp('happy', 1500);
       if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
-      award(addH(Math.min(10, Math.ceil(score / 3)), 'game', 20));
-      toast(tr('gamesLeft', { n: Math.max(0, S.settings.gamesPerDay - T0.games) }));
+      toast('🎈 ' + tr('gamesLeft', { n: Math.max(0, S.settings.gamesPerDay - st.today(S).games) }));
       st.save(S);
     },
   });

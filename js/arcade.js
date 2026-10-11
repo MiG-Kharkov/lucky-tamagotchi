@@ -127,15 +127,22 @@ function core(ctx, game) {
     g.lineWidth = 5; g.strokeStyle = '#0007'; g.strokeText(text, x, y);
     g.fillStyle = color; g.fillText(text, x, y);
   };
-  // touch: where the finger is (x, y), and taps
+  // touch: where the finger is (x, y), and taps. Lucky follows the first finger only (another thumb resting on the
+  // screen doesn't pull him away); in the tapping games (game.taps) every finger's tap counts. A finished game is deaf.
+  let raf = 0, last = 0, running = true, paused = false, finger = null;
   const pos = (e) => { const r = canvas.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
-  canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); A.down = true; game.down?.(...pos(e)); });
-  canvas.addEventListener('pointermove', (e) => { if (A.down || e.pointerType === 'mouse') game.move?.(...pos(e)); });
-  const up = (e) => { if (!A.down) return; A.down = false; game.up?.(...pos(e)); };
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (!running || paused) return;
+    if (finger === null) { finger = e.pointerId; A.down = true; } else if (!game.taps) return;
+    game.down?.(...pos(e));
+  });
+  canvas.addEventListener('pointermove', (e) => { if (running && ((A.down && e.pointerId === finger) || e.pointerType === 'mouse')) game.move?.(...pos(e)); });
+  const up = (e) => { if (e.pointerId !== finger) return; finger = null; A.down = false; if (running) game.up?.(...pos(e)); };
   window.addEventListener('pointerup', up);
   window.addEventListener('pointercancel', up);
-  // the loop; it pauses while the app is hidden
-  let raf = 0, last = 0, running = true, paused = false;
+  // the loop; it pauses while the app is hidden or the phone is turned sideways (the "turn your phone" cover is up)
+  const sideways = matchMedia('(orientation: landscape) and (max-height: 540px)');
   const frame = (now) => {
     if (!running) return;
     const dt = Math.min((now - last) / 1000, 0.05);
@@ -150,10 +157,11 @@ function core(ctx, game) {
     }
     raf = requestAnimationFrame(frame);
   };
-  const onVis = () => { paused = document.hidden; last = performance.now(); };
+  const onVis = () => { paused = document.hidden || sideways.matches; last = performance.now(); };
   document.addEventListener('visibilitychange', onVis);
+  sideways.addEventListener?.('change', onVis);
   window.addEventListener('resize', resize);
-  A.start = () => { resize(); last = performance.now(); raf = requestAnimationFrame(frame); };
+  A.start = () => { resize(); onVis(); raf = requestAnimationFrame(frame); };
   A.cleanup = () => {
     running = false;
     cancelAnimationFrame(raf);
@@ -161,6 +169,7 @@ function core(ctx, game) {
     window.removeEventListener('pointerup', up);
     window.removeEventListener('pointercancel', up);
     document.removeEventListener('visibilitychange', onVis);
+    sideways.removeEventListener?.('change', onVis);
   };
   return A;
 }
@@ -206,6 +215,7 @@ function backdrop(A, th) {
 const peek = (get) => { if (typeof window !== 'undefined' && window.game) window.game.arcade = get; };
 const svgImage = (svg) => { const img = new Image(); img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); return img; };
 const mmss = (s) => { const n = Math.max(0, Math.ceil(s)); return `${Math.floor(n / 60)}:${String(n % 60).padStart(2, '0')}`; };
+const DROPPER_Y = 112; // the catcher's dropper sails under the score pill and the time bar
 const POWER_ICON = { rapid: '⚡', triple: '✳️', magnet: '🧲', shield: '🛡️', slow: '🐢', double: '✖️2', big: '⬆️', fly: '🎈', star: '🌟' };
 
 // HUD in the game's info pill: points, the combo multiplier, time left and the powers that are on
@@ -236,6 +246,11 @@ export function shooter(ctx, th, lvName) {
   let nextBoss = lv.time * 0.3, lastTick = 0, ended = false;
   const total = lv.time;
   const speed = () => (lv.speed[0] + (lv.speed[1] - lv.speed[0]) * clamp(A.t / total, 0, 1)) * (pw.slow > 0 ? 0.55 : 1);
+  // Hard is faster and longer, with more hazards and stronger bosses, but no more crowded than Normal and the things
+  // take as many hits as on Normal: one Lucky can shoot only so fast (he fires a little faster on Hard).
+  const hard = lvName === 'hard';
+  const crowd = (sp) => (hard ? LEVELS.normal.dense * Math.min(sp, LEVELS.normal.speed[1]) : lv.dense * sp);
+  const fireGap = hard ? 0.24 : 0.28;
   game.resize = () => { P.size = clamp(A.W * 0.26, 84, 124); if (!P.x) P.x = P.tx = A.W / 2; };
   game.down = (x) => { P.tx = x; };
   game.move = (x) => { P.tx = x; };
@@ -250,7 +265,7 @@ export function shooter(ctx, th, lvName) {
   const lose = (pts, x, y) => { points = Math.max(0, points - pts); combo = 0; A.float(x, y, `−${pts}`, '#FF8080', 22); };
   function spawn(slot = -1) {
     const f = pickW(th.targets), size = (f.size || 44) * 1.18 * A.k;
-    const hp = Math.ceil((f.hp || 1) * (lvName === 'hard' ? 1.3 : 1));
+    const hp = f.hp || 1;
     // a group now and then: three in a row
     const n = slot < 0 && Math.random() < 0.22 ? 3 : 1, x0 = slot >= 0 ? (A.W / 6) * (slot + 1) : rnd(size, A.W - size * (n > 1 ? 3 : 1));
     for (let i = 0; i < n; i++) foes.push({ ...f, x: clamp(x0 + i * size * 1.15, size / 2, A.W - size / 2), y: -size - i * 18, size, hp, ph: rnd(0, 6), dir: Math.random() < 0.5 ? -1 : 1, kind: 'target', flash: 0 });
@@ -299,10 +314,10 @@ export function shooter(ctx, th, lvName) {
     // Lucky
     P.x += (clamp(P.tx, P.size * 0.4, W - P.size * 0.4) - P.x) * Math.min(1, dt * 12);
     P.stun -= dt; P.happy -= dt;
-    if (P.stun <= 0) { fireIn -= dt; if (fireIn <= 0) { fireIn = pw.rapid > 0 ? 0.12 : 0.28; fire(); } }
+    if (P.stun <= 0) { fireIn -= dt; if (fireIn <= 0) { fireIn = pw.rapid > 0 ? 0.12 : fireGap; fire(); } }
     // what comes down
-    if (!boss) { spawnIn -= dt * lv.dense * sp; if (spawnIn <= 0) { spawn(); spawnIn = rnd(0.4, 0.8); } }
-    else { spawnIn -= dt * lv.dense * sp * 0.35; if (spawnIn <= 0) { spawn(); spawnIn = rnd(0.8, 1.3); } }
+    if (!boss) { spawnIn -= dt * crowd(sp); if (spawnIn <= 0) { spawn(); spawnIn = rnd(0.4, 0.8); } }
+    else { spawnIn -= dt * crowd(sp) * 0.35; if (spawnIn <= 0) { spawn(); spawnIn = rnd(0.8, 1.3); } }
     wave();
     if (!boss && A.t >= nextBoss && left > 12) startBoss();
     friendIn -= dt;
@@ -316,7 +331,7 @@ export function shooter(ctx, th, lvName) {
     for (const f of foes) {
       f.flash -= dt;
       if (f.kind === 'friend') f.x += f.dir * 90 * dt;
-      else if (f.move === 'zigzag') { f.x += f.dir * 110 * dt * sp; if (f.x < f.size / 2 || f.x > W - f.size / 2) f.dir *= -1; f.y += (f.v || 60) * dt * sp; }
+      else if (f.move === 'zigzag') { f.x += f.dir * 110 * dt * sp; if (f.x < f.size / 2) f.dir = 1; else if (f.x > W - f.size / 2) f.dir = -1; f.y += (f.v || 60) * dt * sp; }
       else if (f.move === 'drift') { f.x += Math.sin(A.t * 1.6 + f.ph) * 40 * dt; f.y += (f.v || 60) * dt * sp; }
       else if (f.move === 'drop') { f.top = 0; f.y += (f.v || 200) * dt * Math.min(sp, 1.6); }
       else f.y += (f.v || 55) * dt * sp;
@@ -373,7 +388,7 @@ export function shooter(ctx, th, lvName) {
     // the boss
     if (boss) {
       if (boss.enter) { boss.y += 90 * dt; if (boss.y >= Math.max(110, H * 0.2)) boss.enter = false; }
-      else { boss.x += boss.vx * dt * sp; if (boss.x < boss.size / 2 || boss.x > W - boss.size / 2) boss.vx *= -1; boss.y = Math.max(110, H * 0.2) + Math.sin(A.t * 1.3) * 18; }
+      else { boss.x += boss.vx * dt * sp; if (boss.x < boss.size / 2) boss.vx = Math.abs(boss.vx); else if (boss.x > W - boss.size / 2) boss.vx = -Math.abs(boss.vx); boss.y = Math.max(110, H * 0.2) + Math.sin(A.t * 1.3) * 18; }
       boss.dropIn -= dt;
       if (!boss.enter && boss.dropIn <= 0 && th.hazards) { boss.dropIn = rnd(1.4, 2.2) / lv.bad; const h = one(th.hazards); foes.push({ ...h, x: boss.x, y: boss.y + boss.size * 0.4, size: h.size || 38, hp: 1, kind: 'hazard', ph: 0, dir: 1, flash: 0 }); }
       boss.flash -= dt;
@@ -423,8 +438,8 @@ export function catcher(ctx, th, lvName) {
     for (const k in pw) pw[k] = Math.max(0, pw[k] - dt);
     // the dropper sails along the top
     dropper.x += dropper.dir * (60 + 40 * sp) * dt;
-    if (dropper.x < 40 || dropper.x > W - 40) dropper.dir *= -1;
-    if (th.dropper) A.emoji(th.dropper, dropper.x, 76 + Math.sin(A.t * 2) * 6, 66 * A.k, { sx: th.dropperFlip ? -dropper.dir : 1 });
+    if (dropper.x < 40) dropper.dir = 1; else if (dropper.x > W - 40) dropper.dir = -1;
+    if (th.dropper) A.emoji(th.dropper, dropper.x, DROPPER_Y + Math.sin(A.t * 2) * 6, 66 * A.k, { sx: th.dropperFlip ? -dropper.dir : 1 });
     wave();
     // a rush now and then: lots at once
     rushIn -= dt;
@@ -437,7 +452,7 @@ export function catcher(ctx, th, lvName) {
       const it = bad ? one(th.bad) : pickW(th.good);
       // mostly from the dropper, sometimes from anywhere in the sky
       const fromTop = !th.dropper || Math.random() < 0.3;
-      items.push({ ...it, bad, x: fromTop ? rnd(30, W - 30) : dropper.x + rnd(-20, 20), y: fromTop ? -30 : 100, vy: rnd(120, 170), size: (it.size || 40) * 1.15 * A.k, rot: rnd(-1, 1) });
+      items.push({ ...it, bad, x: fromTop ? rnd(30, W - 30) : dropper.x + rnd(-20, 20), y: fromTop ? -30 : DROPPER_Y + 28, vy: rnd(120, 170), size: (it.size || 40) * 1.15 * A.k, rot: rnd(-1, 1) });
     }
     powerIn -= dt;
     if (th.powers && powerIn <= 0) { powerIn = rnd(14, 22); const p = one(th.powers); items.push({ ...p, power: true, x: rnd(40, W - 40), y: -30, vy: 110, size: 44 * A.k, rot: 0 }); }
@@ -489,10 +504,11 @@ export function whacker(ctx, th, lvName) {
   const cols = lvName === 'hard' ? 4 : 3, rows = lvName === 'easy' ? 3 : 4;
   let spots = [], points = 0, combo = 0, popIn = 0.8, lastTick = 0, ended = false;
   const speed = () => lv.speed[0] + (lv.speed[1] - lv.speed[0]) * clamp(A.t / total, 0, 1);
+  game.taps = true;
   game.resize = () => {
-    const top = A.H * 0.2, bottom = A.H - 70, gw = A.W / cols, gh = (bottom - top) / rows;
+    const top = A.H * 0.2, bottom = A.H - 70, gw = A.W / cols, gh = (bottom - top) / rows, old = spots;
     spots = [];
-    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) spots.push({ x: gw * (c + 0.5), y: top + gh * (r + 0.6), size: Math.min(gw, gh) * 0.7, up: null });
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) spots.push({ x: gw * (c + 0.5), y: top + gh * (r + 0.6), size: Math.min(gw, gh) * 0.7, up: old[spots.length]?.up || null });
   };
   game.down = (x, y) => {
     for (const s of spots) {
@@ -576,6 +592,7 @@ export function fireworks(ctx, th, lvName) {
     // a big burst sets off the rockets right next to it
     for (const o of rockets) if (!o.dead && Math.hypot(o.x - r.x, o.y - r.y) < (r.gold ? 140 : 90)) setTimeout(() => { if (!o.dead && !ended) boom(o, 'good'); }, 120);
   }
+  game.taps = true;
   game.down = (x, y) => {
     let best = null, bd = 70;
     for (const r of rockets) { if (r.dead) continue; const d = Math.hypot(r.x - x, r.y - y); if (d < bd) { bd = d; best = r; } }
@@ -640,7 +657,7 @@ export function fireworks(ctx, th, lvName) {
     if (left <= 0 && !ended) { ended = true; ctx.finish(points); }
   };
   A.start();
-  return { cleanup: A.cleanup, stop: () => { A.cleanup(); return points; } };
+  return { cleanup: A.cleanup, stop: () => { ended = true; A.cleanup(); return points; } };
 }
 
 // ---------- the runner: the world runs by; tap to hop over what's in the way (tap again in the air to hop higher) ----------
@@ -658,6 +675,7 @@ export function runner(ctx, th, lvName) {
   const speed = () => lv.speed[0] + (lv.speed[1] - lv.speed[0]) * clamp(A.t / total, 0, 1);
   const groundY = () => A.H - Math.max(110, A.H * 0.2);
   game.resize = () => { P.size = clamp(A.W * 0.25, 84, 120); P.x = A.W * 0.24; if (!P.y) P.y = groundY(); };
+  game.taps = true;
   game.down = () => {
     if (pw.fly > 0) { P.vy = -A.H * 0.55; return; }
     if (P.jumps >= 2) return;
@@ -705,6 +723,8 @@ export function runner(ctx, th, lvName) {
     P.stun -= dt; P.happy -= dt;
     P.vy += H * (pw.fly > 0 ? 1.4 : 3.1) * dt;
     P.y += P.vy * dt;
+    const ceil = 80 + P.size * (pw.fly > 0 ? 1.3 : 0.6); // below the score and the time bar, balloons and all
+    if (P.y < ceil) { P.y = ceil; P.vy = Math.max(0, P.vy); }
     if (P.y >= gy) { P.y = gy; P.vy = 0; P.jumps = 0; }
     if (pw.fly > 0) P.y = Math.min(P.y, gy);
     for (const t of things) {
