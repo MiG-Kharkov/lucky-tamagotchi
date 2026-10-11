@@ -14,7 +14,7 @@ import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './
 import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
 import { createAntics, gestures } from './antics.js';
 import { createTricks } from './tricks.js';
-import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly } from './events.js';
+import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -760,10 +760,19 @@ function checkBadges() {
   }
 }
 
+// Two times in three the sticker comes from the album closest to done, so the albums fill up one after another
+// (drawn evenly from all of them, the six albums would finish within a few days of each other)
 function giveSticker() {
   const left = STICKERS.filter((s) => !S.stickers.includes(s));
   if (!left.length) return null;
-  const s = pick(left);
+  let pool = left;
+  if (Math.random() < 2 / 3) {
+    const open = ALBUMS.map((a) => a.stickers.filter((x) => left.includes(x))).filter((miss) => miss.length);
+    const fewest = Math.min(...open.map((miss) => miss.length));
+    const near = open.filter((miss) => miss.length === fewest).flat();
+    if (near.length) pool = near;
+  }
+  const s = pick(pool);
   S.stickers.push(s);
   checkAlbums();
   checkBadges();
@@ -901,7 +910,7 @@ function currentEvent() {
 function updateEvent(force = false) {
   const keyOf = (e) => (e ? e.id + e.stage + (e.days <= 7 ? 'w' : '') : ''); // the last week brings a few more things
   const ev = currentEvent(), key = keyOf(ev);
-  if (!force && key === keyOf(EV)) { EV = ev; renderEventBtn(); return; } // a new day: only the days to go change
+  if (!force && key === keyOf(EV)) { EV = ev; renderEventBtn(); antics.refreshEggs(); keptPresent(); return; } // a new day: the days to go and the hunt
   EV = ev;
   const b = document.body;
   [...b.classList].filter((c) => c.startsWith('ev-')).forEach((c) => b.classList.remove(c));
@@ -918,6 +927,7 @@ function updateEvent(force = false) {
   renderTop();
   if (mode === 'sleep') renderSleep(true);
   if (mode === 'edit') renderTray();
+  keptPresent();
 }
 
 // ---------- the holiday calendar: one window a day until the holiday; the holiday's own window holds a present ----------
@@ -938,19 +948,23 @@ function calendarDays(ev) {
     const d = new Date(target.getFullYear(), target.getMonth(), target.getDate() - k);
     days.push({ key: st.dayKey(d.getTime()), day: d.getDate(), offset: Math.round((d - t0) / 864e5), big: k === 0 });
   }
-  return { id: ev.id + '-' + target.getFullYear(), days };
+  return { id: ev.id + '-' + target.getFullYear(), ev: ev.id, days };
 }
-const calTreat = (cal, d) => { const list = CAL_TREATS[EV.id] || EV.stickers; return d.big ? EV.icon : list[st.hash(cal.id + d.key) % list.length]; };
+const calTreat = (cal, d) => { const ev = EVENT_BY_ID[cal.ev], list = CAL_TREATS[cal.ev] || ev.stickers; return d.big ? ev.icon : list[st.hash(cal.id + d.key) % list.length]; };
+// A window opens on its day or any day after: missed ones wait for her (the hearts keep their daily cap)
+const calOpenable = (d, opened) => d.offset <= 0 && !opened.includes(d.key);
 
 function renderEventBtn() {
   const b = $('#eventBtn');
   if (!b) return;
   b.hidden = !(EV && EV.stage >= 3);
   if (b.hidden) return;
-  const cal = calendarDays(EV), waiting = cal.days.some((d) => d.offset === 0) && !(S.calendar[cal.id] || []).includes(S.today?.date);
+  const cal = calendarDays(EV), opened = S.calendar[cal.id] || [];
+  // it shines while today's window or the holiday's own one is waiting (missed ordinary ones just wait quietly)
+  const waiting = cal.days.some((d) => (d.offset === 0 || d.big) && calOpenable(d, opened));
   const html = `${EV.icon}<b>${EV.days > 0 ? EV.days : '!'}</b>`;
   if (b.innerHTML !== html) b.innerHTML = html;
-  b.classList.toggle('waiting', waiting); // today's window hasn't been opened yet
+  b.classList.toggle('waiting', waiting);
 }
 
 function openCalendar() {
@@ -959,34 +973,49 @@ function openCalendar() {
   const head = EV.days > 0 ? tr('calDays', { n: EV.days }) : EV.days === 0 ? tr('calToday', { x: L(EV.name) }) : tr('calAfter');
   const html = `<p class="muted center cal-head">${head}<br><small>${tr('calHint')}</small></p>
     <div class="cal-grid">${cal.days.map((d) => {
-      const open = opened.includes(d.key), now = d.key === today;
-      const cls = open ? 'open' : now ? 'now' : d.offset < 0 ? 'past' : 'future';
-      return `<button class="cal-day ${cls}${d.big ? ' big' : ''}" data-k="${d.key}" ${now && !open ? '' : 'disabled'}><span class="cd-num">${d.day}</span><span class="cd-in">${open ? calTreat(cal, d) : now ? '🎁' : d.offset < 0 ? '💤' : d.big ? EV.icon : '🔒'}</span></button>`;
+      const open = opened.includes(d.key), now = d.key === today, can = calOpenable(d, opened);
+      const cls = open ? 'open' : now ? 'now' : can ? 'missed' : 'future';
+      return `<button class="cal-day ${cls}${d.big ? ' big' : ''}" data-k="${d.key}" ${can ? '' : 'disabled'}><span class="cd-num">${d.day}</span><span class="cd-in">${open ? calTreat(cal, d) : can ? '🎁' : d.big ? EV.icon : '🔒'}</span></button>`;
     }).join('')}</div>${opened.includes(today) ? `<p class="done-note center">✅ ${tr('calOpened')}</p>` : ''}`;
   openSheet(tr('calTitle'), html, (root) => {
-    const b = root.querySelector('.cal-day.now:not(.open)');
-    if (b) b.onclick = () => openWindow(b, cal);
+    root.querySelectorAll('.cal-day.now, .cal-day.missed').forEach((b) => { b.onclick = () => openWindow(b, cal); });
   });
 }
 
+// The window the button stands for (not "today": the sheet may stay open past midnight)
 function openWindow(btn, cal) {
-  const opened = (S.calendar[cal.id] ||= []), today = st.today(S).date;
-  if (opened.includes(today)) return;
-  opened.push(today);
-  const d = cal.days.find((x) => x.key === today), big = !!d?.big;
+  const opened = (S.calendar[cal.id] ||= []), d = cal.days.find((x) => x.key === btn.dataset.k);
+  if (!d || !calOpenable(d, opened)) return;
+  opened.push(d.key);
+  // the holiday's own window holds a real present: chosen and saved now, shown once the window is open
+  const g = d.big ? rollGift(0.4, 0.15) : null;
   btn.disabled = true;
-  btn.classList.remove('now');
+  btn.classList.remove('now', 'missed');
   btn.classList.add('opening');
   sfx.sparkle();
   setTimeout(() => { btn.classList.remove('opening'); btn.classList.add('open'); btn.querySelector('.cd-in').textContent = calTreat(cal, d); sfx.happy(); confetti(); }, 380);
-  const res = addH(big ? 5 : 2, 'calendar', big ? 5 : 2);
-  say(fresh(big && LUCKY.holiday[EV.id]?.greet ? LUCKY.holiday[EV.id].greet : LUCKY.holidayThings.calendar));
-  // the holiday's own window: a real present
-  if (big) setTimeout(() => { const g = rollGift(0.4, 0.15); closeSheet(); showModal({ custom: (host, done) => revealGift(host, { title: tr('calGift'), rewards: [g], line: LUCKY.levelUp }, done) }); }, 1500);
+  const res = addH(d.big ? 5 : 2, 'calendar', d.big ? 5 : 2);
+  say(fresh(d.big && LUCKY.holiday[cal.ev]?.greet ? LUCKY.holiday[cal.ev].greet : LUCKY.holidayThings.calendar));
+  if (g) setTimeout(() => { closeSheet(); showModal({ custom: (host, done) => revealGift(host, { title: tr('calGift'), rewards: [g], line: LUCKY.levelUp }, done) }); }, 1500);
   stat('calendar');
   award(res);
   st.save(S);
   renderEventBtn();
+}
+
+// A holiday present left in its window waits a week after the holiday: on the next visit Lucky hands it over
+function keptPresent() {
+  if (!S.settings.holidays || !S.onboarded || mode !== 'main') return;
+  for (const { ev, date } of justPassed()) {
+    if (EV && EV.id === ev.id) continue; // still on: its window is in the calendar
+    const id = ev.id + '-' + date.getFullYear(), key = st.dayKey(date.getTime()), opened = (S.calendar[id] ||= []);
+    if (opened.includes(key)) continue;
+    opened.push(key);
+    const g = rollGift(0.4, 0.15);
+    st.save(S);
+    showModal({ custom: (host, done) => revealGift(host, { title: tr('calKept'), rewards: [g], line: LUCKY.levelUp }, done) });
+    return;
+  }
 }
 
 // What Lucky says on arriving in a world (the dojo greets him with its gong)

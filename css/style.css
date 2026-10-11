@@ -1615,7 +1615,7 @@ body.ev-easter.ev-s3 {
 .cal-day .cd-num { position: absolute; left: 6px; top: 4px; font-size: 11px; font-weight: 800; color: var(--muted); }
 .cal-day .cd-in { font-size: 26px; line-height: 1; }
 .cal-day.future { opacity: .55; }
-.cal-day.past { opacity: .45; filter: grayscale(.7); }
+.cal-day.missed { background: var(--ev-card, #FFF0F7); box-shadow: 0 0 0 2px var(--ev-1, var(--pink)), 0 3px 0 var(--ev-line, #F0D8E8); } /* a window she missed waits */
 .cal-day.now { background: var(--ev-card, #FFF0F7); box-shadow: 0 0 0 3px var(--ev-1, var(--pink)), 0 3px 0 var(--ev-line, #F0D8E8); animation: pulse 1.1s ease-in-out infinite; }
 .cal-day.open { background: var(--ev-card, #FFF8FB); opacity: 1; filter: none; }
 .cal-day.big { grid-column: span 2; aspect-ratio: auto; box-shadow: 0 0 0 3px #FFD23F, 0 3px 0 #E6A800; }

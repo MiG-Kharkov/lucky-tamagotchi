@@ -60,6 +60,18 @@ export function eventOn(now = new Date()) {
   return best;
 }
 
+// The holidays whose day was 1 to `within` days ago (a present left in the holiday's window waits that long)
+export function justPassed(now = new Date(), within = 7) {
+  const today = dayNo(now), out = [];
+  for (const ev of EVENTS) {
+    for (const y of [now.getFullYear() - 1, now.getFullYear()]) {
+      const date = ev.date(y), ago = today - dayNo(date);
+      if (ago >= 1 && ago <= within) out.push({ ev, date, ago });
+    }
+  }
+  return out;
+}
+
 // A holiday shown on purpose (Turbo preview): 'halloween' or 'halloween:2'
 export function eventPreview(spec) {
   const [id, n] = String(spec).split(':');
