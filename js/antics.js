@@ -67,15 +67,29 @@ export function createAntics(api) {
   const L = ui.lucky;
 
   // ---------- lines ----------
+  // key: a list name in LUCKY.antics (DOG for Tali) or a list itself, so scenes can use any line that is
+  // already recorded (LUCKY.worldTap, LUCKY.idle…) without new voice clips
   const saidAt = {};
   function line(key, chance = 0.85, gap = 12000, who = 'lucky') {
     const now = Date.now();
-    const list = who === 'dog' ? DOG[key] : LUCKY.antics[key];
-    const k = who + ':' + key;
-    if (!list || now - (saidAt[k] || 0) < gap || Math.random() > chance) return 0;
+    const list = Array.isArray(key) ? key : who === 'dog' ? DOG[key] : LUCKY.antics[key];
+    const k = who + ':' + (Array.isArray(key) ? key[0]?.[1] : key);
+    if (!list?.length || now - (saidAt[k] || 0) < gap || Math.random() > chance) return 0;
     saidAt[k] = now;
     return api.say(list, who);
   }
+  // The recorded line that contains these English words, as a one-line list ([] if it has been changed)
+  const lineWith = (list, words) => list.filter((x) => x[1].includes(words)).slice(0, 1);
+
+  // Some things react in several ways: a different one each time, never the same twice in a row
+  const lastWay = {};
+  function pickWay(key, n) {
+    let i;
+    do { i = Math.floor(Math.random() * n); } while (n > 1 && i === lastWay[key]);
+    lastWay[key] = i;
+    return i;
+  }
+  const oneOf = (key, ...ways) => (c) => ways[pickWay(key, ways.length)](c);
 
   // ---------- geometry ----------
   const sceneRect = () => ui.scene.getBoundingClientRect();
@@ -99,7 +113,7 @@ export function createAntics(api) {
   let act = null, lastFidget = '';
   function begin(name) {
     end();
-    const a = { name, timers: [], cls: new Set() };
+    const a = { name, timers: [], cls: new Set(), fin: [] };
     act = a;
     return a;
   }
@@ -109,9 +123,12 @@ export function createAntics(api) {
     act = null;
     a.timers.forEach(clearTimeout);
     a.cls.forEach((c) => L.classList.remove(c));
+    a.fin.forEach((fn) => fn());
     if (L.style.left) { L.style.left = ''; api.hop(L, 'walk', 900); }
   }
   const at = (a, ms, fn) => a.timers.push(setTimeout(() => { if (act === a) fn(); }, ms));
+  // put something back however the scene ends (a hidden sticker, a popped balloon)
+  const onEnd = (a, fn) => a.fin.push(fn);
   function hold(a, c, ms) {
     L.classList.add(c);
     a.cls.add(c);
@@ -225,6 +242,17 @@ export function createAntics(api) {
     api.setTemp('sad', 1200);
     shakeDry(a, ms);
   }
+  // a puddle at Lucky's feet: it spreads, stays for a moment and dries up
+  function puddle(ms = 4000) {
+    const [x, y] = feet();
+    const d = document.createElement('div');
+    d.className = 'puddle';
+    d.style.left = x + 'px';
+    d.style.top = y + 4 + 'px';
+    d.style.setProperty('--ms', ms + 'ms');
+    ui.fx.appendChild(d);
+    setTimeout(() => d.remove(), ms);
+  }
 
   // hide and seek: Lucky hides; a tap on him finds him, otherwise he jumps out with a 'Boo!'
   function hideGame(a, el, cls = 'hiding', ms = 4500) {
@@ -266,9 +294,21 @@ export function createAntics(api) {
   const who = (fn) => (c) => { if (api.free()) fn(c); };
   const R = {};
 
+  const sunShades = () => { pose('happy', 3000, 'hop'); prop('shades', 5000); line('sunShades'); api.reward(); };
+  // he stretches up to the sun and glows warm
+  const sunWarm = () => {
+    const a = begin('warm');
+    pose('happy', 2600, 'stretchUp', 1600);
+    hold(a, 'glow', 2400);
+    api.fxAt(...head(), ['☀️', '✨'], 4, 'spark');
+    sfx.chime();
+    line(LUCKY.sun, 1);
+    api.boost('energy', 1);
+    at(a, 2500, end);
+  };
   R.sun = {
     press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['✨', '☀️'], 5, 'spark'); },
-    tap: who(() => { pose('happy', 3000, 'hop'); prop('shades', 5000); line('sunShades'); api.reward(); }),
+    tap: who(oneOf('sun', sunShades, sunWarm)),
     double: who(() => {
       api.setTemp('sleep', 500);
       setTimeout(() => { sfx.sneeze(); pose('laugh', 1400, 'sneeze'); api.fxAt(...nose(), ['💨', '✨'], 4, 'spark'); line('sunSneeze', 1); }, 450);
@@ -305,6 +345,15 @@ export function createAntics(api) {
         api.fxAt(hx, hy - 30, w === 'winter' ? ['❄️'] : ['💧'], 10, 'drop');
         if (w === 'winter') { sfx.bubble(); prop('snowcap', 4000); hold(a, 'shiver', 1400); line('snowFlakes'); at(a, 2800, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); unprop('head'); }); at(a, 3800, end); return; }
         sfx.rain();
+        if (pickWay('rain', 2)) {
+          // a puddle! He jumps right into it… splash, soaked, shake
+          line(LUCKY.rain, 1);
+          puddle(4600);
+          at(a, 1000, () => pose('laugh', 1400, 'bigjump', 1100));
+          at(a, 1800, () => { sfx.splash(); spray(...feet(), ['💦', '💧']); getWet(a, 1800); });
+          at(a, 4400, end);
+          return;
+        }
         line('rainWet', 0.9);
         getWet(a, 2000);
         at(a, 3400, end);
@@ -333,7 +382,7 @@ export function createAntics(api) {
     tap: who(() => {
       const [hx, hy] = head();
       api.fxAt(hx, hy - 60, ['🌸'], 6, 'drop petal-fx');
-      setTimeout(() => { prop('petals', 4500); api.setTemp('happy', 1500); line('petals', 0.8); }, 500);
+      setTimeout(() => { prop('petals', 4500); api.setTemp('happy', 1500); line([...LUCKY.antics.petals, ...LUCKY.petals], 0.8); }, 500);
       if (Math.random() < 0.3) setTimeout(() => { if (!api.free()) return; api.setTemp('sleep', 400); setTimeout(() => { sfx.sneeze(); pose('laugh', 1200, 'sneeze'); unprop('head'); }, 400); }, 1800);
     }),
     double: who((c) => {
@@ -351,7 +400,7 @@ export function createAntics(api) {
     tap: who((c) => {
       const a = begin('sniff');
       go(nextTo(c.el), 600);
-      at(a, 650, () => { api.setTemp('happy', 1500); api.hop(L, 'sniff', 1500); sfx.sniff(); line('sniff', 0.8); });
+      at(a, 650, () => { api.setTemp('happy', 1500); api.hop(L, 'sniff', 1500); sfx.sniff(); line([...LUCKY.antics.sniff, ...LUCKY.flowers], 0.8); });
       if (Math.random() < 0.3) at(a, 1700, () => { api.setTemp('sleep', 400); at(a, 400, () => { sfx.sneeze(); pose('laugh', 1200, 'sneeze'); line('pollen', 1); }); });
       at(a, 2900, end);
     }),
@@ -421,14 +470,23 @@ export function createAntics(api) {
     }),
   };
 
+  const coconutHit = (c) => {
+    const a = begin('coconut');
+    fly('🥥', [c.x, c.y], head(), 650, { spin: 240, size: 32 });
+    at(a, 650, () => { sfx.bonk(); api.hop(L, 'squash', 700); prop('bump', 3200); prop('dizzy', 2600); api.setTemp('tired', 2000); line('coconut', 0.9); });
+    at(a, 2600, end);
+  };
+  // the coconut lands right next to him: a fright, then relief
+  const coconutMiss = (c) => {
+    const a = begin('coconutMiss'), [gx, gy] = api.luckyPoint(-0.06, 0.93);
+    fly('🥥', [c.x, c.y], [gx, gy], 650, { spin: 240, size: 32, stay: 1700 });
+    at(a, 650, () => { sfx.bonk(); api.fxAt(gx, gy, ['💨'], 3, 'spark'); pose('ok', 1000, 'startle', 1100); });
+    at(a, 1500, () => { pose('laugh', 1500, 'hop'); line(LUCKY.worldTap.palm, 1); });
+    at(a, 2600, end);
+  };
   R.palm = {
     press: () => sfx.pop(),
-    tap: who((c) => {
-      const a = begin('coconut');
-      fly('🥥', [c.x, c.y], head(), 650, { spin: 240, size: 32 });
-      at(a, 650, () => { sfx.bonk(); api.hop(L, 'squash', 700); prop('bump', 3200); prop('dizzy', 2600); api.setTemp('tired', 2000); line('coconut', 0.9); });
-      at(a, 2600, end);
-    }),
+    tap: who(oneOf('palm', coconutHit, coconutMiss)),
     double: who(() => { prop('coconut', 4000); api.setTemp('eat', 1800); sfx.slurp(); line('coconutDrink'); api.reward(); }),
     long: who((c) => {
       const a = begin('dodge');
@@ -445,24 +503,35 @@ export function createAntics(api) {
     }),
   };
 
+  const shellListen = () => { prop('shell', 3500); pose('happy', 3000, 'listen', 3000); sfx.whoosh(); setTimeout(() => sfx.whoosh(), 900); line('shellListen', 0.9); };
+  // he holds the shell out to her: listen, the sea is inside
+  const shellOffer = () => { prop('shellHand', 3400); pose('happy', 2800, 'proud', 1200); sfx.whoosh(); setTimeout(() => sfx.whoosh(), 900); line(LUCKY.worldTap.shell, 1); };
   R.shell = {
     press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['✨', '🌊'], 4, 'spark'); },
-    tap: who(() => { prop('shell', 3500); pose('happy', 3000, 'listen', 3000); sfx.whoosh(); setTimeout(() => sfx.whoosh(), 900); line('shellListen', 0.9); }),
+    tap: who(oneOf('shell', shellListen, shellOffer)),
     double: who(() => { prop('pearl', 3500); api.fxAt(...paw(), ['✨'], 4, 'spark'); sfx.chime(); api.setTemp('happy', 1500); line('pearl'); api.reward(); }),
     long: who(() => { prop('shell', 2500); sfx.trumpet(); api.fxAt(...earPt(), ['🎵', '🎶'], 4, 'spark'); pose('laugh', 1500, 'hop'); line('shellHorn', 1); }),
   };
 
+  const crabFlee = (c) => {
+    const a = begin('flee');
+    api.setTemp('ok', 1800);
+    go(awayFrom(c.el), 420);
+    hold(a, 'scared', 1900);
+    sfx.whoosh();
+    line('crabRun', 0.9);
+    at(a, 2000, end);
+  };
+  // the crab scuttles sideways, and Lucky laughs and copies it
+  const crabSideways = (c) => {
+    api.hop(c.el, 'scuttle', 2600);
+    [0, 350, 700, 1050].forEach((d) => setTimeout(() => sfx.tap(), d));
+    pose('laugh', 2300, 'sidestep', 2300);
+    line(LUCKY.worldTap.crab, 1);
+  };
   R.crab = {
     press: () => sfx.tap(),
-    tap: who((c) => {
-      const a = begin('flee');
-      api.setTemp('ok', 1800);
-      go(awayFrom(c.el), 420);
-      hold(a, 'scared', 1900);
-      sfx.whoosh();
-      line('crabRun', 0.9);
-      at(a, 2000, end);
-    }),
+    tap: who(oneOf('crab', crabFlee, crabSideways)),
     double: (c) => {
       api.hop(c.el, 'crabdance', 2200);
       sfx.happy();
@@ -495,15 +564,32 @@ export function createAntics(api) {
     }),
   };
 
+  const pineSnowcap = () => {
+    const a = begin('snowcap');
+    api.fxAt(...head(), ['❄️'], 6, 'drop');
+    at(a, 400, () => { prop('snowcap', 3000); hold(a, 'shiver', 1200); line('snowHead', 0.8); });
+    at(a, 2400, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); unprop('head'); });
+    at(a, 3400, end);
+  };
+  // this time the snow lands on his ears only: he wiggles them, then shakes it all off
+  const pineEars = () => {
+    const a = begin('earSnow'), [lx, ly] = api.luckyPoint(0.24, 0.18), [rx] = api.luckyPoint(0.76, 0.18);
+    api.fxAt(lx, ly - 30, ['❄️'], 3, 'drop');
+    api.fxAt(rx, ly - 30, ['❄️'], 3, 'drop');
+    at(a, 450, () => {
+      prop('earSnow', 2600);
+      pose('ok', 1700);
+      L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle'));
+      hold(a, 'shiver', 900);
+      sfx.bubble();
+      line(LUCKY.worldTap.pine, 1);
+    });
+    at(a, 2300, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); unprop('earsnow'); });
+    at(a, 3300, end);
+  };
   R.pine = {
     press: (c) => { sfx.bubble(); api.fxAt(c.x, c.y, ['❄️'], 8, 'drop'); },
-    tap: who(() => {
-      const a = begin('snowcap');
-      api.fxAt(...head(), ['❄️'], 6, 'drop');
-      at(a, 400, () => { prop('snowcap', 3000); hold(a, 'shiver', 1200); line('snowHead', 0.8); });
-      at(a, 2400, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); unprop('head'); });
-      at(a, 3400, end);
-    }),
+    tap: who(oneOf('pine', pineSnowcap, pineEars)),
     double: (c) => {
       const [x, y] = topOf(c.el);
       popUp('⭐', x, y + 6, 3200, 30);
@@ -513,9 +599,18 @@ export function createAntics(api) {
     long: who((c) => hideGame(begin('hide'), c.el)),
   };
 
+  const snowmanWave = () => { pose('happy', 1500, 'wave', 1200); line('snowmanHi', 0.8); };
+  // a big hug for his winter friend… brr, cold!
+  const snowmanHug = (c) => {
+    const a = begin('snowHug');
+    go(nextTo(c.el, 16), 700);
+    at(a, 750, () => { pose('happy', 1800, 'hug'); api.hearts(...head(), 4); sfx.happy(); line(LUCKY.worldTap.snowman, 1); });
+    at(a, 2300, () => { hold(a, 'shiver', 1000); sfx.bubble(); api.fxAt(...head(), ['❄️'], 3, 'spark'); });
+    at(a, 3400, end);
+  };
   R.snowman = {
     press: () => sfx.pop(),
-    tap: who(() => { pose('happy', 1500, 'wave', 1200); line('snowmanHi', 0.8); }),
+    tap: who(oneOf('snowman', snowmanWave, snowmanHug)),
     double: who((c) => {
       const a = begin('snowball'), [x, y] = centerOf(c.el);
       pose('laugh', 1400, 'throw', 600);
@@ -549,9 +644,17 @@ export function createAntics(api) {
     }),
   };
 
+  const planetFloat = () => { pose('laugh', 3300, 'zeroG', 3500); sfx.magic(); line('zeroG', 0.8); };
+  // the planet spins round and round… and so does Lucky's head
+  const planetSpin = (c) => {
+    api.hop(c.el, 'whirl', 2200);
+    sfx.whirr();
+    pose('laugh', 1200, 'pirouette', 1500);
+    setTimeout(() => { if (!api.free()) return; prop('dizzy', 2600); api.setTemp('tired', 2200); line(LUCKY.worldTap.planet, 1); }, 1500);
+  };
   R.planet = {
     press: (c) => { sfx.whirr(); api.fxAt(c.x, c.y, ['✨', '⭐'], 4, 'spark'); },
-    tap: who(() => { pose('laugh', 3300, 'zeroG', 3500); sfx.magic(); line('zeroG', 0.8); }),
+    tap: who(oneOf('planet', planetFloat, planetSpin)),
     double: who(() => { const a = begin('hula'); prop('ring', 4000); hold(a, 'hula', 4000); api.setTemp('laugh', 3000); sfx.whirr(); line('hula'); api.reward(); at(a, 4100, end); }),
     long: who(() => { prop('helmet', 10000); sfx.zip(); pose('happy', 1600, 'proud', 1200); line('helmet', 1); }),
   };
@@ -579,9 +682,15 @@ export function createAntics(api) {
     long: who(() => { prop('cheese', 3500); api.setTemp('happy', 1800); sfx.pop(); line('moonCheese', 1); }),
   };
 
+  const sheepBaa = () => { setTimeout(() => { sfx.baa(); pose('laugh', 1200, 'hop'); line('baa', 0.8); }, 650); };
+  // the sheep says hello with a little hop, and Lucky waves back
+  const sheepHello = (c) => {
+    api.hop(c.el, 'sheephop', 900);
+    setTimeout(() => { if (!api.free()) return; pose('happy', 1500, 'wave', 1200); line(LUCKY.worldTap.sheep, 1); }, 600);
+  };
   R.sheep = {
     press: () => sfx.baa(),
-    tap: who(() => { setTimeout(() => { sfx.baa(); pose('laugh', 1200, 'hop'); line('baa', 0.8); }, 650); }),
+    tap: who(oneOf('sheep', sheepBaa, sheepHello)),
     double: who(() => {
       const a = begin('count'), [, hy] = head(), w = sceneRect().width;
       fly('🐑', [-30, hy + 60], [w + 30, hy + 60], 1300, { arc: 120, size: 44 });
@@ -597,12 +706,18 @@ export function createAntics(api) {
     }),
   };
 
+  const cloverEat = (c) => {
+    fly('☘️', [c.x, c.y], mouth(), 500, { size: 22 });
+    setTimeout(() => { prop('clover', 1800); api.setTemp('eat', 1800); sfx.crunch(); line('cloverEat', 0.7); api.reward(); }, 500);
+  };
+  // a shamrock behind his ear, for luck
+  const cloverLuck = (c) => {
+    fly('☘️', [c.x, c.y], api.luckyPoint(0.75, 0.28), 550, { size: 22 });
+    setTimeout(() => { prop('cloverEar', 9000); sfx.chime(); pose('happy', 1500, 'proud', 1200); line(LUCKY.worldTap.clover, 1); api.reward(); }, 550);
+  };
   R.clover = {
     press: (c) => { sfx.pop(); api.floatFx(c.x, c.y, '☘️', 'fly-up'); },
-    tap: who((c) => {
-      fly('☘️', [c.x, c.y], mouth(), 500, { size: 22 });
-      setTimeout(() => { prop('clover', 1800); api.setTemp('eat', 1800); sfx.crunch(); line('cloverEat', 0.7); api.reward(); }, 500);
-    }),
+    tap: who(oneOf('clover', cloverEat, cloverLuck)),
     double: (c) => {
       popUp('🍀', c.x, c.y - 20, 2200, 44);
       sfx.chime();
@@ -611,9 +726,24 @@ export function createAntics(api) {
     long: who(() => { prop('crown', 15000); sfx.magic(); pose('happy', 1500, 'proud', 1200); line('cloverCrown', 1); }),
   };
 
+  const goldJig = () => { prop('coins', 2400); sfx.jig(); pose('laugh', 1900, 'jig', 1900); line('jig', 0.8); api.reward(); };
+  // he peeks into the pot and a fountain of coins jumps out
+  const goldPeek = (c) => {
+    const a = begin('goldPeek');
+    go(nextTo(c.el), 700);
+    at(a, 750, () => {
+      const [x, y] = centerOf(c.el);
+      for (let i = 0; i < 7; i++) at(a, i * 110, () => fly('🪙', [x, y], [x + (Math.random() * 140 - 70), y - 90 - Math.random() * 70], 750, { arc: 30, spin: 360, size: 22 }));
+      sfx.sparkle();
+      pose('happy', 1800, 'proud', 1200);
+      line(LUCKY.worldTap.gold, 1);
+      api.reward();
+    });
+    at(a, 2700, end);
+  };
   R.gold = {
     press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['🪙', '✨', '🪙'], 7, 'spark'); },
-    tap: who(() => { prop('coins', 2400); sfx.jig(); pose('laugh', 1900, 'jig', 1900); line('jig', 0.8); api.reward(); }),
+    tap: who(oneOf('gold', goldJig, goldPeek)),
     double: who(() => { rainbow(); sfx.chime(); pose('happy', 1500, 'hop'); line('rainbowGold', 1); }),
     long: who((c) => {
       const a = begin('heavy');
@@ -630,9 +760,19 @@ export function createAntics(api) {
     long: who((c) => { sfx.fanfare(); api.fxAt(c.x, c.y, ['🎺', '✨'], 5, 'spark'); pose('laugh', 1400, 'binky'); line('fanfare', 1); }),
   };
 
+  const pagodaBow = () => { pose('happy', 1600, 'bow', 1500); line('bow', 0.8); };
+  // the castle bell rings under the roof: ears up, then a laugh
+  const pagodaBell = (c) => {
+    const [x, y] = topOf(c.el); // the roof is often above the visible part of the scene
+    popUp('🔔', x, Math.max(y + 44, 70), 1900, 34, 'bell-ring');
+    sfx.ding();
+    setTimeout(() => sfx.ding(), 500);
+    pose('ok', 900, 'startle', 1100);
+    setTimeout(() => { if (!api.free()) return; api.setTemp('laugh', 1400); line(LUCKY.worldTap.pagoda, 1); }, 500);
+  };
   R.pagoda = {
     press: (c) => { sfx.gong(); api.floatFx(c.x, c.y, '', 'ripple'); },
-    tap: who(() => { pose('happy', 1600, 'bow', 1500); line('bow', 0.8); }),
+    tap: who(oneOf('pagoda', pagodaBow, pagodaBell)),
     double: who(() => { sfx.whoosh(); pose('laugh', 1400, 'bigjump', 1100); line('ninjaJump'); }),
     long: who(() => {
       const a = begin('vanish');
@@ -644,9 +784,18 @@ export function createAntics(api) {
     }),
   };
 
+  const bambooSway = () => { pose('happy', 1300, 'sway', 1300); line('bambooSway', 0.8); };
+  // a gust of wind: the bamboo sways, leaves fly, Lucky sways along
+  const bambooWind = (c) => {
+    api.hop(c.el, 'windsway', 2100);
+    api.fxAt(c.x, c.y - 40, ['🍃'], 5, 'drop');
+    sfx.whoosh();
+    pose('happy', 1800, 'sway', 1300);
+    setTimeout(() => { if (api.free()) line(LUCKY.worldTap.bamboo, 1); }, 300);
+  };
   R.bamboo = {
     press: () => sfx.bubble(),
-    tap: who(() => { pose('happy', 1300, 'sway', 1300); line('bambooSway', 0.8); }),
+    tap: who(oneOf('bamboo', bambooSway, bambooWind)),
     double: who(() => { api.setTemp('eat', 1500); sfx.crunch(); line('bambooMunch'); }),
     long: who((c) => hideGame(begin('hide'), c.el)),
   };
@@ -675,16 +824,58 @@ export function createAntics(api) {
   // ⭐ ball: keepy-uppy. Every tap while the ball is up counts, Lucky counts out loud, best score is kept
   let keepy = null;
   function keepyEnd() {
-    const n = keepy?.n || 0;
+    const n = keepy?.n || 0, el = keepy?.el;
     keepy = null;
     if (!api.free() || !n) return;
     const best = n >= 3 && api.record('keepy', n);
     if (n >= 3) api.reward();
     if (best) { sfx.levelup(); pose('laugh', 1500, 'binky'); api.toast(`⚽ ${n}! 🏆`); line('keepyRecord', 1, 0); }
+    else if (n >= 5 && el?.isConnected && Math.random() < 0.6) headerGoal(el);
     else line(n <= 2 ? 'keepy1' : n <= 5 ? 'keepy2' : 'keepy3', 1, 0);
   }
+  // a long keepy-uppy ends with a header: the ball flies off into a goal on the other side
+  function headerGoal(el) {
+    const a = begin('header'), r = sceneRect(), right = centerOf(el)[0] < r.width / 2;
+    el.style.setProperty('--dir', (right ? 1 : -1) * (el.style.getPropertyValue('--f').trim() === '-1' ? -1 : 1));
+    go(nextTo(el, 12), 500);
+    at(a, 550, () => { pose('laugh', 1500, 'bigjump', 1100); api.hop(el, 'header', 1900); });
+    at(a, 1000, () => { sfx.bonk(); api.fxAt(...head(), ['💥'], 1, 'spark'); });
+    at(a, 1450, () => {
+      const gx = r.width * (right ? 0.84 : 0.16), gy = r.height * 0.56;
+      popUp('🥅', gx, gy, 2100, 64);
+      api.fxAt(gx, gy - 20, ['🎉', '✨', '⭐'], 7, 'spark');
+      sfx.fanfare();
+      line('header', 1, 0);
+      api.reward();
+    });
+    at(a, 3300, end);
+  }
+  // he throws the ball to her: it flies at the screen, and a tap catches it
+  let toss = null;
+  const ballToss = (c) => {
+    const a = begin('toss');
+    go(nextTo(c.el, 12), 600);
+    at(a, 650, () => {
+      pose('laugh', 1400, 'throw', 600);
+      sfx.whoosh();
+      api.hop(c.el, 'toss', 2100);
+      toss = { el: c.el, until: Date.now() + 1700 };
+      line('ballChase', 1, 0);
+    });
+    at(a, 2700, end);
+  };
+  const ballBalance = () => { const a = begin('balance'); prop('ball', 3600); hold(a, 'balance', 3600); api.setTemp('laugh', 3000); line('ballNose', 1); at(a, 3700, end); };
   D.ball = {
     press: (c) => {
+      if (toss && toss.el === c.el && Date.now() < toss.until) {
+        toss = null;
+        sfx.catch();
+        api.hearts(c.x, c.y, 5);
+        pose('happy', 1500, 'clap');
+        line(lineWith(LUCKY.gameAfter, 'Well done'), 1, 0);
+        api.reward();
+        return;
+      }
       sfx.squeak();
       api.hop(c.el, 'juggle', 1200);
       const n = keepy && keepy.el === c.el ? keepy.n + 1 : 1;
@@ -692,7 +883,7 @@ export function createAntics(api) {
       keepy = { n, el: c.el, timer: setTimeout(keepyEnd, 1350) };
       if (api.free()) { api.say([count(n)]); pose('laugh', 800, 'hop'); }
     },
-    long: who(() => { const a = begin('balance'); prop('ball', 3600); hold(a, 'balance', 3600); api.setTemp('laugh', 3000); line('ballNose', 1); at(a, 3700, end); }),
+    long: who(oneOf('ballLong', ballBalance, ballToss)),
   };
   D.bowl = {
     press: (c) => { sfx.tap(); api.hop(c.el, 'wiggle'); },
@@ -903,6 +1094,34 @@ export function createAntics(api) {
   ];
   let lastWish = -1;
 
+  // a sledge ride across the scene; a double tap ends it head first in a snowdrift
+  const sledRide = (crash) => who((c) => {
+    const a = begin('sledge'), x0 = pct(centerOf(c.el)[0]), to = x0 < 50 ? 68 : 32;
+    go(clamp(x0, 26, 74), 600);
+    at(a, 650, () => {
+      c.el.classList.add('popped');
+      onEnd(a, () => { c.el.classList.remove('popped'); api.hop(c.el, 'regrow', 900); });
+      prop('sled', 3200);
+      hold(a, 'sled');
+      api.setTemp('laugh', 1900);
+      sfx.whoosh();
+      go(to, 1300);
+      line('sledge', 1, 0);
+    });
+    at(a, 2050, () => {
+      L.classList.remove('sled');
+      a.cls.delete('sled');
+      unprop('feet');
+      if (!crash) { pose('happy', 1500, 'proud', 1200); api.reward(); return; }
+      sfx.bonk();
+      prop('snowcap', 2400);
+      api.fxAt(...head(), ['❄️'], 6, 'spark');
+      pose('laugh', 1800, 'slip', 1800);
+      line('slip', 1, 0);
+    });
+    at(a, crash ? 3900 : 3000, end);
+  });
+
   const E = {
     '🧚': {
       press: (c) => { sfx.magic(); api.fxAt(c.x, c.y, ['✨', '💫'], 6, 'spark'); },
@@ -925,7 +1144,7 @@ export function createAntics(api) {
         setTimeout(() => { if (!api.free()) return; WISHES[i](); line('fairyWish', 1, 0); api.reward(); }, 600);
       }),
     },
-    '🛷': { press: (c) => { sfx.tap(); api.hop(c.el, 'wiggle'); }, tap: R.ice.tap },
+    '🛷': { press: (c) => { sfx.tap(); api.hop(c.el, 'wiggle'); }, tap: sledRide(false), double: sledRide(true) },
     '🍄': say1('mushroom', () => sfx.pop()),
     // ⭐ balloon: Lucky jumps for it; it pops and grows back; hold it and he floats away, then comes down on his umbrella
     '🎈': {
@@ -941,7 +1160,11 @@ export function createAntics(api) {
       long: who((c) => {
         const a = begin('balloonRide');
         go(nextTo(c.el, 12), 600);
-        at(a, 650, () => { c.el.classList.add('popped'); prop('balloonUp', 5200); hold(a, 'balloonfly'); api.setTemp('laugh', 2000); line('balloonFly', 1); sfx.whoosh(); });
+        at(a, 650, () => {
+          c.el.classList.add('popped');
+          onEnd(a, () => { if (c.el.classList.contains('popped')) { c.el.classList.remove('popped'); api.hop(c.el, 'regrow', 900); } });
+          prop('balloonUp', 5200); hold(a, 'balloonfly'); api.setTemp('laugh', 2000); line('balloonFly', 1); sfx.whoosh();
+        });
         at(a, 2800, () => {
           unprop('hand', true);
           sfx.bonk();

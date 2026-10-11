@@ -804,6 +804,13 @@ function goPlace(id) {
   renderDecor();
 }
 
+// What Lucky says on arriving in a world (the dojo greets him with its gong)
+const ARRIVE = { ...LUCKY.arrive, candy: LUCKY.candy, dojo: LUCKY.gong };
+function arrive(id) {
+  if (id === 'dojo') sfx.gong();
+  say(fresh(ARRIVE[id] || LUCKY.place));
+}
+
 function applyLang() {
   document.documentElement.lang = S.lang;
   buildStats();
@@ -1615,6 +1622,7 @@ function openPlay() {
   const wait = turbo() ? 0 : Math.ceil((S.lastGameAt + GAME_COOLDOWN - Date.now()) / 60e3);
   const can = left > 0 && wait <= 0;
   if (left > 0 && wait > 0) say(fresh(LUCKY.cooldown));
+  if (left <= 0) say(P('noGames'));
   const note = left <= 0 ? tr('noGames') : wait > 0 ? `⏳ ${tr('gameCooldown', { n: wait })}` : tr('gamesLeft', { n: left });
   const html = `<p class="muted center">${note}</p>
     <div class="game-list">${GAMES.map((g) => `<button class="game-item" data-id="${g.id}" ${can ? '' : 'disabled'}>
@@ -1788,7 +1796,7 @@ function missionComplete(m, result = {}) {
       ${master && !beltUp ? '' : `<div class="dots">${[0, 1, 2].map((i) => `<i class="${beltUp || i < S.beltSteps ? 'on' : ''}"></i>`).join('')}</div>`}
       <div class="m-btns"><button class="btn pink">${tr('hooray')}</button></div></div>`;
     setTimeout(() => sfx.stamp(), 450);
-    host.querySelector('button').onclick = () => { sfx.tap(); done(); };
+    host.querySelector('button').onclick = () => { sfx.tap(); done(); setTimeout(missionCheer, 350); };
   } });
   if (beltUp) {
     const b = BELTS[S.belt];
@@ -1799,6 +1807,15 @@ function missionComplete(m, result = {}) {
   st.save(S);
   renderTop();
   say(fresh(beltUp ? LUCKY.belt : master ? LUCKY.sensei.stampMaster : LUCKY.sensei.stamp));
+}
+
+// Back on the scene after the stamp, Lucky cheers with a happy jump (unless a new belt or level is being shown).
+// 'A little more and you get a new belt!' only when one more stamp gives the belt.
+function missionCheer() {
+  if (mode !== 'main' || modalOpen || sheetOpen) return;
+  const oneToGo = S.belt < BELTS.length - 1 && S.beltSteps === 2;
+  binky(true);
+  say(fresh(LUCKY.missionCheer.filter((x) => oneToGo || !x[1].includes('new belt'))));
 }
 
 // Today's ninja look: the mask she drew and the animal cloud she saw
@@ -1921,7 +1938,7 @@ function openCollection(tab = 'outfits') {
         if (b.classList.contains('locked')) { sfx.tap(); hop(b, 'wiggle'); return; }
         sfx.sparkle();
         if (b.dataset.d !== undefined) { startEdit(layout().some((it) => it.id === b.dataset.d) ? null : b.dataset.d); return; }
-        if (b.dataset.p) { const first = !S.worldsSeen.includes(b.dataset.p); goPlace(b.dataset.p); st.save(S); closeSheet(); if (!(first && maybeIdiom('newWorld', 0.6))) say(fresh(LUCKY.arrive[b.dataset.p] || LUCKY.place)); return; }
+        if (b.dataset.p) { const first = !S.worldsSeen.includes(b.dataset.p); goPlace(b.dataset.p); st.save(S); closeSheet(); if (!(first && maybeIdiom('newWorld', 0.6))) arrive(b.dataset.p); return; }
         if (b.dataset.w !== undefined) {
           const w = WEAR_BY_ID[b.dataset.w];
           if (!w) S.wear = { ...S.wear, [wardSlot]: null };
@@ -2100,7 +2117,9 @@ function taliJoke(lead = null, before = []) {
   if (!dogHere || jokesLeft() <= 0 || ask || mode !== 'main') return false;
   S.dog.jokes++;
   const ears = lead === DOG.jokeNew ? pickIdiom('joke', 0.35, true) : null;
-  talk([...before, ...(lead ? [timed('dog', fresh(lead))] : []), ...(ears ? idiomSteps(ears) : []), ...jokeSteps(nextJoke())], true);
+  // after the last joke of the visit: "That's all my jokes for now! I'll learn some new ones."
+  const last = jokesLeft() <= 0 ? [() => { const b = ui.dog.querySelector('.dog-body'); if (b) hop(b, 'hop'); return 300; }, timed('dog', DOG.jokesOut[0])] : [];
+  talk([...before, ...(lead ? [timed('dog', fresh(lead))] : []), ...(ears ? idiomSteps(ears) : []), ...jokeSteps(nextJoke()), ...last], true);
   if (jokesLeft() <= 0) ui.dog.querySelector('.joke-go')?.remove();
   st.save(S);
   return true;

@@ -1087,3 +1087,31 @@ body:not(.editing) .dec-rainbow { pointer-events: none; }
 .surprise .chute { position: absolute; left: 50%; bottom: 80%; transform: translateX(-50%); font-size: 40px; pointer-events: none; }
 /* while decorating, Lucky's speech bubble doesn't get in the way of dragging */
 body.editing .bubble { pointer-events: none; opacity: .88; }
+
+/* ---------- more ways things react (1.7.0) ---------- */
+.puddle { position: absolute; width: 150px; height: 28px; border-radius: 50%; z-index: 0; pointer-events: none;
+  background: radial-gradient(closest-side, #D6F1FF, #7FCBFF 65%, #4FA8E8); opacity: .78; animation: puddle var(--ms, 4s) ease-in-out forwards; }
+@keyframes puddle { 0% { transform: translate(-50%, -50%) scale(0); } 18%, 82% { transform: translate(-50%, -50%) scale(1); } 100% { transform: translate(-50%, -50%) scale(.3); opacity: 0; } }
+[data-tap="crab"].scuttle { animation: scuttle 2.4s ease-in-out; }
+@keyframes scuttle { 15% { transform: translateX(-36px); } 35% { transform: translateX(24px); } 55% { transform: translateX(-30px); } 75% { transform: translateX(14px); } }
+.lucky.sidestep { animation: sidestep 2.2s ease-in-out; }
+@keyframes sidestep { 15% { translate: -7% 0; rotate: -5deg; } 35% { translate: 6% 0; rotate: 5deg; } 55% { translate: -6% 0; rotate: -4deg; } 75% { translate: 3% 0; rotate: 2deg; } }
+[data-tap="planet"].whirl { animation: whirl 2s ease-in-out; }
+@keyframes whirl { to { transform: rotate(720deg); } }
+[data-tap="sheep"].sheephop { animation: sheepHop .8s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes sheepHop { 40% { transform: translateY(-16px) rotate(-8deg); } }
+[data-tap="bamboo"].windsway { transform-origin: 50% 100%; animation: windSway 2s ease-in-out; }
+@keyframes windSway { 20% { transform: rotate(-7deg); } 45% { transform: rotate(6deg); } 70% { transform: rotate(-3deg); } }
+.bell-ring { animation: bellRing var(--ms, 2s) ease-in-out forwards; }
+@keyframes bellRing {
+  0% { transform: translate(-50%, -50%) scale(0); } 12% { transform: translate(-50%, -50%) scale(1.2); }
+  25% { transform: translate(-50%, -50%) rotate(-28deg); } 40% { transform: translate(-50%, -50%) rotate(24deg); }
+  55% { transform: translate(-50%, -50%) rotate(-16deg); } 70% { transform: translate(-50%, -50%) rotate(10deg); }
+  85% { transform: translate(-50%, -50%) rotate(0deg); opacity: 1; } 100% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+}
+.pl.header .pl-in { animation: headerShot 1.8s ease-in-out; }
+@keyframes headerShot { 25% { transform: translateY(-220%) rotate(180deg); } 50% { transform: translate(calc(var(--dir, 1) * 520%), -140%) rotate(420deg) scale(.5); opacity: 0; } 70% { transform: scale(.2); opacity: 0; } 100% { transform: none; opacity: 1; } }
+.pl.toss .pl-in { animation: toss 2.1s ease-in-out; }
+@keyframes toss { 30% { transform: translateY(-140%) scale(1.7); } 55% { transform: translateY(-90%) scale(3.2); } 78% { transform: translateY(-60%) scale(2); } }
+.lucky.sled { animation: sledBump .35s ease-in-out infinite; }
+@keyframes sledBump { 50% { translate: 0 -2%; rotate: -3deg; } }

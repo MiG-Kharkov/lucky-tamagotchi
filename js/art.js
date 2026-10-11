@@ -414,6 +414,11 @@ export const PROPS = {
   shield: { slot: 'hand', art: () => em(156, 164, 46, '🛡️') },
   pearl: { slot: 'hand', art: () => `<circle cx="154" cy="166" r="11" fill="#FFF6FB" stroke="#E6D6EA" stroke-width="2"/><circle cx="150" cy="162" r="3.5" fill="#fff"/>` },
   shell: { slot: 'hand', art: () => em(40, 80, 36, '🐚') },
+  shellHand: { slot: 'hand', art: () => em(158, 160, 42, '🐚') },
+  earSnow: { slot: 'earsnow', art: () => `<g fill="#fff" stroke="#DCE8FB" stroke-width="1.5"><ellipse cx="54" cy="64" rx="14" ry="7"/><circle cx="47" cy="59" r="6.5"/><circle cx="60" cy="60" r="5"/>
+    <ellipse cx="146" cy="64" rx="14" ry="7"/><circle cx="153" cy="59" r="6.5"/><circle cx="140" cy="60" r="5"/><circle cx="38" cy="108" r="4"/><circle cx="162" cy="112" r="4"/><circle cx="44" cy="132" r="3"/></g>` },
+  cloverEar: { slot: 'ear', art: () => `<path d="M152 66 q-3 9 -10 13" stroke="#2E9E4E" stroke-width="2.4" fill="none" stroke-linecap="round"/>${shamrock(152, 58, 6.5)}` },
+  sled: { slot: 'feet', art: () => em(100, 194, 80, '🛷') },
   ball: { slot: 'hand', art: () => `<g transform="translate(100 18)"><circle r="20" fill="#FF5FA2"/><path d="M0 0 L0 -20 A20 20 0 0 1 20 0Z M0 0 L0 20 A20 20 0 0 1 -20 0Z" fill="#fff"/><path d="M0 0 L20 0 A20 20 0 0 1 0 20Z" fill="#FFD23F"/><circle r="3.5" fill="#fff" stroke="#FF5FA2" stroke-width="1.5"/></g>` },
   clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
   hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },
