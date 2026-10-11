@@ -1390,7 +1390,7 @@ function needCues(now) {
   let flies = ui.scene.querySelector('.flies');
   if (dirty && !flies) { flies = document.createElement('div'); flies.className = 'flies'; flies.innerHTML = '<span>🪰</span><span>🪰</span>'; ui.scene.appendChild(flies); }
   if (!dirty && flies) flies.remove();
-  if (mode === 'main' && S.pet.hunger < 25 && userActive() && now > nextRumbleAt && now >= busyUntil && !antics.busy()) {
+  if (mode === 'main' && S.pet.hunger < 25 && userActive() && now > nextRumbleAt && now >= busyUntil && !antics.busy() && !sheetOpen && !modalOpen) {
     nextRumbleAt = now + 45e3 + Math.random() * 30e3;
     hop(ui.lucky, 'rumble');
     sfx.rumble();
@@ -2898,7 +2898,7 @@ function idleTalk() {
 let prevTier = null, recoveredAt = 0, nextBinkyAt = 0, nextTailAt = Date.now() + 120e3;
 function moodEvents(now, T0) {
   const t = tier();
-  if (mode === 'main' && userActive() && !antics.busy()) {
+  if (mode === 'main' && userActive() && !antics.busy() && !sheetOpen && !modalOpen) {
     if (prevTier === 'low' && t !== 'low' && now - recoveredAt > 180e3) { recoveredAt = now; sayAuto(fresh(LUCKY.recovered)); }
     else if (t === 'max' && prevTier && prevTier !== 'max' && !T0.maxSaid) { T0.maxSaid = true; if (!maybeIdiom('max', 0.6)) { sayAuto(fresh(LUCKY.maxReached)); binky(true); } }
     else if (t === 'max' && now > nextBinkyAt) { nextBinkyAt = now + 90e3 + Math.random() * 60e3; if (prevTier === 'max') binky(true); }

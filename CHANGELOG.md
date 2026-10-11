@@ -3,6 +3,47 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.9.0] – 2026-10-11
+
+### Added
+- **Holiday games.** While a holiday is on, its own three games take the usual four's place (they come back on
+  ordinary days). Each lasts two or three minutes, speeds up in waves every 30 seconds and counts points with combos
+  (up to ×4), power-ups and, in the shooters, a boss; you can't lose, only score less. Pick easy, normal or hard (the
+  choice is remembered); the end shows up to three stars, the points and the best score at that difficulty, with a
+  new record celebrated.
+  - Halloween: Ghost Zapper (Lucky zaps ghosts and bats with stars, catches the sweets they drop, dodges spiders,
+    mustn't zap the black cat; the Pumpkin King), Pumpkin Peekaboo (ghosts and bats peek out of pumpkins), Spooky
+    Memory.
+  - Christmas: Snow Storm (zap the snow clouds to free the presents, mind the icicles and the reindeer; the Snow
+    Cloud), Santa's Presents (catch what falls from the sleigh, not the coal), Jingle Bells (copy the bells: they play
+    the song).
+  - New Year: Fireworks (tap the rockets at the top of their flight; a burst sets off its neighbours), Balloon Pop
+    (the piñata), Party Memory.
+  - Valentine's Day: Cupid's Arrows (the Big Heart), Love Letters, Heart Memory.
+  - St Patrick's Day: Rainbow Run (hop over rocks and mushrooms, collect coins and shamrocks), Leprechaun's Gold
+    (the pot of gold), Leprechaun Hide-and-Seek.
+  - Easter: Egg Catch (the hen drops them), Bunny Hop, Egg Hunt.
+  The memory games get more pairs on harder levels and score pairs in a row higher.
+- **A holiday calendar:** a button on the scene shows the holiday and the days to go. A window opens each day (a
+  holiday treat and hearts); the holiday's own window holds a real present.
+- **Holiday things answer taps,** and there are more of them: pumpkins that light up, get new faces and are full of
+  sweets, a bubbling cauldron whose potion turns Lucky another colour, ghosts, bats, a spider on its thread; a
+  sparkling Christmas tree that takes its star from Lucky, presents with a toy inside, a snowman, Santa's sleigh
+  dropping presents; fireworks set off by a tap and a clock that counts down to midnight; heart balloons, roses and a
+  mailbox of love letters; the leprechaun's gold coins hidden in every world; chicks, tulips and the egg basket.
+- **Holiday moments:** Tali comes trick-or-treating at Halloween, Cupid flies by on Valentine's Day, a ghost going
+  past dims the scene, and on New Year's Day Lucky counts down to a fireworks show.
+- A waking-up screen while the game loads, with a way to try again if it takes long.
+- 15 new voice lines (30 clips).
+
+### Changed
+- **The holiday is out from the first day** instead of a little at a time (three weeks before Halloween there were
+  only two pumpkins), and the last week and the day itself still add their own things.
+- **The interface wears the holiday on every screen:** its colours and a pattern on the level bar and the stat bars,
+  little decorations on the level card, the stat cards and the action buttons (snow on every card at Christmas), the
+  scene's frame, the main buttons, sheets, windows (with the holiday's icon), the level-up present, hints, questions
+  and games. The Play button shows the holiday, and Lucky wears his holiday hat in missions, games, windows and asleep.
+
 ## [1.8.0] – 2026-10-11
 
 ### Added

@@ -13,7 +13,7 @@ Open <http://localhost:8123>. Useful query parameters:
 
 | Parameter | What it does |
 |---|---|
-| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)` / `ask(id)`, `mission(id)`, `game(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`, `chat(i)` / `prank(i)` (a chat or prank with Tali, acted out), `event('halloween:3')` (show a holiday at a stage, `null` for the calendar), `tricks()` / `trick(name)` (Lucky's rare tricks), `touch(gesture, part, dir)` (one way of answering a touch), `frog()`, `dog()`, `modal(title)`, `toast(html)`, `talk(steps, keep)`, `now()` (mode, chat, scene, windows)) |
+| `?debug` | Exposes `window.game` in the console (`S()` state, `loop()`, `save()`, `visitorNow()`, `askById(id)` / `ask(id)`, `mission(id)`, `game(id)`, `sound()`, `laugh(action)`, `idiom(id)`, `twister()`, `visitorEnd(kind)`, `fidget()`, `chat(i)` / `prank(i)` (a chat or prank with Tali, acted out), `event('halloween:3')` (show a holiday at a stage, `null` for the calendar), `tricks()` / `trick(name)` (Lucky's rare tricks), `touch(gesture, part, dir)` (one way of answering a touch), `startHoliday(game)` (start a holiday game; while it runs `arcade()` shows its insides), `frog()`, `dog()`, `modal(title)`, `toast(html)`, `talk(steps, keep)`, `now()` (mode, chat, scene, windows)) |
 | `?mute` | No sound effects and no voice (for automated tests; settings are not changed) |
 
 On `localhost` / plain `http` the service worker is **not** registered and any old cache is removed,
@@ -40,13 +40,15 @@ Offline mode needs https, so this is only for quick checks.
 | `js/jokes.js` | Tali's jokes: question/answer and knock-knock, with Lucky's reaction and comment |
 | `js/english.js` | Sayings Lucky acts out (where each one fits, what it means, the Russian equivalent) and tongue twisters |
 | `js/events.js` | Holidays: dates (Easter is worked out), how many days before each one decorations start, stages, holiday stickers |
+| `js/arcade.js` | The holiday games' engine: a canvas core (loop that pauses when hidden, touch, emoji sprites, sparkles, time bar) and the kinds: shooter, catcher, whack, fireworks, runner; difficulties |
+| `js/holigames.js` | The holiday games: three per holiday, each a kind with a theme (pictures, sounds, hazards, boss) and its point targets |
 | `js/state.js` | Saved state, stat decay, daily limits, levels, mood tiers, parent password storage, Turbo snapshot |
 | `js/i18n.js` | All texts as `[ru, en]` pairs: UI strings, Lucky's lines, jokes, missions, phrases, talk-game dialogues |
 | `js/dialogs.js` | Lucky's questions with answer choices, stories, riddle frog |
 | `js/wardrobe.js` | 28 outfit items (SVG layers per slot) |
 | `js/content.js` | Worlds, decorations, sticker albums, badges |
 | `js/art.js` | SVG art: Lucky (with his 16 expressions), Tali, 8 worlds + night, decorations, belts, icon, Lucky's props |
-| `js/game.js` | Mini-games and their shared shell |
+| `js/game.js` | Mini-games and their shared shell (difficulty, stars, records for the holiday games; the memory and copy-me games serve both) |
 | `js/sound.js` | Web Audio effects, voice clip playback, built-in voice fallback, iOS audio unlock |
 | `js/voicekey.js` | Clip ids (shared with the generator) and voice settings |
 | `js/config.js` | Child's and dog's names |
@@ -123,12 +125,26 @@ the tray (`editScale`). Saves from before 1.6.1 (`layoutV` 1) are converted once
 
 ## Holidays
 
-`js/events.js` lists the holidays. Each one starts `lead` days before its date and stays `after` days after it; on the
-way there are stages: 1 (three weeks before: a few small things), 2 (two weeks: more), 3 (the last week: everything,
-including Lucky's hat, Tali's accessory, the interface, holiday visitors and stickers) and 4 (the day itself). `main.js`
-checks the calendar every minute (`updateEvent`) and sets `body.ev-<id>` plus `ev-s1`…`ev-s4`, so CSS can add things per
-stage. The pictures are drawn in `art.js` (`eventScene`, `eventTop`) as a layer over the world in the same 400×700
-picture, so they line up and taps go through to the world underneath (only Easter eggs can be tapped).
+`js/events.js` lists the holidays. Each one starts `lead` days before its date and stays `after` days after it. From the
+first day it is stage 3 (everything), `days <= 7` adds the last week's extras, and stage 4 is the day itself (1 and 2
+are the quieter looks of earlier versions, still reachable in Turbo previews). `main.js` checks the calendar every minute
+(`updateEvent`: the scene is redrawn only when the look changes) and sets `body.ev-<id>` plus `ev-s1`…`ev-s4`.
+
+- **The interface:** each holiday sets custom properties on `body.ev-<id>.ev-s3` (`--ev-1`, `--ev-ink`, `--ev-card`,
+  `--ev-line`, `--ev-pat` for the bars, `--ev-bar`, `--ev-btn`, `--ev-head`, `--ev-reveal`, `--ev-a1…a5` and `--ev-s1…s4`
+  for the decorations on the action buttons and stat cards); the `.ev-s3 …` rules in `style.css` use them everywhere.
+  A new screen gets the holiday look by using those properties. `luckyPic()` draws Lucky with his holiday hat away from
+  the scene.
+- **The pictures** are drawn in `art.js` (`eventScene`, `eventTop`) as a layer over the world in the same 400×700
+  picture, so they line up. Taps go through to the world underneath except on holiday things (`data-tap="ev…"`, eggs,
+  coins), which `antics.js` answers. Keep them outside the middle of the picture (about x 70–330, y 395–665), where
+  Lucky covers them.
+- **The calendar** (`openCalendar` in `main.js`) keeps the opened days in `S.calendar['<id>-<year>']`.
+- **Holiday games:** `HOLIDAY_GAMES` in `holigames.js`. A game is `{ id, emoji, kind, energy, target: { easy, normal,
+  hard }, theme }`; its name and hint are `g_<id>` and `g_<id>_hint` in `STR`. `kind` is a function from `arcade.js` or
+  `'memory'` / `'simon'`. The shell (`openGame`) shows the difficulty, and `ctx.finish(points)` ends it: stars from the
+  target, the best in `S.games.best['<id>:<level>']`, hearts from `points / target`. Targets were set from a bot that
+  plays like a quick child; a child should reach three stars with good play.
 
 - Nothing in the rules changes. Holiday lines live in `LUCKY.holiday` and `DOG.holiday` (greetings in the last week, on
   the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`.
@@ -139,7 +155,7 @@ picture, so they line up and taps go through to the world underneath (only Easte
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 2,849 MP3 files, ~29 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 2,879 MP3 files, ~29 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.

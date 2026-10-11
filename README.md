@@ -67,13 +67,14 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🥕 **Care** | Feed (with real bunny facts), wash with bubbles, cuddle, tuck into bed |
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
-| 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (English Q&A) |
+| 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (English Q&A) · and the holiday games |
 | 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 28 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings… mix and match |
 | 🌍 **8 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle |
 | 🦋 **Visitors** | Different for each world: butterflies (with five different endings), a ladybird whose spots Lucky counts, a singing bird, a bee, a jumping fish, snowflakes, shooting stars, a UFO that beams Lucky up, a balloon that carries him off, and now and then a unicorn or a baby dragon |
 | 🌈 **Living scene** | Every sun, cloud, tree, crab and snowman answers a tap, a double tap and a long press, often in more than one way, and Lucky joins in with sunglasses, umbrellas, space helmets and more: a coconut that just misses him, a puddle to jump in, a crab he copies walking sideways, a planet that makes him dizzy, a sledge ride |
-| 🎃 **Holidays** | Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter: for a few weeks before each one the worlds slowly dress up (more every week), Lucky gets a holiday hat, holiday visitors and stickers come, and at Easter there are eggs to find. The game itself stays the same |
+| 🎃 **Holidays** | Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter: for a few weeks before each one the whole game dresses up, on every screen (the worlds, the bars and buttons, windows, games, Lucky's hat). Every holiday thing answers a tap: pumpkins light up, a cauldron's potion turns Lucky purple, presents open, fireworks go off. A holiday calendar opens a window a day with a present on the holiday itself, and there are eggs and leprechaun's coins to find |
+| 🕹️ **Holiday games** | While a holiday is on, three games of its own: shooters with a boss (Ghost Zapper, Snow Storm, Cupid's Arrows…), catching presents and eggs, whack-a-ghost, fireworks, a rainbow run, holiday memory and Jingle Bells. Two or three minutes, faster in waves, combos and power-ups, easy / normal / hard, stars and records |
 | ✏️ **Decorate** | Drag your items and stickers anywhere in the scene, resize and flip them. The tray is sorted into categories. ✨ **Super things** glow and have their own fun: keepy-uppy with the ball, fishing in the pond, a balloon ride, a UFO beam, a fairy's wishes, a rocket that brings back souvenirs… |
 | 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 37 badges, and an English tab with jokes, tongue twisters and sayings |
 | 🎩 **Tricks** | Every touch has several answers: a pat, a clap, a wave, a wink, a blush, a backflip, a high five with his paws, a wag of his pom-pom tail, a bunny loaf, static fluff from stroking, a pancake when you swipe down. Rare big tricks: Super Bunny flies in a cape, the Cheshire bunny leaves only his grin, ninja clones (find the real one), a bunny out of a hat, a giant, Robo-Bunny, a statue that mustn't laugh, a disco… |
@@ -206,7 +207,7 @@ static files, and all progress stays in the phone's local storage.
 
 ## 🛠️ Under the hood
 
-- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (2,809 clips, ~29 MB, downloaded once for offline play)
+- Plain ES modules, SVG art, Web Audio sound effects, pre-recorded MP3 voices (2,879 clips, ~29 MB, downloaded once for offline play)
 - A service worker for offline play (code network-first, voice clips cached once)
 - Deployed to GitHub Pages by [GitHub Actions](.github/workflows/pages.yml). The cache version is set from the commit automatically
 - Developer notes: [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) · game design: [`docs/DESIGN.md`](docs/DESIGN.md) · what's new: [`CHANGELOG.md`](CHANGELOG.md)

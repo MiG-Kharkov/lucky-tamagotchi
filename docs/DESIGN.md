@@ -140,7 +140,7 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | Action | Mechanics |
 |---|---|
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
-| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
+| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). While a holiday is on, its three games instead (below). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
@@ -149,6 +149,23 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | 🌙 Put to bed | Voluntary end of the session, with a bonus |
 
 Once a day Lucky asks how the child feels; if sad or cross, he offers ninja breathing.
+
+**Holiday games** (`js/arcade.js`, `js/holigames.js`): three for each holiday. Two or three minutes long, they speed up
+smoothly and in waves every 30 seconds, and count points: a combo of good catches or hits raises a multiplier (×2 from
+6, ×3 from 14, ×4 from 25) that a mistake resets; mistakes cost points but never end the game. The difficulty (easy,
+normal, hard: time, speed, how much comes and how many hazards) is chosen on the start card and remembered per game.
+The end card shows 1–3 stars against the game's target for that difficulty, the points and the best; a new best is
+celebrated. Hearts come from the points against the target, as before.
+
+| Kind | How it plays | Games |
+|---|---|---|
+| Shooter | Lucky follows the finger and fires on his own; targets come down alone or three in a row, a friend crosses (don't hit it), hazards drop (dodge or shoot them), treats and power-ups fall (rapid fire, three shots, a shield, a magnet), a boss with a health bar every few waves | Ghost Zapper, Snow Storm, Balloon Pop, Cupid's Arrows, Leprechaun's Gold |
+| Catcher | Something sails along the top dropping things; catch the good ones in the basket, not the bad; rushes of many; power-ups (magnet, double points, slow motion, a big basket) | Santa's Presents, Love Letters, Egg Catch |
+| Whack | Things peek out of pumpkins, shamrocks or grass for a moment; tap the right ones, a golden one is worth more, leave the decoy | Pumpkin Peekaboo, Leprechaun Hide-and-Seek, Egg Hunt |
+| Fireworks | Rockets rise from the town; a tap near the top of the flight is a perfect burst, and a burst sets off the rockets next to it | Fireworks |
+| Runner | The world runs by; tap to hop, again in the air to hop higher; collect coins or eggs (in arcs), power-ups (balloons to fly, a magnet, a rainbow star) | Rainbow Run, Bunny Hop |
+| Memory | Pairs (6, 8 or 10 by difficulty); pairs in a row score more, fewer moves and less time add a bonus | Spooky, Party and Heart Memory |
+| Copy me | The bells play "Jingle Bells" a note more each round | Jingle Bells |
 
 ## Ninja missions
 
@@ -181,11 +198,27 @@ and a step towards the next belt (3 stamps per belt).
 ## Holidays
 
 Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter. For three weeks before (one week for New
-Year and Valentine's Day) the worlds slowly dress up: a few small things at first, more every week, everything in the
-last week (Lucky's holiday hat, Tali's accessory, the interface, holiday visitors and Decorate stickers), all out on the
-day. Some familiar things change for fun (a cloud rains sweets before Halloween, a bat brings the daily surprise).
-At Easter painted eggs hide in every world: Lucky praises each one she finds. Nothing in the rules or the pacing
-changes, and the voice stays the same. Parents can switch the decorations off.
+Year and Valentine's Day) the whole game is dressed up for it from the first day; the last week and the day itself add
+their own things. Parents can switch it off; Turbo previews each holiday.
+
+- **On every screen:** the worlds (pumpkins, a cauldron, ghosts and bats; a tree, presents and a snowman; fireworks and
+  a clock; heart balloons, roses and a mailbox; shamrocks, a rainbow and the leprechaun's coins; eggs, chicks and
+  tulips), the top of the scene (a cobweb with a spider, fairy lights, tinsel, bunting), and the interface: the
+  holiday's colours and a pattern on the level bar and the stat bars, little decorations on the level card, stat cards
+  and action buttons (snow on every card at Christmas), the scene's frame, the main buttons, sheets, windows, the
+  level-up present, hints, questions and games. Lucky wears his holiday hat everywhere, the Play button shows the
+  holiday, Tali has an accessory, and the daily surprise and presents come in holiday wrapping.
+- **Everything holiday answers taps** (a tap, a double tap, a long press), and Lucky joins in: a pumpkin lights up, gets a
+  new face or is full of sweets; the potion turns Lucky another colour; the tree takes its star from him; a present
+  opens with a toy; the clock counts down to midnight with fireworks; the mailbox sends him a love letter; the pot of
+  gold makes him dance a jig. Easter eggs and the leprechaun's coins are hidden in every world to be found.
+- **The holiday calendar:** a button on the scene shows the days to go. A window opens each day (a treat and two
+  hearts), the holiday's own window holds a present. Missed days stay asleep.
+- **Moments:** Tali comes trick-or-treating at Halloween, a ghost going past dims the scene, Cupid flies by, New Year's
+  Day starts with a countdown and fireworks. Holiday greetings and chatter, holiday visitors and stickers.
+- **Holiday games** take the usual games' place (see Actions and games).
+
+Nothing in the rules, the care or the pacing changes.
 
 ## Parents' area
 
