@@ -69,7 +69,7 @@ input, select { font: inherit; }
 
 .lucky {
   position: absolute; left: 50%; bottom: 7%; width: min(64%, 300px); aspect-ratio: 200 / 210;
-  transform: translateX(-50%); transition: left .8s cubic-bezier(.4, 1.4, .5, 1), width .8s;
+  transform: translateX(-50%); transition: left var(--go, .8s) cubic-bezier(.4, 1.4, .5, 1), width .6s, bottom .6s, opacity .5s, scale .5s;
   z-index: 3; cursor: pointer;
 }
 .lucky svg { width: 100%; height: 100%; overflow: visible; }
@@ -282,6 +282,9 @@ input, select { font: inherit; }
   font-size: 15px; line-height: 1.35; transition: opacity .3s, transform .35s cubic-bezier(.3, 1.4, .5, 1);
 }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
+.modal.show ~ .toast { visibility: hidden; } /* a hint never sits on top of a window */
+/* a game, a mission or sleep fills the screen: the scene under it isn't drawn (its animations cost nothing) */
+body.covered #app { visibility: hidden; }
 
 /* ---------- overlays: game and sleep ---------- */
 .overlay { position: fixed; inset: 0; z-index: 30; display: none; }
@@ -703,14 +706,14 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 .rec-code { font: 800 30px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: 3px; color: var(--pink-d); background: #FFF0F7; border: 2px dashed #FFB3D6; border-radius: 16px; padding: 12px; margin: 8px 0; user-select: text; -webkit-user-select: text; }
 .pw-card .pw-forgot { margin-top: 6px; font-size: 14px; }
 
-/* ---------- question: Lucky above the answer choices ---------- */
-.lucky { transition: left var(--go, .8s) cubic-bezier(.4, 1.4, .5, 1), width .6s, bottom .6s, opacity .5s, scale .5s; }
-.scene.asking .lucky { width: min(40%, 190px); bottom: calc(var(--choicesH, 180px) + 14px); }
-.scene.asking .dog { width: min(24%, 110px); bottom: calc(var(--choicesH, 180px) + 14px); }
+/* ---------- question: Lucky above the answer choices (--askW: what fits under the bubble, set by fitAsk) ---------- */
+.scene.asking .lucky { width: var(--askW, min(40%, 190px)); bottom: calc(var(--choicesH, 180px) + 14px); }
+.scene.asking .dog { width: min(24%, 110px, var(--askW, 110px)); bottom: calc(var(--choicesH, 180px) + 14px); }
 .scene.asking .pill, .scene.asking .gift { display: none; }
 .choices.compact { flex-direction: row; flex-wrap: wrap; justify-content: center; }
 .choices.compact .choice { flex: 1 1 28%; align-items: center; text-align: center; padding: 8px 6px; }
 .choices.compact .choice b { font-size: 15px; }
+.choices.compact.c4 .choice { flex-basis: 40%; }
 /* the rainbow covers the sky: let taps reach the sun and clouds (it stays draggable in Decorate) */
 body:not(.editing) .dec-rainbow { pointer-events: none; }
 

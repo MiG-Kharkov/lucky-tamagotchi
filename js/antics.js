@@ -60,6 +60,7 @@ export function gestures(root, find, on, opts = {}) {
 }
 
 // api (from main.js): ui, ok() - scene is interactive, free() - Lucky can take part (no question on screen),
+// talking() - Tali's joke, a saying or a tongue twister is going on (taps don't start scenes then),
 // world(), say(list, who) → ms, hop(el, cls, ms), setTemp(face, ms), floatFx(x, y, txt, cls), fxAt(x, y, list, n, cls),
 // hearts(x, y, n), luckyPoint(fx, fy), sceneXY(p), reward(), boost(stat, n), stat(key)
 export function createAntics(api) {
@@ -128,10 +129,12 @@ export function createAntics(api) {
     a.fin.forEach((fn) => fn());
     if (L.style.left) { L.style.left = ''; api.hop(L, 'walk', 900); }
   }
-  const at = (a, ms, fn) => a.timers.push(setTimeout(() => { if (act === a) fn(); }, ms));
+  // timers and poses of a scene that has already ended do nothing (a window may end it in the middle of a step)
+  const at = (a, ms, fn) => { if (act === a) a.timers.push(setTimeout(() => { if (act === a) fn(); }, ms)); };
   // put something back however the scene ends (a hidden sticker, a popped balloon)
   const onEnd = (a, fn) => a.fin.push(fn);
   function hold(a, c, ms) {
+    if (act !== a) return;
     L.classList.add(c);
     a.cls.add(c);
     if (ms) at(a, ms, () => { L.classList.remove(c); a.cls.delete(c); });
@@ -293,7 +296,8 @@ export function createAntics(api) {
   }
 
   // ---------- reactions: what each thing does ----------
-  const who = (fn) => (c) => { if (api.free()) fn(c); };
+  // Lucky joins in only when he is free: no question, and no joke or saying of Tali's going on
+  const who = (fn) => (c) => { if (api.free() && !api.talking()) fn(c); };
   const R = {};
 
   const sunShades = () => { pose('happy', 3000, 'hop'); prop('shades', 5000); line('sunShades'); api.reward(); };

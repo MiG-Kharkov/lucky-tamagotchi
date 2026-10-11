@@ -69,11 +69,13 @@ function fresh(list) {
   return x;
 }
 
-let chainQ = [], chainTimer = 0, chainKeep = false;
+let chainQ = [], chainTimer = 0, chainKeep = false, chainHeld = 0;
 let lastSaid = null;
 let busyUntil = 0;   // the current line plays until this moment
 let pending = null;  // one postponed automatic line
-function stopChain() { chainQ = []; chainKeep = false; clearTimeout(chainTimer); }
+function stopChain() { chainQ = []; chainKeep = false; chainHeld = 0; clearTimeout(chainTimer); }
+// a scene with lines that taps don't interrupt is going on (Tali's joke, a saying, a tongue twister)
+const storyOn = () => chainKeep && chainQ.length > 0;
 
 function speechMs(text) { return Math.max(3200, text.length * 85); }
 
@@ -99,6 +101,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   const sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
   ui.bubble.className = 'bubble show b-' + who;
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
+  if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
   // The line plays right away; tapping the bubble plays the translation
   ui.bubble.onclick = (e) => {
     e.stopPropagation();
@@ -121,7 +124,7 @@ const sayAuto = (pair, who = 'lucky') => say(pair, who, { auto: true });
 
 // A postponed line plays when nothing else is speaking; stale ones are dropped
 function flushPending(now) {
-  if (!pending || ask || now < busyUntil || chainQ.length || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
+  if (!pending || ask || now < busyUntil || chainQ.length || antics.busy() || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
   const p = pending;
   pending = null;
   if (now - p.at < 15000) sayAuto(p.pair, p.who);
@@ -129,6 +132,7 @@ function flushPending(now) {
 
 function silence() {
   stopChain();
+  stopJokeBook();
   stopSpeech();
   pending = null;
   busyUntil = 0;
@@ -146,7 +150,17 @@ function talk(lines, keep = false) {
 
 // A step is a line [who, ru, en, pause?] or a function (an action) that returns how long to wait, or -1 to stop.
 // If a line can't be said (nobody is looking, a question is on screen), the rest of the scene is dropped.
+// While a sheet or a window covers the scene the next line waits (up to 30 s), so a punchline isn't lost.
 function nextLine() {
+  try { nextStep(); } catch (e) { stopChain(); setTimeout(() => { throw e; }); } // a broken step must not leave Lucky silent
+}
+function nextStep() {
+  if (chainQ.length && mode === 'main' && (sheetOpen || modalOpen)) {
+    chainHeld ||= Date.now();
+    if (Date.now() - chainHeld < 30e3) { chainTimer = setTimeout(nextLine, 400); return; }
+    return stopChain();
+  }
+  chainHeld = 0;
   const line = chainQ.shift();
   if (!line || mode !== 'main' || !windowActive()) return stopChain();
   if (typeof line === 'function') {
@@ -196,7 +210,9 @@ function riddle(r) {
   talk([['lucky', ...r[0]], ['lucky', ...r[1]]].map((x, i) => (i === 1 ? ['lucky', '🤔 … ' + x[1], '🤔 … ' + x[2]] : x)));
 }
 
+let toastLater = null;
 function toast(html, ms = 3500) {
+  if (modalOpen) { toastLater = [html, ms]; return; } // shown when the window closes, never on top of it
   ui.toast.innerHTML = html;
   ui.toast.classList.add('show');
   clearTimeout(toast.t);
@@ -249,6 +265,7 @@ const antics = createAntics({
   ui,
   ok: () => mode === 'main' && !sheetOpen && !modalOpen,
   free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
+  talking: () => storyOn(),
   world: () => S.bg,
   say: (list, who = 'lucky') => say(fresh(list), who),
   hop, setTemp, floatFx, fxAt, luckyPoint, sceneXY,
@@ -289,14 +306,21 @@ function setTemp(face, ms) {
 const modalQ = [];
 let modalOpen = false;
 
+// A window never covers a game or a mission: it waits and opens when that is over (closeGame)
 function showModal(m) {
   modalQ.push(m);
-  if (!modalOpen) nextModal();
+  if (!modalOpen && mode !== 'game' && mode !== 'mission') nextModal();
 }
 
 function nextModal() {
   const m = modalQ.shift();
-  if (!m) { modalOpen = false; ui.modal.className = 'modal'; return; }
+  if (!m) {
+    modalOpen = false;
+    ui.modal.className = 'modal';
+    if (toastLater) { const [h, ms] = toastLater; toastLater = null; toast(h, ms); }
+    return;
+  }
+  if (!modalOpen) setTimeout(() => { if (modalOpen) antics.end(); }); // Lucky's scene stops under the window (not mid-step)
   modalOpen = true;
   if (m.custom) { ui.modal.className = 'modal show ' + (m.cls ?? 'reveal-host'); m.custom(ui.modal, nextModal); return; }
   const btns = m.buttons || [{ label: tr('hooray') }];
@@ -630,10 +654,9 @@ function editScale(on) {
 
 function startEdit(addId = null) {
   if (mode !== 'main') return;
-  cancelAsk();
   closeSheet();
   sceneH = ui.scene.offsetHeight; // the scene's usual height, before the tray opens
-  mode = 'edit';
+  leaveMain('edit');
   editSel = -1;
   document.body.classList.add('editing');
   renderTray();
@@ -767,9 +790,12 @@ function buildStats() {
     <span class="s-ico">${STAT_ICONS[k]}</span><div class="s-body"><span class="s-name">${tr(k)}</span><div class="s-bar"><i></i></div></div></div>`).join('');
 }
 
+// Called every second: a bar is touched only when its whole-number value changes (each change animates)
 function renderStats() {
   ui.stats.querySelectorAll('.stat').forEach((row) => {
-    const v = S.pet[row.dataset.k];
+    const v = Math.round(S.pet[row.dataset.k]);
+    if (row.v === v) return;
+    row.v = v;
     row.querySelector('i').style.width = v + '%';
     row.classList.toggle('low', v < 35);
   });
@@ -874,6 +900,7 @@ function applyLang() {
 
 function openSheet(title, html, mount) {
   cancelAsk();
+  antics.end();
   ui.sheet.innerHTML = `<div class="sheet-head"><h2>${title}</h2><button class="x" aria-label="close">✕</button></div><div class="sheet-body">${html}</div>`;
   ui.sheetWrap.classList.add('show');
   sheetOpen = true;
@@ -884,6 +911,7 @@ function openSheet(title, html, mount) {
 function closeSheet() {
   ui.sheetWrap.classList.remove('show');
   sheetOpen = false;
+  stopJokeBook();
   // clear the content after the closing animation so hidden scenes don't drain the battery
   setTimeout(() => { if (!sheetOpen) ui.sheet.innerHTML = ''; }, 400);
 }
@@ -953,9 +981,17 @@ function feed(f) {
 
 let washGain = 0, washIdle = 0, washDown = false, washLast = 0, cleanBefore = 100;
 
-function startWash() {
+// Leaving the scene for Wash, Decorate, a game or a mission: Lucky's scene, a question, a chat and a waiting line end here
+function leaveMain(next) {
   cancelAsk();
-  mode = 'wash';
+  antics.end();
+  stopChain();
+  pending = null;
+  mode = next;
+}
+
+function startWash() {
+  leaveMain('wash');
   washGain = 0;
   cleanBefore = S.pet.clean;
   ui.scene.classList.add('washing');
@@ -1230,7 +1266,7 @@ function needCues(now) {
   let flies = ui.scene.querySelector('.flies');
   if (dirty && !flies) { flies = document.createElement('div'); flies.className = 'flies'; flies.innerHTML = '<span>🪰</span><span>🪰</span>'; ui.scene.appendChild(flies); }
   if (!dirty && flies) flies.remove();
-  if (mode === 'main' && S.pet.hunger < 25 && userActive() && now > nextRumbleAt && now >= busyUntil) {
+  if (mode === 'main' && S.pet.hunger < 25 && userActive() && now > nextRumbleAt && now >= busyUntil && !antics.busy()) {
     nextRumbleAt = now + 45e3 + Math.random() * 30e3;
     hop(ui.lucky, 'rumble');
     sfx.rumble();
@@ -1336,7 +1372,7 @@ function maybeFidget(now) {
 
 // Daily surprise: a present appears after a minute of play
 function maybeSurprise(now, T0) {
-  if (T0.surprise || ask || mode !== 'main' || sheetOpen || modalOpen || !userActive() || S.session.activeMs < 60e3 || ui.scene.querySelector('.surprise')) return;
+  if (T0.surprise || ask || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 60e3 || ui.scene.querySelector('.surprise')) return;
   const b = document.createElement('button');
   b.className = 'surprise';
   b.textContent = pick(EV && EV.stage >= 3 ? EV.gift : ['🎁', '🎁', '🎁', '🧺', '📦', '💝']);
@@ -1393,7 +1429,7 @@ function renderPlan(T0) {
 
 function checkPlan(T0) {
   renderPlan(T0);
-  if (T0.planDone || !PLAN.every(([, , done]) => done(T0)) || mode !== 'main' || modalOpen || sheetOpen) return;
+  if (T0.planDone || !PLAN.every(([, , done]) => done(T0)) || mode !== 'main' || modalOpen || sheetOpen || antics.busy()) return;
   T0.planDone = true;
   stat('plans');
   st.save(S);
@@ -1423,7 +1459,7 @@ let ask = null, lastAskAt = Date.now(), askTimer = 0;
 const recentAsks = [];
 
 const shuffle = (a) => [...a].sort(() => Math.random() - 0.5);
-const canAsk = () => mode === 'main' && !sheetOpen && !modalOpen && userActive() && Date.now() >= busyUntil && !chainQ.length && !ask;
+const canAsk = () => mode === 'main' && !sheetOpen && !modalOpen && userActive() && Date.now() >= busyUntil && !chainQ.length && !ask && !antics.busy();
 
 function pickAsk() {
   const T0 = st.today(S);
@@ -1442,10 +1478,15 @@ function askQ(q, who, opts, onPick, { compact = false } = {}) {
   antics.end(); // Lucky walks back to his place above the choices
   say(q, who, { hold: true, forAsk: true });
   ui.choices.innerHTML = choicesHtml(opts);
-  ui.choices.className = 'choices' + (compact ? ' compact' : '');
+  ui.choices.className = 'choices' + (compact ? ' compact' : '') + (opts.length === 4 ? ' c4' : '');
   ui.choices.hidden = false;
-  // Lucky moves up above the choices so he stays visible
+  // Lucky moves up above the choices so he stays visible; on a short screen the choices go in two columns
   ui.scene.style.setProperty('--choicesH', ui.choices.offsetHeight + 'px');
+  if (!compact && opts.length >= 3 && askRoom() < 110) {
+    ui.choices.classList.add('compact');
+    ui.scene.style.setProperty('--choicesH', ui.choices.offsetHeight + 'px');
+  }
+  fitAsk();
   ui.scene.classList.add('asking');
   ui.choices.querySelectorAll('.choice').forEach((b) => {
     b.onclick = (e) => {
@@ -1457,6 +1498,13 @@ function askQ(q, who, opts, onPick, { compact = false } = {}) {
   });
   clearTimeout(askTimer);
   askTimer = setTimeout(cancelAsk, 35000); // no answer: quietly remove it, no nagging
+}
+
+// The room between the question bubble (and its tail) and the choices decides how big Lucky can be there
+const askRoom = () => ui.choices.offsetTop - (ui.bubble.offsetTop + ui.bubble.offsetHeight) - 30;
+function fitAsk() {
+  const w = Math.max(56, Math.min(190, ui.scene.clientWidth * 0.4, (askRoom() * 200) / 210));
+  ui.scene.style.setProperty('--askW', Math.round(w) + 'px');
 }
 
 function hideChoices() {
@@ -1616,11 +1664,11 @@ function frogRiddle(f) {
       const done = answer(fresh(FROG.right), 'frog', { reward: false });
       award(addH(3, 'frog', 3));
       stat('frogRight');
+      const s = giveSticker(); // given now, shown after her goodbye (or once a game started meanwhile is over)
+      st.save(S);
       setTimeout(() => {
         frogLeave();
-        if (mode !== 'main') return;
-        say(fresh(FROG.bye), 'frog');
-        const s = giveSticker();
+        if (mode === 'main') say(fresh(FROG.bye), 'frog');
         if (s) showModal({ art: `<div class="big-emoji">${s}</div>`, title: tr('newSticker'), text: tr('fromFrog') });
       }, done + 300);
     });
@@ -1637,7 +1685,7 @@ function maybeFrog(now, T0) {
 const MOODS = [['happy', '😊'], ['calm', '😌'], ['tired', '😴'], ['sad', '😢'], ['angry', '😠']];
 
 function maybeMood(T0) {
-  if (T0.mood || !S.onboarded || mode !== 'main' || sheetOpen || modalOpen || !userActive() || S.session.activeMs < 8000 || Date.now() < busyUntil) return;
+  if (T0.mood || !S.onboarded || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 8000 || Date.now() < busyUntil) return;
   T0.mood = 'asked';
   sayAuto(LUCKY.moodAsk[0]);
   showModal({
@@ -1709,20 +1757,24 @@ function openPlay() {
   }));
 }
 
+// While a game, a mission or sleep fills the screen, the scene under it is hidden (and its animations aren't drawn)
+const cover = (on) => document.body.classList.toggle('covered', on);
+
 function closeGame() {
   ui.overlay.className = 'overlay';
   ui.overlay.innerHTML = '';
   mode = 'main';
+  cover(false);
+  if (!modalOpen && modalQ.length) nextModal(); // windows that waited for the end of the game
 }
 
 function startGame(game) {
   if (S.pet.energy < 22) return say(P('tooTired'));
   if (S.pet.hunger < 25) { setTemp('sad', 1500); return say(fresh(LUCKY.gameRefuse)); }
-  cancelAsk();
-  antics.end();
+  leaveMain('game');
   antics.clearProps();
-  mode = 'game';
   ui.overlay.className = 'overlay show game-ov';
+  cover(true);
   openGame(ui.overlay, game, {
     tr, sfx, lang: S.lang,
     svgOk: luckyArt({ face: 'ok', wear: S.wear }),
@@ -1833,11 +1885,10 @@ function openDojo() {
 
 // A mission runs full screen (ninja.js); Lucky stays awake until it's over
 function startMission(m) {
-  cancelAsk();
-  antics.end();
+  leaveMain('mission');
   silence();
-  mode = 'mission';
   ui.overlay.className = 'overlay show game-ov';
+  cover(true);
   openMission(ui.overlay, m, {
     lang: S.lang, translate: S.settings.translate, fast: turbo(), tr,
     luckyArt: (face) => luckyArt({ face, wear: S.wear }),
@@ -2116,12 +2167,14 @@ function dogArrive() {
     e.stopPropagation();
     if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; } // wait until the current scene is over
     sfx.pop();
+    antics.end();
     taliJoke(DOG.jokeMore);
   };
   ui.dog.querySelector('.twist-btn').onclick = (e) => {
     e.stopPropagation();
     if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; }
     sfx.pop();
+    antics.end();
     taliTwister();
   };
   const tog = ui.dog.querySelector('.together');
@@ -2204,8 +2257,9 @@ function taliJoke(lead = null, before = []) {
 
 // The joke book in the collection: tap a joke to hear it again (and tell it to friends at school)
 let jokeTimers = [];
+function stopJokeBook() { jokeTimers.forEach(clearTimeout); jokeTimers = []; }
 function playJoke(j) {
-  jokeTimers.forEach(clearTimeout);
+  stopJokeBook();
   const steps = j.kk ? [['dog', DOG.knock[0]], ['lucky', LUCKY.whosThere[0]], ['dog', j.kk], ['lucky', j.who], ['dog', j.a]] : [['dog', j.q], ['dog', j.a]];
   let t = 0;
   jokeTimers = steps.map(([who, pair], i) => {
@@ -2221,27 +2275,26 @@ function playJoke(j) {
 const IDIOMS_PER_DAY = 3, IDIOM_GAP = 3 * 864e5;
 // An idiom that fits this moment ('any' for any of them): at most 3 a day, each one not again for 3 days, new ones first
 function pickIdiom(when, chance = 0.5, inChain = false) {
-  if (mode !== 'main' || ask || sheetOpen || modalOpen || (!inChain && chainQ.length) || !userActive()) return null;
+  if (mode !== 'main' || ask || sheetOpen || modalOpen || (!inChain && (chainQ.length || antics.busy())) || !userActive()) return null;
   const T0 = st.today(S);
   if ((!turbo() && (T0.idioms || 0) >= IDIOMS_PER_DAY) || Math.random() > chance) return null;
   const now = Date.now();
   const pool = IDIOMS.filter((x) => (when === 'any' || x.when === when) && now - (S.idioms.at[x.id] || 0) > IDIOM_GAP);
   if (!pool.length) return null;
   const unheard = pool.filter((x) => !S.idioms.heard.includes(x.id));
-  const it = pick(unheard.length ? unheard : pool);
-  T0.idioms = (T0.idioms || 0) + 1;
-  S.idioms.at[it.id] = now;
-  return it;
+  return pick(unheard.length ? unheard : pool);
 }
 
-// Lucky says the idiom, acts it out literally, then explains what it really means
-function idiomSteps(it, intro = false) {
+// Lucky says the idiom, acts it out literally, then explains what it really means.
+// It counts towards the day's three when the picture really starts (a replay from the collection doesn't count).
+function idiomSteps(it, intro = false, counts = true) {
   return [
     ...(intro ? [timed('lucky', fresh(LUCKY.idiomIntro))] : []),
     ['lucky', ...it.say, 1100], // the picture starts while he is still saying it
     () => {
       const ms = antics.idiomShow(it.show);
       if (!ms) return -1;
+      if (counts) { const T0 = st.today(S); T0.idioms = (T0.idioms || 0) + 1; S.idioms.at[it.id] = Date.now(); }
       if (!S.idioms.heard.includes(it.id)) { S.idioms.heard.push(it.id); stat('idiomsSeen'); }
       st.save(S);
       return ms;
@@ -2260,7 +2313,7 @@ function maybeIdiom(when, chance = 0.5) {
 // From the collection: Lucky acts it out again (doesn't count towards the 3 a day)
 function replayIdiom(it) {
   closeSheet();
-  setTimeout(() => { if (mode === 'main' && !ask && !modalOpen) talk(idiomSteps(it), true); }, 450);
+  setTimeout(() => { if (mode === 'main' && !ask && !modalOpen) talk(idiomSteps(it, false, false), true); }, 450);
 }
 
 // ---------- tongue twisters: Tali asks, Lucky says it slowly, faster and super fast ----------
@@ -2350,7 +2403,7 @@ function updateDog(now, asleep) {
     if (asleep || (now >= d.stayUntil && !chainQ.length)) { d.lastAt = now; dogLeave(asleep); st.save(S); }
     return;
   }
-  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length) return;
+  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy()) return;
   const due = forced || (dogDueAt !== null && S.session.activeMs >= dogDueAt && d.n < DOG_PER_DAY
     && now - (d.lastAt || 0) > DOG_GAP && !st.isNight(now, S.settings) && userActive());
   if (!due) return;
@@ -2382,6 +2435,7 @@ function renderSleep(force = false) {
   const m = MISSIONS[st.missionIndex(S, MISSIONS.length)];
   const time = fmtTime(until);
   ui.overlay.className = 'overlay show sleep-ov' + (night ? '' : ' rest');
+  cover(true);
   const bgHtml = night ? art.scene('night') + holidayLayers('night') : `${art.scene(S.bg)}${holidayLayers(S.bg)}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
   requestAnimationFrame(() => {
     const rd = ui.overlay.querySelector('.rest-decor'), bg = ui.overlay.querySelector('.sleep-bg');
@@ -2438,6 +2492,7 @@ function exitSleep() {
   mode = 'main';
   ui.overlay.className = 'overlay';
   ui.overlay.innerHTML = '';
+  cover(false);
   renderLucky(true);
   sayAuto(fresh(LUCKY.woke));
   sfx.happy();
@@ -2705,7 +2760,7 @@ function idleTalk() {
 let prevTier = null, recoveredAt = 0, nextBinkyAt = 0, nextTailAt = Date.now() + 120e3;
 function moodEvents(now, T0) {
   const t = tier();
-  if (mode === 'main' && userActive()) {
+  if (mode === 'main' && userActive() && !antics.busy()) {
     if (prevTier === 'low' && t !== 'low' && now - recoveredAt > 180e3) { recoveredAt = now; sayAuto(fresh(LUCKY.recovered)); }
     else if (t === 'max' && prevTier && prevTier !== 'max' && !T0.maxSaid) { T0.maxSaid = true; if (!maybeIdiom('max', 0.6)) { sayAuto(fresh(LUCKY.maxReached)); binky(true); } }
     else if (t === 'max' && now > nextBinkyAt) { nextBinkyAt = now + 90e3 + Math.random() * 60e3; if (prevTier === 'max') binky(true); }
@@ -2759,7 +2814,7 @@ function loop() {
   ui.scene.classList.toggle('evening', st.minutesToBed(now, S.settings) <= 60 || (EV?.id === 'halloween' && EV.stage >= 4));
 
   flushPending(now);
-  if (mode === 'main' && !sheetOpen && !modalOpen && windowActive() && now >= busyUntil && !chainQ.length) {
+  if (mode === 'main' && !sheetOpen && !modalOpen && windowActive() && now >= busyUntil && !chainQ.length && !antics.busy()) {
     const idleFor = now - lastInput;
     if (idleFor < ACTIVE_MS && canAsk() && now - lastAskAt > ASK_EVERY && (T0.asks < 8 || turbo()) && now - lastSpeech > 20e3 && Math.random() < 0.3) startAsk(pickAsk());
     else if (idleFor < ACTIVE_MS && !ask && now - lastSpeech > 60e3) idleTalk();
@@ -2924,6 +2979,9 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; } };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
+  talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id)), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 
 start();
