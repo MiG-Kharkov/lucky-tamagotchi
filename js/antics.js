@@ -6,7 +6,7 @@ import { LUCKY, DOG, CHATS } from './i18n.js';
 import { sfx } from './sound.js';
 import { PROPS, decor as decorArt } from './art.js';
 
-const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90;
+const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90, SWIPE_MS = 280, SWIPE_PX = 55;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 // Gestures on elements found by find(target):
@@ -15,6 +15,8 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 //   double - two quick taps on the same thing
 //   long   - press and hold
 //   stroke - press and slide the finger (only if opts.stroke)
+//   swipe  - a quick fling (only if opts.swipe): p.dir is up, down, left or right. A slide that starts fast waits
+//            SWIPE_MS before it counts as a stroke, so a fling is never both.
 export function gestures(root, find, on, opts = {}) {
   let down = null, last = null;
   const pt = (e) => ({ clientX: e.clientX, clientY: e.clientY, target: e.target });
@@ -22,7 +24,7 @@ export function gestures(root, find, on, opts = {}) {
     if (e.button > 0) return;
     const el = find(e.target);
     if (!el) return;
-    const d = { el, x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, path: 0, p: pt(e) };
+    const d = { el, x: e.clientX, y: e.clientY, px: e.clientX, py: e.clientY, path: 0, p: pt(e), t0: Date.now() };
     down = d;
     d.timer = setTimeout(() => { if (down === d && !d.moved) { d.long = true; on('long', el, d.p); } }, LONG_MS);
   });
@@ -33,13 +35,27 @@ export function gestures(root, find, on, opts = {}) {
     d.px = e.clientX;
     d.py = e.clientY;
     if (!d.moved && Math.hypot(e.clientX - d.x, e.clientY - d.y) > MOVE_PX) { d.moved = true; clearTimeout(d.timer); }
-    if (opts.stroke && d.moved && !d.stroked && d.path > STROKE_PX) { d.stroked = true; on('stroke', d.el, pt(e)); }
+    if (opts.stroke && d.moved && !d.stroked && d.path > STROKE_PX) {
+      const wait = opts.swipe ? SWIPE_MS - (Date.now() - d.t0) : 0;
+      d.lastP = pt(e);
+      if (wait <= 0) { d.stroked = true; clearTimeout(d.strokeT); on('stroke', d.el, d.lastP); }
+      else if (!d.strokeT) d.strokeT = setTimeout(() => { if (down === d && !d.stroked) { d.stroked = true; on('stroke', d.el, d.lastP); } }, wait);
+    }
   });
   const up = (e) => {
     const d = down;
     down = null;
     if (!d) return;
     clearTimeout(d.timer);
+    clearTimeout(d.strokeT);
+    if (opts.swipe && d.moved && !d.stroked && !d.long && e.type !== 'pointercancel' && Date.now() - d.t0 < SWIPE_MS + 120) {
+      const dx = e.clientX - d.x, dy = e.clientY - d.y;
+      if (Math.hypot(dx, dy) > SWIPE_PX) {
+        const dir = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+        on('swipe', d.el, { ...pt(e), dir, dx, dy });
+        return;
+      }
+    }
     if (d.long || d.moved || e.type === 'pointercancel') return;
     const p = pt(e), now = Date.now();
     if (last && last.el === d.el && now - last.at < DOUBLE_MS) {
@@ -1832,6 +1848,8 @@ export function createAntics(api) {
     decor: (kind, el, it, p) => run(forDecor(it), kind, el, p),
     line, prop, unprop, setSticky, clearProps, fly, popUp, spray, end,
     busy: () => !!act,
+    // the scene tools Lucky's tricks are made of (tricks.js)
+    kit: { begin, end, at, hold, onEnd, pose, prop, unprop, line, lineWith, chatLine, fly, popUp, rainbow, spray, dark, sceneRect, head, nose, mouth, feet, paw, earPt },
     // Tali's joke: Lucky listens to the question, then laughs and does something that fits.
     // Returns how long to wait before Lucky's comment (0 when he can't take part right now).
     think() {

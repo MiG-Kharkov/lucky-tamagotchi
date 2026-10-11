@@ -13,6 +13,7 @@ import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, t
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, openGame } from './game.js';
 import { createAntics, gestures } from './antics.js';
+import { createTricks } from './tricks.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly } from './events.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -99,7 +100,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   if (!chain) stopChain();
   const main = fill(typeof pair === 'string' ? pair : L(pair), S.lang);
   const sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
-  ui.bubble.className = 'bubble show b-' + who;
+  ui.bubble.className = 'bubble show b-' + who + (ui.bubble.classList.contains('aloft') ? ' aloft' : '');
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
   if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
   // The line plays right away; tapping the bubble plays the translation
@@ -122,6 +123,12 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
 
 const sayAuto = (pair, who = 'lucky') => say(pair, who, { auto: true });
 
+function hideBubble() { clearTimeout(bubbleTimer); ui.bubble.classList.remove('show'); }
+// Up in a big jump Lucky would go behind the bubble: while he is up there it steps aside (the voice goes on)
+const AIR = ['binky', 'bigjump', 'moonjump', 'heli', 'zeroG', 'beamup', 'balloonfly', 'blastoff', 'land', 'parachute', 'levitate', 'backflip', 'starjump', 'heroflight', 'giant', 'outofhat'];
+new MutationObserver(() => ui.bubble.classList.toggle('aloft', AIR.some((c) => ui.lucky.classList.contains(c))))
+  .observe(ui.lucky, { attributes: true, attributeFilter: ['class'] });
+
 // A postponed line plays when nothing else is speaking; stale ones are dropped
 function flushPending(now) {
   if (!pending || ask || now < busyUntil || chainQ.length || antics.busy() || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
@@ -136,8 +143,7 @@ function silence() {
   stopSpeech();
   pending = null;
   busyUntil = 0;
-  clearTimeout(bubbleTimer);
-  ui.bubble.classList.remove('show');
+  hideBubble();
 }
 
 // A scene: lines in turn, each starts when the previous one ends
@@ -279,6 +285,32 @@ const antics = createAntics({
   toast: (html) => toast(html, 2500),
   // best scores (keepy-uppy): true when it's a new record
   record: (key, n) => { const k = 'best_' + key; if (n <= (S.stats[k] || 0)) return false; S.stats[k] = n; st.save(S); return true; },
+});
+
+// Lucky's tricks (tricks.js): the many ways he answers a touch, and the rare big tricks
+let tempWear = null; // an outfit he tries on for a moment in a trick
+const wornNow = () => (tempWear ? { ...S.wear, ...tempWear } : S.wear);
+// Nothing else is on the screen: no line playing, no question, sheet, window, hint or scene (a rare trick can start)
+function quietNow() {
+  return mode === 'main' && !sheetOpen && !modalOpen && !ask && windowActive() && !chainQ.length && Date.now() >= busyUntil
+    && !antics.busy() && !ui.toast.classList.contains('show');
+}
+const tricks = createTricks({
+  kit: antics.kit, ui, setTemp, hop, fxAt, floatFx, luckyPoint,
+  hearts: heartsBurst,
+  quiet: quietNow,
+  free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
+  clearBubble: () => { if (Date.now() >= busyUntil) hideBubble(); },
+  luckyArt: (face) => luckyArt({ face, wear: wornNow() }),
+  outfits: () => WEAR.filter((w) => ownsWear(w) && S.wear[w.slot] !== w.id),
+  dressUp: (id) => { tempWear = id ? { [WEAR_BY_ID[id].slot]: id } : null; renderLucky(true); },
+  wearing: (id) => Object.values(wornNow()).includes(id),
+  dogEl: () => (dogHere ? ui.dog.querySelector('.dog-body') : null),
+  helicopter: () => helicopter(),
+  sneeze: () => sneeze(),
+  thump: () => thump(),
+  chase: () => { hop(ui.lucky, 'chase'); setTemp('laugh', 2200); },
+  say: (list) => say(fresh(list)),
 });
 
 function confetti() {
@@ -767,7 +799,7 @@ function moodFace() {
 
 function renderLucky(force = false) {
   const face = moodFace();
-  const look = JSON.stringify(S.wear) + S.belt;
+  const look = JSON.stringify(wornNow()) + S.belt;
   if (!force && face === shownFace && look === shownOutfit) return;
   const sameLook = look === shownOutfit;
   shownFace = face;
@@ -779,8 +811,8 @@ function renderLucky(force = false) {
     ui.lucky.innerHTML = '<svg class="l-back" viewBox="0 0 200 210" aria-hidden="true"></svg><div class="l-art"></div><svg class="l-props" viewBox="0 0 200 210" aria-hidden="true"></svg>';
     [ui.propsBack, ui.luckyArt, ui.props] = ui.lucky.children;
   }
-  ui.luckyArt.innerHTML = luckyArt({ face, wear: S.wear });
-  ui.lucky.classList.toggle('has-hat', !!S.wear?.head);
+  ui.luckyArt.innerHTML = luckyArt({ face, wear: wornNow() });
+  ui.lucky.classList.toggle('has-hat', !!wornNow()?.head);
 }
 
 const STAT_ICONS = { hunger: '🥕', fun: '💗', clean: '🫧', energy: '⚡' };
@@ -1045,27 +1077,39 @@ window.addEventListener('pointercancel', () => { washDown = false; });
 
 // ---------- taps ----------
 
-let tapCount = 0, tapTimes = [], earTimes = [], tickledAt = 0;
-const partOf = (t) => (t.closest('.nose') ? 'nose' : t.closest('.ear') ? 'ear' : t.closest('.feet') ? 'feet'
-  : t.closest('.tummy') ? 'tummy' : t.closest('.head') ? 'head' : 'body');
+let tapCount = 0, tapTimes = [], earTimes = [], tickledAt = 0, answeredAt = 0;
+const partOf = (t) => (t.closest('.nose') ? 'nose' : t.closest('.ear') ? 'ear' : t.closest('.feet') ? 'feet' : t.closest('.paw') ? 'paw'
+  : t.closest('.tail') ? 'tail' : t.closest('.tummy') ? 'tummy' : t.closest('.head') ? 'head' : 'body');
 
-// Taps on Lucky: what happens depends on where and how (tap, double tap, long press, stroke)
+// Taps on Lucky: what happens depends on where and how (tap, double tap, long press, stroke, swipe).
+// How he answers is tricks.js (several ways for each, now and then a rare big trick); here is what it means for the game.
 gestures(ui.lucky, (t) => (mode === 'main' ? ui.lucky : null), (kind, _el, p) => {
   if (mode !== 'main') return;
   const part = partOf(p.target);
   if (kind === 'press') return luckyPress(part, p);
-  if (antics.luckyTap() || ask) return;
-  if (kind === 'tap' && part === 'nose') sneeze();
+  if (antics.luckyTap() || ask || Date.now() - answeredAt < 700) return;
+  // in the middle of a scene or a trick he only shows he felt it (moves of his own would clash with it)
+  if (antics.busy()) { if (kind !== 'tap') feltIt(p); return; }
+  if (kind === 'tap' && part === 'nose') noseTap();
   if (kind === 'double' && Date.now() - tickledAt > 200) luckyDouble(part);
   if (kind === 'long') luckyLong(part);
   if (kind === 'stroke') stroke(p);
-}, { stroke: true });
+  if (kind === 'swipe') swipe(p);
+}, { stroke: true, swipe: true });
 ui.scene.addEventListener('contextmenu', (e) => e.preventDefault()); // long presses are gestures here
 
+function feltIt(p) {
+  sfx.pop();
+  heartsBurst(...sceneXY(p), 2);
+  st.boost(S, 'fun', 1);
+  renderStats();
+}
+
 function luckyPress(part, p) {
-  if (antics.luckyTap()) return; // found him hiding
+  if (antics.luckyTap()) return; // found him hiding, or his trick wants the tap (the statue laughs, the grin comes back)
   if (ask?.touch) { if (!p.second) touchAnswer(p); return; }
   if (ask) { sfx.pop(); hop(ui.lucky); heartsBurst(...sceneXY(p), 2); return; }
+  if (antics.busy()) { if (!p.second) feltIt(p); return; }
   if (part === 'ear') { ears(); return; }
   if (part === 'nose') return; // a tap sneezes, a double tap boops
   // Many quick taps: tickling
@@ -1074,47 +1118,53 @@ function luckyPress(part, p) {
   while (tapTimes.length && now - tapTimes[0] > 3000) tapTimes.shift();
   if (tapTimes.length >= 6) { tapTimes = []; tickledAt = now; if (!maybeIdiom('fastTaps', 0.3)) tickle(); return; }
   if (p.second) return; // the second tap of a double tap
-  if (part === 'feet') { setTemp('laugh', 900); hop(ui.lucky, 'paws', 600); sfx.tap(); antics.line('paws', 0.5, 15000); st.boost(S, 'fun', 2); renderStats(); return; }
+  // feet, tail and paws: a giggle, a wag, a high five
+  if (part === 'feet' || part === 'tail' || part === 'paw') {
+    const w = tricks.touch('tap', part, p);
+    if (w.say) antics.line(w.say, part === 'feet' ? 0.5 : 0.7, 15000);
+    st.boost(S, 'fun', 2);
+    renderStats();
+    return;
+  }
   pet(part, p);
 }
 
-const PET_MOVES = ['hop', 'hop', 'hop', 'clap', 'sway', 'proud', 'wave'];
 function pet(part, p) {
   const [x, y] = sceneXY(p);
   // Sulks when he badly needs something (except joy: petting is exactly what helps)
   const need = st.lowestNeed(S.pet);
   if (tier() === 'low' && LUCKY.sulk[need] && S.pet[need] < 30 && Math.random() < 0.35) { sulk(need); return; }
   sfx.pop();
-  setTemp(part === 'head' ? 'happy' : pick(['laugh', 'laugh', 'happy']), 1100);
-  // now and then he is patted so well that his ears start spinning (the helicopter says its own line)
-  const heli = part === 'head' && Math.random() < 0.05;
-  if (heli) helicopter();
-  else if (part === 'head') hop(ui.lucky, 'pat', 600);
-  else if (part === 'tummy') hop(ui.lucky, 'jiggle', 700);
-  else hop(ui.lucky, pick(PET_MOVES), 1400);
+  const w = tricks.touch('tap', part, p); // a pat, a clap, a wave, a wink… or now and then a rare trick
   heartsBurst(x, y - 20);
   st.boost(S, 'fun', 3);
   tapCount++;
   if (tapCount % 3 === 0) award(addH(1, 'pet', 8));
-  if (tapCount % 2 === 1 && !heli) {
-    const special = part === 'head' ? antics.line('pat', 0.5, 20000) : part === 'tummy' ? antics.line('giggle', 0.7, 20000) : 0;
-    if (!special) say(fresh(byTier(LUCKY.tapLow, LUCKY.tap, LUCKY.tapMax)));
+  // every other tap a word (a rare trick and the helicopter ears say their own)
+  if (tapCount % 2 === 1 && !w.special && w.key !== 'heli') {
+    const own = w.say ? antics.line(w.say, 0.8, 15000) : part === 'head' ? antics.line('pat', 0.5, 20000) : part === 'tummy' ? antics.line('giggle', 0.7, 20000) : 0;
+    if (!own) say(fresh(byTier(LUCKY.tapLow, LUCKY.tap, LUCKY.tapMax)));
   }
   renderStats();
 }
 
+// A tap on his nose: usually a sneeze, sometimes one that never comes, or three in a row
+function noseTap() {
+  const w = tricks.touch('tap', 'nose');
+  if (w.say) say(fresh(w.say));
+}
+
+const BINKY_LIKE = ['binky', 'backflip', 'ninjajump', 'starjump', 'spin'];
 function luckyDouble(part) {
   if (part === 'ear') return; // ear taps count towards the helicopter
-  if (part === 'nose') {
-    if (Math.random() < 0.15) { sneeze(); return; } // a boop on the nose… and it tickles: achoo!
-    setTemp('laugh', 1000); hop(ui.lucky, 'boop', 800); sfx.squeak(); antics.line('boop', 0.9); return;
-  }
-  if (part === 'tummy') { setTemp('laugh', 1200); hop(ui.lucky, 'drum', 1000); sfx.drum(); antics.line('drum', 0.9); st.boost(S, 'fun', 2); renderStats(); return; }
-  if (part === 'feet') { thump(); return; }
-  binky();
+  const w = tricks.touch('double', part);
+  if (w.say) antics.line(w.say, w.key === 'binky' ? 1 : 0.9, w.key === 'binky' ? 0 : 12000);
+  if (part === 'tummy') { st.boost(S, 'fun', 2); renderStats(); }
+  if (BINKY_LIKE.includes(w.key)) stat('binkies');
 }
 
 function luckyLong(part) {
+  const w = tricks.touch('long', part);
   if (part === 'ear') {
     setTemp('happy', 2500);
     hop(ui.lucky, 'melt');
@@ -1123,21 +1173,14 @@ function luckyLong(part) {
     st.boost(S, 'fun', 4);
     award(addH(1, 'pet', 8));
     antics.line('earRub', 1, 10000);
-  } else if (part === 'nose') {
-    setTemp('happy', 1500);
-    hop(ui.lucky, 'kiss');
-    sfx.kiss();
-    floatFx(...luckyPoint(0.5, 0.5), '💗');
-    antics.line('kiss', 1, 10000);
-  } else if (part === 'tummy') {
-    setTemp('laugh', 2200);
-    hop(ui.lucky, 'roll');
-    sfx.happy();
+  } else if (part === 'nose') antics.line(w.say || 'kiss', 1, 10000);
+  else if (part === 'tummy') {
     heartsBurst(...luckyPoint(0.5, 0.7), 5);
     st.boost(S, 'fun', 4);
-    antics.line('tummyRub', 1, 20000);
+    if (w.say) antics.line(w.say, 1, 20000);
   } else if (part === 'feet') thump();
-  else { hug(); return; }
+  else if (part === 'tail' || part === 'paw') { if (w.say) antics.line(w.say, 1, 15000); st.boost(S, 'fun', 2); }
+  else { hug(w); return; }
   renderStats();
 }
 
@@ -1154,16 +1197,22 @@ function thump() {
   else antics.line('thump', 0.9);
 }
 
-// Stroking Lucky with a finger: he purrs (bunnies really do, by gently grinding their teeth)
+// Stroking Lucky with a finger: he purrs (bunnies really do, by gently grinding their teeth), melts, stretches…
 function stroke(p) {
-  setTemp('happy', 1800);
-  hop(ui.lucky, 'purr');
-  sfx.purr();
+  const w = tricks.touch('stroke', partOf(p.target), p);
   const [x, y] = sceneXY(p);
   heartsBurst(x, y, 3);
   st.boost(S, 'fun', 3);
   stat('strokes');
-  antics.line('purr', 0.9, 10000);
+  if (w.say) antics.line(w.say, 0.9, 10000);
+  renderStats();
+}
+
+// A quick fling across him: up he jumps, down he goes flat as a pancake, sideways he slides
+function swipe(p) {
+  const w = tricks.touch('swipe', 'body', p);
+  if (w.say) antics.line(w.say, 0.8, 12000);
+  st.boost(S, 'fun', 2);
   renderStats();
 }
 
@@ -1174,18 +1223,19 @@ function sulk(need) {
   say(fresh(LUCKY.sulk[need]));
 }
 
-function hug() {
-  sfx.happy();
-  hop(ui.lucky, 'hug');
-  setTemp('happy', 1800);
+// A long press: a hug (or one of its other ways: a bunny loaf, a cosy doze, melting with love)
+function hug(w = { key: 'hug' }) {
   const [x, y] = luckyPoint(0.5, 0.35);
+  if (w.key === 'hug') { sfx.happy(); hop(ui.lucky, 'hug'); setTemp('happy', 1800); }
   heartsBurst(x, y, 7);
   st.boost(S, 'fun', 5);
   award(addH(1, 'pet', 8));
-  // now and then the hug is so tight he gets squashed: "Oof! Too tight!"
-  const tight = Math.random() < 0.12;
-  say(fresh(tight ? LUCKY.antics.squeeze : byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
-  if (tight) setTimeout(() => { hop(ui.lucky, 'squash', 700); heartsBurst(x, y, 6); sfx.boing(); }, 900);
+  if (w.key === 'hug') {
+    // now and then the hug is so tight he gets squashed: "Oof! Too tight!"
+    const tight = Math.random() < 0.12;
+    say(fresh(tight ? LUCKY.antics.squeeze : byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
+    if (tight) setTimeout(() => { if (mode === 'main' && !antics.busy()) { hop(ui.lucky, 'squash', 700); heartsBurst(x, y, 6); sfx.boing(); } }, 900);
+  } else if (!w.special) say(fresh(w.say || byTier(LUCKY.hugLow, LUCKY.hug, LUCKY.hugMax)));
   stat('hugs');
   renderStats();
 }
@@ -1519,7 +1569,7 @@ function cancelAsk() {
   hideChoices();
   if (ask.frog) frogLeave();
   ask = null;
-  ui.bubble.classList.remove('show');
+  hideBubble();
 }
 
 // Lucky's reply; on a wrong guess the question stays and another choice can be picked
@@ -1599,6 +1649,7 @@ function storyNode(id) {
 
 // Tapping Lucky in answer to 'tap my ears'
 function touchAnswer(e) {
+  answeredAt = Date.now();
   const part = e.target.closest('.nose') ? 'nose' : e.target.closest('.ear') ? 'ears' : e.target.closest('.head') ? 'head' : 'body';
   if (part === ask.touch) {
     sfx.happy();
@@ -2625,6 +2676,7 @@ const TURBO_TOOLS = [
   ['day', '🌅', () => { S.today = null; st.today(S); closeSheet(); toast('🌅 ' + tr('newDay'), 2000); }],
   ['nap', '💤', () => { closeSheet(); startNap(); }],
   ['idiom', '🎭', () => { closeSheet(); setTimeout(() => maybeIdiom('any', 1), 450); }],
+  ['trick', '🎩', () => { closeSheet(); lastInput = Date.now(); setTimeout(() => { silence(); tricks.special('any', true); }, 600); }],
   ['holiday', '🎃', () => {
     const ids = [null, ...EVENTS.map((e) => e.id)], i = ids.indexOf(S.eventPreview || null);
     S.eventPreview = ids[(i + 1) % ids.length];
@@ -2982,6 +3034,7 @@ if ('serviceWorker' in navigator) {
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
   game: (id) => startGame(GAMES.find((g) => g.id === id)), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 
 start();

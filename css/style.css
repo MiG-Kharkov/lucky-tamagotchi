@@ -132,6 +132,7 @@ input, select { font: inherit; }
   transform: translateX(-50%) rotate(45deg); border-radius: 3px;
 }
 .bubble.show { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
+.bubble.show.aloft { opacity: 0; transition: opacity .15s; } /* Lucky is up in a big jump, right where the bubble is */
 .scene.has-dog .bubble.b-lucky { left: 42%; max-width: calc(84% - 24px); }
 .bubble.b-dog { left: 58%; max-width: calc(84% - 24px); background: #F4EEFF; }
 .bubble.b-dog::after { background: #F4EEFF; left: 72%; }
@@ -1287,3 +1288,155 @@ body.ev-easter.ev-s3 { --ev-deco: "🌸"; background: radial-gradient(circle at 
 @media (prefers-reduced-motion: reduce) {
   .lucky .tail { animation: none; }
 }
+
+/* ---------- Lucky's tricks (tricks.js): everyday ways to answer a touch ---------- */
+.lucky.bounce { animation: bounce2 .8s ease-out; }
+@keyframes bounce2 { 20% { translate: 0 -10%; } 40% { translate: 0 0; scale: 1.06 .94; } 60% { translate: 0 -6%; scale: 1 1; } 80% { translate: 0 0; scale: 1.03 .97; } }
+.lucky.twirl { animation: pirouette .75s ease-in-out; }
+.lucky.shimmy { transform-origin: 50% 100%; animation: shimmy .8s ease-in-out; }
+@keyframes shimmy { 15%, 45%, 75% { rotate: -4deg; translate: -2% 0; } 30%, 60%, 90% { rotate: 4deg; translate: 2% 0; } }
+.lucky.shimmy .tail, .lucky.tailwag .tail { animation: tailWagFast .32s ease-in-out 4; }
+.lucky.tailwag { animation: shimmy .8s ease-in-out; transform-origin: 50% 100%; }
+.lucky.shy { animation: shySway 1.6s ease-in-out; transform-origin: 50% 100%; }
+@keyframes shySway { 25%, 75% { rotate: -3deg; } 50% { rotate: 2deg; } }
+.lucky.shy .paw-l { animation: shyL 1.6s ease-in-out; }
+.lucky.shy .paw-r { animation: shyR 1.6s ease-in-out; }
+@keyframes shyL { 15%, 85% { transform: translate(-4px, -62px) rotate(24deg); } }
+@keyframes shyR { 15%, 85% { transform: translate(4px, -62px) rotate(-24deg); } }
+.lucky.tilt .head { animation: listenTilt 1.4s ease-in-out; }
+.lucky.highfive .paw-r { animation: highFive 1s ease-in-out; }
+@keyframes highFive { 25%, 70% { transform: translate(28px, -72px) rotate(-12deg) scale(1.35); } 35% { transform: translate(30px, -76px) rotate(-6deg) scale(1.45); } }
+.lucky.highten .paw-r { animation: highFive 1s ease-in-out; }
+.lucky.highten .paw-l { animation: highFiveL 1s ease-in-out; }
+@keyframes highFiveL { 25%, 70% { transform: translate(-28px, -72px) rotate(12deg) scale(1.35); } 35% { transform: translate(-30px, -76px) rotate(6deg) scale(1.45); } }
+.lucky.pawshake .paw-r { animation: pawShake 1.4s ease-in-out; }
+@keyframes pawShake { 15%, 85% { transform: translate(10px, -22px) scale(1.5); } 30%, 60% { transform: translate(10px, -30px) scale(1.5); } 45%, 75% { transform: translate(10px, -14px) scale(1.5); } }
+.lucky.loaf { animation: loaf 2.6s ease-in-out; transform-origin: 50% 100%; }
+@keyframes loaf { 15%, 85% { scale: 1.08 .88; translate: 0 5%; } }
+.lucky.loaf .paws, .lucky.loaf .feet { animation: tuck 2.6s ease-in-out; }
+@keyframes tuck { 15%, 85% { opacity: 0; } }
+.lucky.backflip { animation: backflip .95s cubic-bezier(.3, 1.1, .5, 1); }
+@keyframes backflip { 18% { translate: 0 4%; scale: 1.08 .9; rotate: 0deg; } 55% { translate: 0 -34%; scale: 1 1; rotate: -200deg; } 82% { translate: 0 -4%; rotate: -360deg; } 100% { translate: 0 0; rotate: -360deg; } }
+.lucky.starjump { animation: starJump .75s ease-out; }
+@keyframes starJump { 40% { translate: 0 -16%; scale: 1.18 .94; } }
+.lucky.starjump .paw-l { animation: pawsOutL .75s ease-out; }
+.lucky.starjump .paw-r { animation: pawsOutR .75s ease-out; }
+.lucky.starjump .ear-l { animation: earUpL .75s ease-out; }
+.lucky.starjump .ear-r { animation: earUpR .75s ease-out; }
+.lucky.tapdance { animation: tapBody 1.2s ease-in-out; }
+@keyframes tapBody { 12%, 37%, 62%, 87% { translate: 0 -3%; } 25%, 50%, 75% { translate: 0 0; } }
+.lucky.tapdance .feet { animation: feetTap .15s ease-in-out 8 alternate; }
+@keyframes feetTap { to { transform: translateY(-4px) rotate(3deg); } }
+.lucky.tapdance .paw-l { animation: danceL .6s ease-in-out 2; }
+.lucky.tapdance .paw-r { animation: danceR .6s ease-in-out 2; }
+.lucky.pancake { transform-origin: 50% 100%; animation: pancake 1.3s ease-in-out; }
+@keyframes pancake { 12%, 68% { scale: 1.3 .48; } 80% { scale: .9 1.14; } 92% { scale: 1.04 .97; } }
+.lucky.slideL { animation: slideL 1.4s ease-in-out; }
+.lucky.slideR { animation: slideR 1.4s ease-in-out; }
+@keyframes slideL { 30% { translate: -34% 0; rotate: -8deg; } 60% { translate: -26% 0; rotate: 4deg; } }
+@keyframes slideR { 30% { translate: 34% 0; rotate: 8deg; } 60% { translate: 26% 0; rotate: -4deg; } }
+.lucky.dodge { animation: dodge 1.1s ease-in-out; }
+@keyframes dodge { 20% { translate: -16% 0; rotate: -6deg; } 45% { translate: 16% 0; rotate: 6deg; } 70% { translate: -8% 0; rotate: -3deg; } }
+.lucky.static { animation: puffUp 1.5s ease-in-out; }
+@keyframes puffUp { 15%, 80% { scale: 1.07; } }
+.lucky.static .l-art { animation: staticBuzz .1s linear 14; filter: drop-shadow(0 0 2px #FFFFFF) drop-shadow(0 0 5px #FFE066); }
+@keyframes staticBuzz { 25% { translate: -1px 1px; } 75% { translate: 1px -1px; } }
+
+/* ---------- the rare big tricks: each is a scene that holds its class ---------- */
+/* Super Bunny: a crouch, a flight off one side and back in from the other, a superhero landing */
+.lucky.crouch { animation: crouch .6s ease-in forwards; transform-origin: 50% 100%; }
+@keyframes crouch { to { scale: 1.08 .86; translate: 0 5%; } }
+.lucky.heroflight { animation: heroFly 2.7s ease-in-out forwards; }
+@keyframes heroFly {
+  0% { translate: 0 5%; rotate: 0deg; } 12% { translate: 0 -20%; rotate: -6deg; } 36% { translate: 135% -18%; rotate: 20deg; }
+  37% { translate: -135% -18%; rotate: 20deg; } 72% { translate: -10% -16%; rotate: 16deg; } 88% { translate: 0 -8%; rotate: 0deg; } 100% { translate: 0 0; rotate: 0deg; }
+}
+.lucky.heroflight .paw-r { transform: translate(24px, -48px) rotate(-30deg) scale(1.1); }
+.lucky.heroflight .paw-l { transform: translate(-6px, -10px) rotate(20deg); }
+.lucky.herolanding { animation: heroLand .9s ease-out; transform-origin: 50% 100%; }
+@keyframes heroLand { 0% { scale: 1.16 .8; translate: 0 4%; } 55% { scale: .95 1.05; translate: 0 -2%; } 100% { scale: 1 1; translate: 0 0; } }
+.pp-cape { transform-box: view-box; transform-origin: 100px 126px; animation: capeFlutter .45s ease-in-out infinite alternate; }
+@keyframes capeFlutter { to { transform: skewX(-4deg) scaleX(1.04); } }
+.lucky.heroflight .pp-cape { animation: capeFly .25s ease-in-out infinite alternate; }
+@keyframes capeFly { from { transform: rotate(38deg) scaleY(1.05); } to { transform: rotate(46deg) scaleY(.95) skewX(6deg); } }
+/* the Cheshire bunny: all of him fades away but the grin, which floats a little */
+.lucky.cheshire .l-art svg > :not(.head), .lucky.cheshire .head > :not(.face-mouth), .lucky.cheshire .l-props, .lucky.cheshire .l-back { animation: fadeAway 1.3s ease-in forwards; }
+@keyframes fadeAway { to { opacity: 0; } }
+.lucky.cheshire .face-mouth { transform-box: fill-box; transform-origin: center; animation: grinFloat 2.4s ease-in-out infinite alternate; }
+@keyframes grinFloat { from { transform: scale(1.25); } to { transform: translateY(-6px) scale(1.4) rotate(-4deg); } }
+.lucky.reappear .l-art svg > :not(.head), .lucky.reappear .head > :not(.face-mouth), .lucky.reappear .l-props, .lucky.reappear .l-back { animation: fadeBack .7s ease-out; }
+@keyframes fadeBack { from { opacity: 0; } }
+/* ninja clones: two copies poof up beside him and everyone shuffles */
+.lucky-clone { position: absolute; z-index: 3; aspect-ratio: 200 / 210; cursor: pointer; animation: cloneIn .4s cubic-bezier(.3, 1.5, .5, 1); filter: saturate(.9); }
+.lucky-clone svg { width: 100%; height: 100%; overflow: visible; }
+@keyframes cloneIn { from { scale: .2; opacity: 0; } }
+.lucky-clone.shuffle, .lucky.shuffle { animation: cloneHop .5s ease-in-out infinite; }
+@keyframes cloneHop { 50% { translate: 0 -4%; } }
+.lucky-clone.out { animation: cloneOut .4s ease-in forwards; pointer-events: none; }
+@keyframes cloneOut { to { scale: .2; opacity: 0; } }
+/* a bunny out of a hat */
+.hat-fx { z-index: 6; }
+.hat-in { display: inline-block; transform-origin: 50% 90%; }
+.hat-fx.wobble .hat-in { animation: hatWobble .3s ease-in-out 3; }
+@keyframes hatWobble { 25% { transform: rotate(-12deg); } 75% { transform: rotate(10deg); } }
+.lucky.intohat { animation: intoHat .8s ease-in forwards; transform-origin: 50% 100%; }
+@keyframes intoHat { 30% { translate: 0 -10%; scale: 1 1; } to { translate: 0 22%; scale: .2; opacity: 0; } }
+.lucky.outofhat { animation: outOfHat .9s cubic-bezier(.3, 1.4, .5, 1); transform-origin: 50% 100%; }
+@keyframes outOfHat { from { translate: 0 22%; scale: .2; opacity: 0; } 50% { translate: 0 -14%; scale: 1.08; opacity: 1; } }
+/* a giant (who stomps the ground), then tiny */
+.lucky.giant { scale: 1.3; transform-origin: 50% 100%; }
+.lucky.stomp { animation: stomp .5s ease-in-out; }
+@keyframes stomp { 40% { translate: 0 -4%; } 70% { translate: 0 1%; } }
+.scene.quake { animation: quake .45s ease-in-out; }
+@keyframes quake { 20%, 60% { translate: -3px 1px; } 40%, 80% { translate: 3px -1px; } }
+/* a balloon bunny: puffs up, then lets the air out and zips around */
+.lucky.puff { animation: puffUpBig 1.8s ease-out forwards; transform-origin: 50% 70%; }
+@keyframes puffUpBig { 60% { scale: 1.2 1.12; translate: 0 -3%; } 80% { scale: 1.16 1.1; translate: 0 -4%; } 100% { scale: 1.2 1.12; translate: 0 -3%; } }
+.lucky.deflate { animation: deflate 1.7s ease-in-out; }
+@keyframes deflate {
+  0% { scale: 1.2 1.12; } 15% { translate: -28% -4%; rotate: -40deg; scale: 1.14 1.08; } 30% { translate: 26% -6%; rotate: 50deg; scale: 1.1 1.05; }
+  45% { translate: -20% -2%; rotate: -30deg; } 60% { translate: 18% -5%; rotate: 25deg; scale: 1.04 1.02; } 80% { translate: -6% -2%; rotate: -10deg; } 100% { translate: 0 0; rotate: 0deg; scale: 1 1; }
+}
+/* Robo-Bunny: antenna ears, moves in jerky steps */
+.lucky.robot { animation: robotMove 2.4s steps(1, end) infinite; }
+@keyframes robotMove { 0% { rotate: 0deg; } 12.5% { rotate: 6deg; } 25% { rotate: 0deg; translate: 3% 0; } 37.5% { rotate: -6deg; translate: 3% 0; } 50% { rotate: 0deg; translate: 0 0; } 62.5% { rotate: 6deg; translate: -3% 0; } 75% { rotate: 0deg; translate: -3% 0; } 87.5% { rotate: -6deg; translate: 0 0; } }
+.lucky.robot .ear-l { animation: none; transform: rotate(150deg) scale(.6, .68); }
+.lucky.robot .ear-r { animation: none; transform: rotate(-150deg) scale(.6, .68); }
+.lucky.robot .paw-l { animation: robotArm .6s steps(1, end) infinite; }
+.lucky.robot .paw-r { animation: robotArm .6s steps(1, end) .3s infinite; }
+@keyframes robotArm { 0% { transform: translate(-6px, -30px) rotate(-90deg); } 50% { transform: none; } }
+/* a handstand: over, a wobble upside down, back again */
+.lucky.handstand { animation: handstand 3.6s ease-in-out; }
+@keyframes handstand {
+  0% { rotate: 0deg; } 12% { translate: 0 -12%; rotate: 90deg; } 22% { translate: 0 2%; rotate: 180deg; } 32% { rotate: 172deg; } 42% { rotate: 188deg; }
+  52% { rotate: 174deg; } 62% { rotate: 186deg; } 72% { rotate: 180deg; } 84% { translate: 0 -12%; rotate: 300deg; } 100% { translate: 0 0; rotate: 360deg; }
+}
+.lucky.handstand .l-art svg > ellipse:first-of-type { opacity: 0; }
+/* a statue: grey and still, one paw up; a tap makes him laugh */
+.lucky.statue .l-art { filter: grayscale(1) contrast(.85) brightness(1.08); }
+.lucky.statue *, .lucky.statue { animation-play-state: paused !important; }
+.lucky.statue .paw-r { transform: translate(24px, -62px) rotate(-20deg); }
+/* disco: a mirror ball, coloured lights, dancing */
+.lucky.disco { animation: dance .55s ease-in-out infinite; }
+.lucky.disco .paw-l { animation: danceL .55s ease-in-out infinite; }
+.lucky.disco .paw-r { animation: danceR .55s ease-in-out infinite; }
+.fx-disco { position: absolute; inset: 0; pointer-events: none; opacity: .38; animation: discoLights 1.2s linear infinite;
+  background: radial-gradient(circle at 20% 30%, #FF5FA2 0, transparent 22%), radial-gradient(circle at 75% 35%, #4CD37B 0, transparent 22%),
+    radial-gradient(circle at 40% 72%, #6FD3FF 0, transparent 24%), radial-gradient(circle at 82% 78%, #FFD23F 0, transparent 22%); }
+@keyframes discoLights { to { filter: hue-rotate(360deg); } }
+.disco-ball { animation: popStay var(--ms, 2s) ease-in-out forwards, discoSpin .8s linear infinite; }
+@keyframes discoSpin { 50% { rotate: 20deg; } }
+/* a cartwheel that goes wrong */
+.lucky.cartwheel { animation: cartwheel 2s ease-in-out; }
+@keyframes cartwheel { 25% { rotate: 60deg; translate: 10% -10%; } 42% { rotate: 96deg; translate: 22% 8%; } 72% { rotate: 92deg; translate: 22% 8%; } 88% { rotate: -6deg; translate: 6% -6%; } 100% { rotate: 0deg; translate: 0 0; } }
+/* peekaboo: paws over his eyes */
+.lucky.peek .paw-l { transform: translate(-4px, -82px) scale(1.55); }
+.lucky.peek .paw-r { transform: translate(4px, -82px) scale(1.55); }
+/* meditation: eyes closed, a little float, a soft glow */
+.lucky.meditate { animation: meditate 3.6s ease-in-out; }
+@keyframes meditate { 20%, 80% { translate: 0 -8%; } 50% { translate: 0 -10%; } }
+.lucky.meditate .l-art { filter: drop-shadow(0 0 12px #FFFFFFAA); }
+.lucky.meditate .paw-l { transform: translate(8px, -6px) rotate(14deg); }
+.lucky.meditate .paw-r { transform: translate(-8px, -6px) rotate(-14deg); }
+/* spinning till he's dizzy */
+.lucky.spinout { animation: pirouette .35s linear 4; }

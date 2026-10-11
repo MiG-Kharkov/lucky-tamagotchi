@@ -201,6 +201,20 @@ export const sfx = {
   buzz: () => { tone(210, 1.1, { type: 'sawtooth', vol: 0.025, slide: 1.1 }); tone(214, 1.1, { type: 'sawtooth', vol: 0.02, delay: 0.05 }); },
   // ba-dum-tss after a punchline
   rimshot: () => { tone(200, 0.1, { vol: 0.13, slide: 0.7 }); tone(150, 0.12, { vol: 0.13, slide: 0.7, delay: 0.13 }); noise(0.6, { vol: 0.06, type: 'highpass', freq: 6000, delay: 0.27 }); },
+  // Lucky's tricks
+  clap: () => noise(0.06, { vol: 0.12, type: 'highpass', freq: 1800 }),
+  taps: () => [0, 0.15, 0.3, 0.38, 0.53, 0.68, 0.76].forEach((d) => { tone(1800, 0.03, { type: 'square', vol: 0.03, delay: d }); noise(0.03, { vol: 0.05, type: 'highpass', freq: 3500, delay: d }); }),
+  honk: () => { tone(392, 0.16, { type: 'square', vol: 0.05, slide: 0.9 }); tone(330, 0.2, { type: 'square', vol: 0.05, slide: 0.9, delay: 0.2 }); },
+  poof: () => { noise(0.35, { vol: 0.08, type: 'lowpass', freq: 2200, to: 400 }); tone(1200, 0.2, { vol: 0.03, slide: 0.5 }); },
+  grow: () => tone(160, 0.7, { type: 'triangle', vol: 0.09, slide: 2.5 }),
+  shrink: () => tone(900, 0.6, { type: 'triangle', vol: 0.07, slide: 0.3 }),
+  stomp: () => { tone(60, 0.25, { vol: 0.2, slide: 0.6 }); noise(0.15, { vol: 0.07, type: 'lowpass', freq: 400 }); },
+  deflate: () => { noise(0.9, { vol: 0.07, freq: 900, to: 300, q: 3 }); tone(160, 0.9, { type: 'sawtooth', vol: 0.03, slide: 0.5 }); },
+  robot: () => [880, 660, 990, 740, 1175].forEach((f, i) => tone(f, 0.09, { type: 'square', vol: 0.035, delay: i * 0.12 })),
+  disco: () => {
+    for (let i = 0; i < 8; i++) { tone(110, 0.12, { vol: 0.13, slide: 0.6, delay: i * 0.5 }); noise(0.05, { vol: 0.04, type: 'highpass', freq: 7000, delay: i * 0.5 + 0.25 }); }
+    [523, 659, 784, 659, 523, 659, 784, 1047].forEach((f, i) => tone(f, 0.18, { type: 'triangle', vol: 0.05, delay: i * 0.5 }));
+  },
 };
 
 // A cheerful loop for Freeze dance: start() / stop()

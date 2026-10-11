@@ -705,6 +705,10 @@ export const PROPS = {
   clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
   hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },
   butterfly: { slot: 'nose', art: () => em(100, 98, 30, '🦋') },
+  clownNose: { slot: 'nose', art: () => '<circle cx="100" cy="104" r="10" fill="#FF3B4E"/><circle cx="96.5" cy="100.5" r="3.2" fill="#fff" opacity=".65"/>' },
+  // Super Bunny's cape hangs behind him (the props layer behind the drawing) and flies out in the flight
+  heroCape: { slot: 'cape', back: true, art: () => `<g class="pp-cape"><path d="M70 126 Q26 172 30 206 L170 206 Q174 172 130 126Z" fill="#E2313B"/>
+    <path d="M70 126 Q44 166 46 202" stroke="#FF7A7A" stroke-width="3" fill="none" opacity=".75"/></g>` },
   wet: { slot: 'body', art: () => `<g class="pp-drip" fill="#6FC6FF" stroke="#fff" stroke-width="1">${[[70, 58], [128, 54], [44, 118], [156, 126], [86, 150], [120, 170], [100, 46], [62, 176]].map(([x, y]) => drop(x, y)).join('')}</g>` },
   ring: { slot: 'body', art: () => `<ellipse class="pp-ring" cx="100" cy="158" rx="76" ry="15" fill="none" stroke="#FFD23F" stroke-width="7"/>` },
   dizzy: { slot: 'fx', art: () => `<g transform="translate(100 24) scale(1 .4)"><g class="pp-orbit">${[0, 90, 180, 270].map((a) => { const r = (a * Math.PI) / 180; return starPath(Math.cos(r) * 34, Math.sin(r) * 34, 0.6); }).join('')}</g></g>` },
