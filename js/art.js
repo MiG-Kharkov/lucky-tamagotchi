@@ -11,10 +11,34 @@ function luckyEyes(face) {
   const eye = (cx) => `<circle cx="${cx}" cy="90" r="10.5" fill="${INK}"/>
     <circle cx="${cx + 4}" cy="85.5" r="3.8" fill="#fff"/><circle cx="${cx - 3}" cy="94" r="1.7" fill="#fff"/>`;
   const arc = (cx, up) => `<path d="M${cx - 10} ${up ? 93 : 89} q10 ${up ? -12 : 10} 20 0" stroke="${INK}" stroke-width="4.2" fill="none" stroke-linecap="round"/>`;
+  const brow = (cx, lift = 0) => `<path d="M${cx - 9} ${75 - lift} q9 -6 18 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const bigEye = (cx) => `<circle cx="${cx}" cy="89" r="12.5" fill="#fff" stroke="${INK}" stroke-width="2.6"/><circle cx="${cx}" cy="90" r="6.5" fill="${INK}"/><circle cx="${cx + 2.5}" cy="87" r="2.2" fill="#fff"/>`;
+  // the inner .fx part of stars, hearts and spirals is what CSS animates (twinkle, beat, spin)
+  const star = (cx) => `<g transform="translate(${cx} 90) scale(.82)"><path class="fx" d="M0 -14 l4.2 8.6 9.6 1.2 -7 6.6 1.8 9.4 -8.6 -4.6 -8.6 4.6 1.8 -9.4 -7 -6.6 9.6 -1.2z" fill="#FFD23F" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/></g>`;
+  const heart = (cx) => `<g transform="translate(${cx} 91)"><g class="fx"><path d="M0 9 C-15 -2 -13 -17 0 -8 C13 -17 15 -2 0 9Z" fill="#FF4F7B" stroke="${INK}" stroke-width="2.2"/><ellipse cx="-5" cy="-6" rx="2.6" ry="1.8" fill="#fff" opacity=".8"/></g></g>`;
+  const spiral = (cx) => `<g transform="translate(${cx} 90)"><path class="fx" d="M0 0 q4 -1 3 3 q-1 6 -7 4 q-7 -3 -4 -10 q4 -8 12 -4 q8 5 3 14" stroke="${INK}" stroke-width="2.8" fill="none" stroke-linecap="round"/></g>`;
   switch (face) {
     case 'happy':
     case 'laugh':
+    case 'grin':
       return arc(80, true) + arc(120, true);
+    case 'smug': // sly: eyelids half down, looking aside
+      return `<g class="eyes">${eye(83)}${eye(123)}</g>
+        <path d="M68 86 a12 12 0 0 1 24 0z" fill="#F29A48"/><path d="M108 86 a12 12 0 0 1 24 0z" fill="#F29A48"/>
+        <path d="M68 86.5 h24 M108 86.5 h24" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`;
+    case 'wink':
+    case 'cheeky':
+      return arc(80, true) + `<g class="eyes">${eye(120)}</g>`;
+    case 'shy':
+      return `<path d="M70 92 q10 7 20 0 M110 92 q10 7 20 0" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/>`;
+    case 'surprised':
+      return bigEye(80) + bigEye(120) + brow(80, 6) + brow(120, 6);
+    case 'stars':
+      return star(80) + star(120);
+    case 'hearts':
+      return heart(80) + heart(120);
+    case 'dizzy':
+      return spiral(80) + spiral(120);
     case 'sleep':
       return arc(80, false) + arc(120, false);
     case 'tired':
@@ -31,11 +55,28 @@ function luckyEyes(face) {
 
 function luckyMouth(face) {
   const base = `<path d="M100 108 v4 M100 112 q-5 5 -10 1 M100 112 q5 5 10 1" stroke="#8A4526" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+  const blush = '<ellipse cx="71" cy="108" rx="12" ry="7" fill="#FF5C8A" opacity=".45"/><ellipse cx="129" cy="108" rx="12" ry="7" fill="#FF5C8A" opacity=".45"/>';
   switch (face) {
     case 'laugh':
     case 'eat':
+    case 'stars':
+    case 'wink':
       return `<path d="M91 113 q9 14 18 0z" fill="#C8456B"/><rect x="96.5" y="112.5" width="7" height="5" rx="1.5" fill="#fff"/>
         <path d="M100 108 v4" stroke="#8A4526" stroke-width="2.4" stroke-linecap="round"/>`;
+    case 'surprised':
+      return '<path d="M100 108 v3" stroke="#8A4526" stroke-width="2.4" stroke-linecap="round"/><ellipse cx="100" cy="118" rx="5" ry="6.5" fill="#C8456B"/>';
+    case 'grin':
+      return `<path d="M84 110 q16 19 32 0 q-16 7 -32 0z" fill="#C8456B" stroke="#8A4526" stroke-width="2" stroke-linejoin="round"/><path d="M87 112 q13 5 26 0" stroke="#fff" stroke-width="3.2" fill="none"/>
+        <path d="M100 106 v4" stroke="#8A4526" stroke-width="2.4" stroke-linecap="round"/>`;
+    case 'cheeky':
+      return base + '<path d="M94 113.5 q6 16 12 0z" fill="#FF7FA8" stroke="#C8456B" stroke-width="1.4"/><path d="M100 115 v6" stroke="#C8456B" stroke-width="1.2" opacity=".6"/>';
+    case 'smug':
+      return '<path d="M100 108 v4 M100 112 q-5 3 -10 2 M100 112 q7 2 13 -4" stroke="#8A4526" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    case 'dizzy':
+      return '<path d="M100 108 v4" stroke="#8A4526" stroke-width="2.4" stroke-linecap="round"/><path d="M89 117 q3 -4 6 0 t6 0 t6 0 t5 0" stroke="#8A4526" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    case 'shy':
+    case 'hearts':
+      return base + (face === 'shy' ? blush : '');
     case 'sad':
       return `<path d="M100 108 v4" stroke="#8A4526" stroke-width="2.4" stroke-linecap="round"/><path d="M92 120 q8 -7 16 0" stroke="#8A4526" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
     case 'sleep':
@@ -45,25 +86,44 @@ function luckyMouth(face) {
   }
 }
 
-// wear is { head, face, neck, body }; outfit (a single item) is kept for old saves
+// The expressions Lucky's face can show (moodFace() and setTemp() in main.js use these names)
+export const LUCKY_FACES = ['ok', 'happy', 'laugh', 'eat', 'sleep', 'tired', 'sad', 'wink', 'cheeky', 'shy', 'surprised', 'stars', 'hearts', 'dizzy', 'grin', 'smug'];
+
+// Only the eyes and the mouth change with the expression. They are separate groups, so a new face swaps just them:
+// the rest of the drawing stays, and so do the animations running on it (Safari restarts those on a redraw).
+export function setLuckyFace(root, face) {
+  const eyes = root.querySelector('.face-eyes'), mouth = root.querySelector('.face-mouth');
+  if (!eyes || !mouth) return false;
+  eyes.setAttribute('class', 'face-eyes f-' + face);
+  eyes.innerHTML = luckyEyes(face);
+  mouth.innerHTML = luckyMouth(face);
+  return true;
+}
+
+// wear is { head, face, neck, body }; outfit (a single item) is kept for old saves.
+// Parts the animations move: .head, .ear-l/.ear-r, .face-eyes, .nose, .body, .tummy, .feet, .paw-l/.paw-r (in front
+// of everything, so they can wave, clap or cover his eyes), .tail (the pom-pom peeking out on the right).
 export function lucky({ face = 'ok', wear = null, outfit = null, belt = '#FF4F9A' } = {}) {
   const u = uid();
   if (!wear) wear = outfit && WEAR_BY_ID[outfit] ? { [WEAR_BY_ID[outfit].slot]: outfit } : {};
   const W = wearLayers(wear, belt);
+  const paw = (cls, cx) => `<g class="paw ${cls}"><ellipse cx="${cx}" cy="177" rx="11" ry="9" fill="#FFDDB6"/><path d="M${cx - 4} 184 v-3 M${cx} 185 v-3 M${cx + 4} 184 v-3" stroke="#E9B98C" stroke-width="1.6" stroke-linecap="round"/></g>`;
   return `<svg viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" class="lucky-svg">
 <defs>
   <radialGradient id="${u}f" cx="42%" cy="32%" r="72%"><stop offset="0" stop-color="#FFC47E"/><stop offset=".55" stop-color="#F59A45"/><stop offset="1" stop-color="#DD7629"/></radialGradient>
   <radialGradient id="${u}e" cx="50%" cy="25%" r="85%"><stop offset="0" stop-color="#F9A452"/><stop offset="1" stop-color="#D26A24"/></radialGradient>
   <linearGradient id="${u}i" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFC7D8"/><stop offset="1" stop-color="#FF9DBB"/></linearGradient>
+  <radialGradient id="${u}t" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#FFE3C4"/></radialGradient>
 </defs>
 <ellipse cx="100" cy="202" rx="64" ry="7" fill="#000" opacity=".13"/>
+<g class="tail"><circle cx="157" cy="176" r="13" fill="url(#${u}t)"/><circle cx="165" cy="170" r="6" fill="#FFF8EE"/><circle cx="163" cy="183" r="5.5" fill="#FFEFDC"/></g>
 ${W.back}
 <g class="body">
   <ellipse cx="100" cy="152" rx="57" ry="48" fill="url(#${u}f)"/>
   <ellipse class="tummy" cx="100" cy="161" rx="33" ry="31" fill="#FFEBD3"/>
+  <path d="M90 140 q5 6 10 0 q5 6 10 0" stroke="#F3CFA6" stroke-width="2" fill="none" stroke-linecap="round" pointer-events="none"/>
   <g class="feet"><ellipse cx="67" cy="194" rx="23" ry="10" fill="#FFEBD3"/><ellipse cx="133" cy="194" rx="23" ry="10" fill="#FFEBD3"/>
   <path d="M58 194 v-3 M64 196 v-4 M136 196 v-4 M142 194 v-3" stroke="#E9C29A" stroke-width="2" stroke-linecap="round"/></g>
-  <ellipse cx="84" cy="177" rx="11" ry="9" fill="#FFDDB6"/><ellipse cx="116" cy="177" rx="11" ry="9" fill="#FFDDB6"/>
   ${W.body}
 </g>
 <g class="head">
@@ -75,14 +135,15 @@ ${W.back}
     <ellipse cx="49" cy="112" rx="8" ry="31" transform="rotate(12 49 112)" fill="url(#${u}i)" opacity=".6"/></g>
   <g class="ear ear-r"><ellipse cx="153" cy="106" rx="18.5" ry="45" transform="rotate(-12 153 106)" fill="url(#${u}e)"/>
     <ellipse cx="151" cy="112" rx="8" ry="31" transform="rotate(-12 151 112)" fill="url(#${u}i)" opacity=".6"/></g>
-  ${luckyEyes(face)}
+  <g class="face-eyes f-${face}">${luckyEyes(face)}</g>
   <ellipse cx="72" cy="108" rx="10" ry="6.5" fill="#FF7FA8" opacity=".55"/><ellipse cx="128" cy="108" rx="10" ry="6.5" fill="#FF7FA8" opacity=".55"/>
   <ellipse cx="91" cy="111" rx="11" ry="9" fill="#FFEBD3"/><ellipse cx="109" cy="111" rx="11" ry="9" fill="#FFEBD3"/>
-  <g class="nose"><circle cx="100" cy="104" r="13" fill="transparent"/><path d="M93.5 101 q6.5 -4.5 13 0 q-2 6.5 -6.5 7.5 q-4.5 -1 -6.5 -7.5z" fill="#FF6F9A"/></g>
-  ${luckyMouth(face)}
+  <g class="nose"><circle cx="100" cy="104" r="13" fill="transparent"/><path d="M93.5 101 q6.5 -4.5 13 0 q-2 6.5 -6.5 7.5 q-4.5 -1 -6.5 -7.5z" fill="#FF6F9A"/><ellipse cx="97.5" cy="101.6" rx="2.2" ry="1.2" fill="#fff" opacity=".55"/></g>
+  <g class="face-mouth">${luckyMouth(face)}</g>
   <path d="M80 110 l-18 -3 M80 114 l-17 3 M120 110 l18 -3 M120 114 l17 3" stroke="#D99A6C" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>
   <g pointer-events="none"><g class="w-face">${W.over}</g>${W.neck}<g class="w-head">${W.head}</g></g>
 </g>
+<g class="paws">${paw('paw-l', 84)}${paw('paw-r', 116)}</g>
 </svg>`;
 }
 

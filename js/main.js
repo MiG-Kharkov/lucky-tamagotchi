@@ -746,13 +746,15 @@ function renderLucky(force = false) {
   const face = moodFace();
   const look = JSON.stringify(S.wear) + S.belt;
   if (!force && face === shownFace && look === shownOutfit) return;
+  const sameLook = look === shownOutfit;
   shownFace = face;
   shownOutfit = look;
-  // the picture is redrawn, the props layer on top of it (sunglasses, umbrella…) stays
+  // A new expression swaps only the eyes and the mouth: the ears, paws and body keep their running animations
+  if (!force && sameLook && ui.luckyArt && art.setLuckyFace(ui.luckyArt, face)) return;
+  // the picture is redrawn; the props layers stay: behind him (a cape) and on top (sunglasses, umbrella…)
   if (!ui.luckyArt) {
-    ui.lucky.innerHTML = '<div class="l-art"></div><svg class="l-props" viewBox="0 0 200 210" aria-hidden="true"></svg>';
-    ui.luckyArt = ui.lucky.firstChild;
-    ui.props = ui.lucky.lastChild;
+    ui.lucky.innerHTML = '<svg class="l-back" viewBox="0 0 200 210" aria-hidden="true"></svg><div class="l-art"></div><svg class="l-props" viewBox="0 0 200 210" aria-hidden="true"></svg>';
+    [ui.propsBack, ui.luckyArt, ui.props] = ui.lucky.children;
   }
   ui.luckyArt.innerHTML = luckyArt({ face, wear: S.wear });
   ui.lucky.classList.toggle('has-hat', !!S.wear?.head);

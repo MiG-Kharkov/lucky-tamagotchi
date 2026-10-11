@@ -157,7 +157,7 @@ export function createAntics(api) {
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
     g.setAttribute('class', `pp pp-in pid-${id}${P.slot === 'season' ? ' season' : ''}`);
     g.innerHTML = P.art(arg);
-    ui.props.appendChild(g);
+    (P.back ? ui.propsBack : ui.props).appendChild(g); // a cape goes behind him
     L.classList.add('p-' + P.slot);
     worn[P.slot] = { id, g, timer: ms === Infinity ? 0 : setTimeout(() => unprop(P.slot), ms) };
   }

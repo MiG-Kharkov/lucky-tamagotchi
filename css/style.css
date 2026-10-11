@@ -717,8 +717,9 @@ body:not(.editing) .dec-rainbow { pointer-events: none; }
 /* ---------- Lucky's antics: props layer, poses and scene effects ---------- */
 /* the finger can stroke Lucky and hold things without iOS taking it for a scroll */
 .lucky, .bg [data-tap], .dog-body { touch-action: none; }
-.l-art, .l-props { position: absolute; inset: 0; }
+.l-art, .l-props, .l-back { position: absolute; inset: 0; }
 .l-props { pointer-events: none; z-index: 1; }
+.l-back { pointer-events: none; overflow: visible; }
 .lucky .nose, .lucky .feet { transform-box: fill-box; transform-origin: 50% 50%; }
 .lucky.p-eyes .w-face, .lucky.p-eyes .w-under, .lucky.p-head .w-head { opacity: 0; }
 .pp { transform-box: fill-box; transform-origin: 50% 50%; }
@@ -1214,4 +1215,70 @@ body.ev-easter.ev-s3 { --ev-deco: "🌸"; background: radial-gradient(circle at 
 @media (prefers-reduced-motion: reduce) {
   .ev-bat, .ev-sleigh, .ev-burst, .ev-rise { display: none; }
   .ev-ghost, .ev-bunting, .ev-spider, .ev-bulb, .ev-star, .ev-year, .ev-pumpkin .ev-face, .ev-egg, .ev-bob, .pp-boing { animation: none !important; }
+}
+
+/* ---------- Lucky's drawing (1.8.0): paws in front of him, a pom-pom tail, faces that sparkle ---------- */
+/* Paws are drawn last, so they can wave by his cheek, clap, cover his eyes; they rest on his tummy.
+   Offsets are in the drawing's own units (viewBox 0 0 200 210): paw-l rests at (84,177), paw-r at (116,177). */
+.lucky .paw, .m-lucky .paw { transform-box: fill-box; transform-origin: 50% 100%; transition: transform .35s ease-out; }
+.lucky .paws { transform-box: view-box; transform-origin: 100px 204px; } /* the same point the body squashes from */
+.lucky .tail { transform-box: fill-box; transform-origin: 15% 60%; animation: tailWag 7s ease-in-out infinite; }
+@keyframes tailWag { 0%, 88%, 100% { transform: none; } 91% { transform: rotate(12deg) scale(1.05); } 94% { transform: rotate(-8deg); } 97% { transform: rotate(6deg) scale(1.04); } }
+@keyframes tailWagFast { 25% { transform: rotate(16deg) scale(1.1); } 75% { transform: rotate(-12deg) scale(.96); } }
+.lucky.wagtry .tail { animation: tailWagFast .32s ease-in-out 6; }
+.lucky .face-eyes .fx { transform-box: fill-box; transform-origin: center; }
+.lucky .f-stars .fx { animation: starTwinkle .6s ease-in-out infinite alternate; }
+@keyframes starTwinkle { to { transform: scale(1.2) rotate(14deg); } }
+.lucky .f-hearts .fx { animation: heartBeat .7s ease-in-out infinite; }
+@keyframes heartBeat { 0%, 100% { transform: scale(1); } 25% { transform: scale(1.22); } 45% { transform: scale(1.04); } 65% { transform: scale(1.16); } }
+.lucky .f-dizzy .fx { animation: spin .9s linear infinite; }
+/* the old moves, now with paws */
+.lucky.jiggle .paws { animation: jiggle .6s ease-out; }
+.lucky.drum .paw-l { animation: pawDrum .225s ease-in-out 4; }
+.lucky.drum .paw-r { animation: pawDrum .225s ease-in-out .11s 4; }
+@keyframes pawDrum { 50% { transform: translateY(-9px) rotate(-8deg); } }
+.lucky.clap .paw-l { animation: clapL .35s ease-in-out 2; }
+.lucky.clap .paw-r { animation: clapR .35s ease-in-out 2; }
+@keyframes clapL { 50% { transform: translate(8px, -8px) rotate(18deg); } }
+@keyframes clapR { 50% { transform: translate(-8px, -8px) rotate(-18deg); } }
+.lucky.wave .paw-r { animation: pawWave 1.2s ease-in-out; }
+@keyframes pawWave { 15%, 85% { transform: translate(30px, -62px) rotate(-12deg); } 32%, 66% { transform: translate(32px, -64px) rotate(18deg); } 49% { transform: translate(30px, -62px) rotate(-18deg); } }
+.lucky.proud .paw-l { animation: pawHipL 1.2s ease-in-out; }
+.lucky.proud .paw-r { animation: pawHipR 1.2s ease-in-out; }
+@keyframes pawHipL { 25%, 75% { transform: translate(-14px, -10px) rotate(-25deg); } }
+@keyframes pawHipR { 25%, 75% { transform: translate(14px, -10px) rotate(25deg); } }
+.lucky.groom .paw-l { animation: groomL 1.6s ease-in-out; }
+.lucky.groom .paw-r { animation: groomR 1.6s ease-in-out; }
+@keyframes groomL { 15%, 85% { transform: translate(4px, -72px) rotate(20deg); } 35%, 65% { transform: translate(6px, -80px) rotate(10deg); } 50% { transform: translate(4px, -70px) rotate(20deg); } }
+@keyframes groomR { 15%, 85% { transform: translate(-4px, -72px) rotate(-20deg); } 35%, 65% { transform: translate(-6px, -80px) rotate(-10deg); } 50% { transform: translate(-4px, -70px) rotate(-20deg); } }
+.lucky.hug .paw-l { animation: hugL .9s ease-in-out; }
+.lucky.hug .paw-r { animation: hugR .9s ease-in-out; }
+@keyframes hugL { 30% { transform: translate(-16px, -16px) rotate(-30deg); } 60% { transform: translate(8px, -14px) rotate(20deg); } }
+@keyframes hugR { 30% { transform: translate(16px, -16px) rotate(30deg); } 60% { transform: translate(-8px, -14px) rotate(-20deg); } }
+.lucky.startle .paw-l { animation: cheekL 1s ease-out; }
+.lucky.startle .paw-r { animation: cheekR 1s ease-out; }
+@keyframes cheekL { 15%, 70% { transform: translate(-10px, -60px) rotate(-10deg); } }
+@keyframes cheekR { 15%, 70% { transform: translate(10px, -60px) rotate(10deg); } }
+.lucky.kiss .paw-r { animation: blowKiss 1s ease-in-out; }
+@keyframes blowKiss { 30%, 45% { transform: translate(-12px, -60px) rotate(-10deg); } 75% { transform: translate(16px, -66px) rotate(20deg); } }
+.lucky.dance .paw-l { animation: danceL .55s ease-in-out 4; }
+.lucky.dance .paw-r { animation: danceR .55s ease-in-out 4; }
+@keyframes danceL { 25% { transform: translate(-14px, -36px) rotate(-30deg); } 50% { transform: none; } }
+@keyframes danceR { 75% { transform: translate(14px, -36px) rotate(30deg); } }
+.lucky.binky .paw-l, .lucky.bigjump .paw-l { animation: pawsOutL .9s ease-in-out; }
+.lucky.binky .paw-r, .lucky.bigjump .paw-r { animation: pawsOutR .9s ease-in-out; }
+@keyframes pawsOutL { 30%, 60% { transform: translate(-14px, -26px) rotate(-35deg); } }
+@keyframes pawsOutR { 30%, 60% { transform: translate(14px, -26px) rotate(35deg); } }
+.lucky.balance .paw-l { transform: translate(-18px, -20px) rotate(-40deg); }
+.lucky.balance .paw-r { transform: translate(18px, -20px) rotate(40deg); }
+.lucky.think .paw-r { transform: translate(-6px, -42px) rotate(-20deg); }
+.lucky.bow .paw-l { transform: translate(8px, -4px) rotate(14deg); }
+.lucky.bow .paw-r { transform: translate(-8px, -4px) rotate(-14deg); }
+/* missions: the moves she copies */
+.m-lucky.mv-star .paw-l { animation: pawsOutL .6s ease-out; }
+.m-lucky.mv-star .paw-r { animation: pawsOutR .6s ease-out; }
+.m-lucky.mv-punch .paw-r { animation: pawPunch .4s ease-out; }
+@keyframes pawPunch { 40% { transform: translate(6px, -34px) scale(1.6); } }
+@media (prefers-reduced-motion: reduce) {
+  .lucky .tail { animation: none; }
 }
