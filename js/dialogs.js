@@ -68,7 +68,7 @@ export const ASKS = [
   // ---------- do you know? ----------
   { id: 'k-hay', kind: 'quiz', q: ['Знаешь, что кролики едят больше всего?', 'Do you know what bunnies eat the most?'],
     right: ['Сено', 'Hay'], wrong: [['Шоколад', 'Chocolate'], ['Пиццу', 'Pizza'], ['Чипсы', 'Crisps']],
-    ok: ['Да! Сено — это самое главное!', 'Yes! Hay is the most important!'], no: ['Ха-ха, нет! Больше всего кролики едят сено.', 'Ha-ha, no! Bunnies eat hay the most.'] },
+    ok: ['Да! Сено — это самое главное!', 'Yes! Hay is the most important thing!'], no: ['Ха-ха, нет! Больше всего кролики едят сено.', 'Ha-ha, no! Bunnies eat hay the most.'] },
   { id: 'k-irish', kind: 'quiz', q: ['Знаешь, как сказать «спасибо» по-ирландски?', 'Do you know how to say thank you in Irish?'],
     right: ['Go raibh maith agat', 'Go raibh maith agat'], wrong: [['Merci', 'Merci'], ['Gracias', 'Gracias'], ['Danke', 'Danke']],
     ok: ['Ого! Ты знаешь ирландский!', 'Wow! You know Irish!'], no: ['Почти! По-ирландски это Go raibh maith agat.', 'Almost! In Irish it is Go raibh maith agat.'] },

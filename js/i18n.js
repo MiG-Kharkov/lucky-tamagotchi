@@ -426,7 +426,7 @@ export const LUCKY = {
     ['Мммм, моё любимое!', 'Mmm, my favourite!'],
   ],
   food: {
-    hay: [['Сено — это самое главное! Спасибо!', 'Hay is the most important! Thanks!'], ['Хрусть-хрусть, свежее сено!', 'Crunch-crunch, fresh hay!']],
+    hay: [['Сено — это самое главное! Спасибо!', 'Hay is the most important thing! Thanks!'], ['Хрусть-хрусть, свежее сено!', 'Crunch-crunch, fresh hay!']],
     clover: [['Зелень! Как на лугу!', 'Greens! Just like in a meadow!'], ['Свеженькая! Пахнет летом.', 'So fresh! It smells like summer.']],
     carrot: [['Морковка! Но только кусочек — я же умный кролик.', "A carrot! Just a little piece — I'm a smart bunny."]],
     apple: [['Яблочко сладкое, как ты!', 'The apple is sweet, just like you!']],
@@ -434,7 +434,7 @@ export const LUCKY = {
   },
   full: [
     ['Я сыт, спасибо!', "I'm full, thank you!"],
-    ['Мой животик полный-полный.', 'My tummy is full-full.'],
+    ['Мой животик полный-полный.', 'My tummy is full to the top!'],
     ['Спасибо, но я больше не могу!', "Thank you, but I can't eat any more!"],
   ],
   noTreats: [
@@ -667,7 +667,7 @@ export const LUCKY = {
       ['Ты лучшая хозяйка на свете!', "You're the best owner in the world!"],
       ['У меня хорошее настроение. А у тебя?', "I'm in a good mood. Are you?"],
       ['Я полон сил и радости!', "I'm full of energy and joy!"],
-      ['Кия! Настроение на все сто!', 'Hi-yah! My mood is one hundred percent!'],
+      ['Кия! Настроение на все сто!', 'Hi-yah! I feel a hundred percent!'],
     ],
     max: [
       ['Я самый счастливый кролик на свете!', "I'm the happiest bunny in the world!"],
@@ -723,7 +723,7 @@ export const LUCKY = {
     ['Щекотка — это моё любимое!', 'Tickles are my favourite!'],
   ],
   hugLow: [['Обнимашки помогают. Спасибо.', 'Hugs help. Thank you.'], ['Мне сразу стало теплее.', 'I feel warmer already.'], ['Не отпускай ещё чуть-чуть.', "Don't let go just yet."]],
-  hugMax: [['Самые счастливые обнимашки!', 'The happiest hugs ever!'], ['Я тебя люблю вот столько! И ещё больше!', 'I love you this much! And even more!'], ['Крепко-крепко! Ура!', 'Tight, tight! Hooray!']],
+  hugMax: [['Самые счастливые обнимашки!', 'The happiest hugs ever!'], ['Я тебя люблю вот столько! И ещё больше!', 'I love you this much! And even more!'], ['Крепко-крепко! Ура!', 'A big tight squeeze! Hooray!']],
   washDirty: [
     ['Наконец-то! Я был таким грязнулей!', 'At last! I was such a mucky bunny!'],
     ['Ух ты, я снова рыжий, а не серый!', "Wow, I'm ginger again, not grey!"],
@@ -748,9 +748,9 @@ export const LUCKY = {
   belt: [
     ['Новый пояс! Я всё ближе к розовому поясу мастера!', "A new belt! I'm getting closer to the Pink Master Belt!"],
     ['Кия! Посмотри, какой у меня пояс!', 'Hi-yah! Look at my new belt!'],
-    ['Настоящий ниндзя растёт!', 'A real ninja is growing!'],
+    ['Настоящий ниндзя растёт!', 'A real ninja in the making!'],
   ],
-  placeGeneric: [['Ой, как красиво!', 'Oh, how pretty!'], ['Здорово придумала!', 'Great idea!'], ['Пусть будет здесь!', 'Let it stay here!'], ['Мой сад всё красивее!', 'My garden is getting prettier!']],
+  placeGeneric: [['Ой, как красиво!', 'Oh, how pretty!'], ['Здорово придумала!', 'Great idea!'], ['Пусть будет здесь!', 'It can stay right here!'], ['Мой сад всё красивее!', 'My garden is getting prettier!']],
   place_item: {
     '🌷': [['Тюльпанчик! Красота.', 'A tulip! How pretty.']],
     '🌼': [['Ромашка! Любит, не любит…', 'A daisy! Loves me, loves me not…']],
@@ -1275,6 +1275,7 @@ export const PHRASES = [
   ['Мы пойдём в парк в субботу.', 'We\'re going to the park on Saturday.', '🌳'],
   ['Можно мне с вами?', 'Can I join in?', '🙋'],
   ['Это мой кролик.', 'This is my rabbit.', '🐰', 'Seo é mo choinín.'],
+  ['Да, у меня есть кролик!', "Yes, I've got a rabbit!", '🐰'],
   ['Я устал. Пора спать.', 'I\'m tired. It\'s time for bed.', '😴'],
   ['Спокойной ночи!', 'Good night!', '🌙', 'Oíche mhaith!'],
   ['Увидимся завтра!', 'See you tomorrow!', '👋'],
@@ -1305,7 +1306,7 @@ export const DIALOGS = [
   ["I'm tired. It's time for bed.", 'Good night!', 'bye'],
   ['See you tomorrow!', 'Bye!', 'bye'],
   ["What's your favourite colour?", 'I love the colour pink.', 'colour'],
-  ['Do you have a pet?', 'This is my rabbit.', 'pet'],
+  ['Do you have a pet?', "Yes, I've got a rabbit!", 'pet'],
   ['Where do you live?', 'I live in Ireland.', 'live'],
   ['What day is it today?', "It's Saturday today.", 'day'],
   ['What do you like doing?', 'I like drawing and dancing.', 'hobby'],

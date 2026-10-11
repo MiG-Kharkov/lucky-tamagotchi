@@ -26,9 +26,9 @@ export const IDIOMS = [
   { id: 'bananas', when: 'play', show: 'bananas', e: '🍌', idiom: 'Go bananas', ru: 'Сходить с ума от радости',
     say: ['Ура! Я сейчас пойду бананами!', "Yay! I'm going bananas!"],
     mean: ['Так говорят, когда ты так рад, что скачешь как сумасшедший. По-русски: «с ума сойти от радости».', 'Going bananas means getting really, really excited.'] },
-  { id: 'weather', when: 'low', show: 'weather', e: '🌧️', idiom: 'Under the weather', ru: 'Мне что-то не по себе',
+  { id: 'weather', when: 'low', show: 'weather', e: '🌧️', idiom: 'Under the weather', ru: 'Мне что-то нездоровится',
     say: ['Я сегодня немножко под погодой…', "I'm feeling a bit under the weather…"],
-    mean: ['Это значит: «Мне немножко нехорошо». По-русски: «мне что-то не по себе».', 'That means I feel a little bit poorly.'] },
+    mean: ['Это значит: «Мне немножко нехорошо». По-русски: «мне что-то нездоровится».', 'That means I feel a little bit poorly.'] },
   { id: 'hay', when: 'sleepSoon', show: 'hay', e: '🌾', idiom: 'Hit the hay', ru: 'Пора на боковую',
     say: ['Скоро пора ударить по сену!', 'Soon it will be time to hit the hay!'],
     mean: ['Hit the hay значит «пойти спать». По-русски: «пора на боковую». А я правда сплю на сене!', 'Hit the hay means go to bed. And I really do sleep on hay!'] },
@@ -90,14 +90,14 @@ export const TWISTERS = [
   { id: 'sillySally', t: ['Глупышка Салли быстро прогнала семь глупеньких овечек.', 'Silly Sally swiftly shooed seven silly sheep.'] },
   { id: 'wristwatch', t: ['Ирландские наручные часы, швейцарские наручные часы.', 'Irish wristwatch, Swiss wristwatch.'] },
   { id: 'fourFish', t: ['Четыре прекрасные свежие рыбки для тебя.', 'Four fine fresh fish for you.'] },
-  { id: 'whichWitch', t: ['Какая ведьма какая? Какая ведьма какая?', 'Which witch is which? Which witch is which?'] },
+  { id: 'whichWitch', t: ['Кто из ведьм кто? Кто из ведьм кто?', 'Which witch is which? Which witch is which?'] },
   { id: 'kitty', t: ['Кошка поймала котёнка на кухне.', 'Kitty caught the kitten in the kitchen.'] },
   { id: 'greekGrapes', t: ['Греческий виноград, греческий виноград.', 'Greek grapes, Greek grapes, Greek grapes.'] },
   { id: 'freeThrows', t: ['Три свободных броска, три свободных броска.', 'Three free throws, three free throws.'] },
   { id: 'walrus', t: ['Уэйн поехал в Уэльс смотреть на моржей.', 'Wayne went to Wales to watch walruses.'] },
   { id: 'lollipops', t: ['Лаки лижет чудесные маленькие леденцы.', 'Lucky licks lovely little lollipops.'] },
   { id: 'taliTail', t: ['Крошечный хвостик {dog} дёргается десять раз.', "{dog}'s tiny tail twitches ten times."] },
-  { id: 'bunnies', t: ['Весёлые кролики прыгают на больших синих шариках.', 'Busy bunnies bounce on big blue balloons.'] },
+  { id: 'bunnies', t: ['Хлопотливые кролики прыгают на больших синих шариках.', 'Busy bunnies bounce on big blue balloons.'] },
 ];
 
 export const IDIOM_BY_ID = Object.fromEntries(IDIOMS.map((x) => [x.id, x]));
