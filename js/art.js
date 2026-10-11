@@ -241,7 +241,7 @@ ${[[40, 470, '#fff'], [120, 520, '#FFE66D'], [300, 490, '#fff'], [360, 540, '#C7
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FD6FF"/><stop offset=".7" stop-color="#FFDDF0"/></linearGradient>
 <radialGradient id="${u}g"><stop offset="0" stop-color="#FFF6A8"/><stop offset="1" stop-color="#FFF6A8" stop-opacity="0"/></radialGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<g data-tap="sun"><circle cx="325" cy="245" r="70" fill="url(#${u}g)"/><circle cx="325" cy="245" r="32" fill="#FFE066"/></g>
+<g data-tap="sun"><circle cx="275" cy="245" r="70" fill="url(#${u}g)"/><circle cx="275" cy="245" r="32" fill="#FFE066"/></g>
 ${cloud(128, 266, .8)}${cloud(232, 334, .68, 'slow')}
 <path d="M0 440 Q110 360 230 420 T400 395 V700 H0Z" fill="#B4EBA6"/>
 <g data-tap="tree"><path d="M-10 420 C0 360 20 330 40 330" stroke="#9A6B4A" stroke-width="10" fill="none"/>
@@ -270,7 +270,7 @@ const WORLDS = {
 <defs><linearGradient id="${u}s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7FD3FF"/><stop offset="1" stop-color="#FFE9C9"/></linearGradient>
 <linearGradient id="${u}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2FA9E0"/><stop offset="1" stop-color="#8FE0F7"/></linearGradient></defs>
 <rect width="400" height="700" fill="url(#${u}s)"/>
-<g data-tap="sun"><circle cx="320" cy="250" r="62" fill="#FFF3A8" opacity=".35"/><circle cx="320" cy="250" r="32" fill="#FFD23F"/></g>
+<g data-tap="sun"><circle cx="275" cy="250" r="62" fill="#FFF3A8" opacity=".35"/><circle cx="275" cy="250" r="32" fill="#FFD23F"/></g>
 ${cloud(130, 266, .8)}
 <path class="gull" d="M150 280 q10 -10 20 0 q10 -10 20 0" stroke="#fff" stroke-width="3" fill="none"/>
 <rect data-tap="sea" x="0" y="380" width="400" height="110" fill="url(#${u}w)"/>

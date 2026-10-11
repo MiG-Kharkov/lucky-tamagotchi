@@ -12,7 +12,7 @@ import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
-import { createAntics, gestures } from './antics.js';
+import { createAntics, gestures, DOUBLE_MS } from './antics.js';
 import { createTricks } from './tricks.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
@@ -68,11 +68,12 @@ function fresh(list) {
   const pool = list.filter((x) => !recent.includes(x));
   const x = pick(pool.length ? pool : list);
   recent.push(x);
-  if (recent.length > 25) recent.shift();
+  if (recent.length > 60) recent.shift(); // about six minutes of an active child's lines
   return x;
 }
 
 let chainQ = [], chainTimer = 0, chainKeep = false, chainHeld = 0;
+let tapWait = false, tapWord = 0, quietUntil = 0;
 let lastSaid = null;
 let busyUntil = 0;   // the current line plays until this moment
 let pending = null;  // one postponed automatic line
@@ -93,6 +94,15 @@ const userActive = () => windowActive() && Date.now() - lastInput < ACTIVE_MS;
 // Speak only in an active window, one line at a time: automatic lines wait for the current one.
 function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false, speed = 1 } = {}) {
   if (document.hidden) return 0;
+  if (!auto && !chain && Date.now() < quietUntil) return 0; // "soon I'll rest" stays a moment (he still moves)
+  // a tap's word waits to see whether a second tap follows: then the double tap answers instead, and the first
+  // line doesn't flash up and get cut off
+  if (tapWait && !auto && !chain) {
+    clearTimeout(tapWord);
+    const opts = { ambient, hold, forAsk, speed };
+    tapWord = setTimeout(() => { tapWord = 0; say(pair, who, opts); }, DOUBLE_MS);
+    return speechMs(fill(typeof pair === 'string' ? pair : L(pair), S.lang));
+  }
   if (ask && !forAsk) return 0; // don't interrupt Lucky's or the frog's question
   if ((auto || chain) && !userActive() && !(ambient && windowActive())) return 0;
   if ((auto || chain) && (mode === 'game' || mode === 'mission')) return 0;
@@ -995,7 +1005,8 @@ function openWindow(btn, cal) {
   sfx.sparkle();
   setTimeout(() => { btn.classList.remove('opening'); btn.classList.add('open'); btn.querySelector('.cd-in').textContent = calTreat(cal, d); sfx.happy(); confetti(); }, 380);
   const res = addH(d.big ? 5 : 2, 'calendar', d.big ? 5 : 2);
-  say(fresh(d.big && LUCKY.holiday[cal.ev]?.greet ? LUCKY.holiday[cal.ev].greet : LUCKY.holidayThings.calendar));
+  const greeted = st.today(S).holidayHi === cal.ev; // the day's greeting is said already: the window has its own line
+  say(fresh(d.big && !greeted && LUCKY.holiday[cal.ev]?.greet ? LUCKY.holiday[cal.ev].greet : LUCKY.holidayThings.calendar));
   if (g) setTimeout(() => { closeSheet(); showModal({ custom: (host, done) => revealGift(host, { title: tr('calGift'), rewards: [g], line: LUCKY.levelUp }, done) }); }, 1500);
   stat('calendar');
   award(res);
@@ -1111,7 +1122,7 @@ function feed(f) {
     if (quick || Math.random() < 0.12) setTimeout(hiccups, ms + 300);
     award(addH(2, 'feed', 10));
     renderStats();
-    setTimeout(() => toast(`<b>💡 ${tr('didYouKnow')}</b><br>${L(f.fact)}`, 6000), 900);
+    setTimeout(() => toast(`<b>💡 ${tr('didYouKnow')}</b>${bi(f.fact)}`, 6000), (ms || 500) + 400); // after his line
   };
 }
 
@@ -1193,7 +1204,8 @@ const partOf = (t) => (t.closest('.nose') ? 'nose' : t.closest('.ear') ? 'ear' :
 gestures(ui.lucky, (t) => (mode === 'main' ? ui.lucky : null), (kind, _el, p) => {
   if (mode !== 'main') return;
   const part = partOf(p.target);
-  if (kind === 'press') return luckyPress(part, p);
+  if (kind === 'press') { tapWait = true; try { return luckyPress(part, p); } finally { tapWait = false; } }
+  if (kind === 'double') { clearTimeout(tapWord); tapWord = 0; } // the single tap's word gives way
   if (antics.luckyTap() || ask || Date.now() - answeredAt < 700) return;
   // in the middle of a scene or a trick he only shows he felt it (moves of his own would clash with it)
   if (antics.busy()) { if (kind !== 'tap') feltIt(p); return; }
@@ -1836,7 +1848,7 @@ function frogRiddle(f) {
 }
 
 function maybeFrog(now, T0) {
-  if (T0.frog || !canAsk() || S.session.activeMs < 3 * 60e3 || st.hash(T0.date + 'frog') % 100 >= 60) return;
+  if (T0.frog || dogHere || !canAsk() || S.session.activeMs < 3 * 60e3 || st.hash(T0.date + 'frog') % 100 >= 60) return; // not while Tali is here
   showFrog();
 }
 
@@ -1845,7 +1857,7 @@ function maybeFrog(now, T0) {
 const MOODS = [['happy', '😊'], ['calm', '😌'], ['tired', '😴'], ['sad', '😢'], ['angry', '😠']];
 
 function maybeMood(T0) {
-  if (T0.mood || !S.onboarded || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 8000 || Date.now() < busyUntil) return;
+  if (T0.mood || !S.onboarded || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 30e3 || Date.now() < busyUntil) return; // after her first things, not on top of them
   T0.mood = 'asked';
   sayAuto(LUCKY.moodAsk[0]);
   showModal({
@@ -2386,7 +2398,7 @@ function dogArrive() {
 const JOKES_PER_VISIT = 3;
 const jokesLeft = () => (turbo() ? 99 : JOKES_PER_VISIT - S.dog.jokes);
 // Roughly how long a line takes when spoken (Tali talks fast), so jokes keep their rhythm
-const pauseFor = (pair, min = 900, who = 'dog') => Math.max(min, 400 + pair[1].length * (who === 'lucky' ? 70 : 60));
+const pauseFor = (pair, min = 900, who = 'dog') => Math.max(min, 400 + pair[1].length * (who === 'lucky' ? 85 : 75)); // long enough for the clip
 const timed = (who, pair, min = 1200) => [who, ...pair, pauseFor(pair, min, who)];
 
 // Not repeated soon; new ones first, so the joke book keeps growing
@@ -2414,7 +2426,7 @@ function jokeSteps(j) {
     return antics.laughAt(j.do) || 800;
   };
   const setup = j.kk
-    ? [['dog', ...DOG.knock[0], 1300], ['lucky', ...LUCKY.whosThere[0], 1200], ['dog', ...j.kk, pauseFor(j.kk)], ['lucky', ...j.who, j.cut ? 750 : pauseFor(j.who, 900, 'lucky')]]
+    ? [['dog', ...DOG.knock[0], 1300], ['lucky', ...LUCKY.whosThere[0], 1500], ['dog', ...j.kk, pauseFor(j.kk)], ['lucky', ...j.who, j.cut ? 750 : pauseFor(j.who, 900, 'lucky')]]
     : [['dog', ...j.q, pauseFor(j.q, 1500)], () => { antics.think(); return 1300; }];
   return [...setup, ['dog', ...j.a, pauseFor(j.a)], punch, react, ['lucky', ...(j.say || fresh(LUCKY.jokeLaugh))]];
 }
@@ -2582,7 +2594,7 @@ function updateDog(now, asleep) {
   }
   if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy()) return;
   const due = forced || (dogDueAt !== null && S.session.activeMs >= dogDueAt && d.n < DOG_PER_DAY
-    && now - (d.lastAt || 0) > DOG_GAP && !st.isNight(now, S.settings) && userActive());
+    && now - (d.lastAt || 0) > DOG_GAP && !st.isNight(now, S.settings) && windowActive() && now - lastInput < 30e3);
   if (!due) return;
   dogDueAt = null;
   if (!forced) d.n++;
@@ -2677,6 +2689,14 @@ function exitSleep() {
   sfx.happy();
 }
 let wokeAt = 0; // he has just said good morning (coming back to the app wakes him up first)
+
+// "Soon I'll need a rest": it stays on the screen a few seconds (a tap doesn't sweep it away; he still moves) and
+// comes once more 20 s before the rest
+function sleepSoon() {
+  if (!maybeIdiom('sleepSoon', 0.5)) sayAuto(fresh(LUCKY.sleepSoon));
+  quietUntil = Date.now() + 4000;
+  setTimeout(() => { if (mode === 'main' && !document.hidden) { sayAuto(fresh(LUCKY.sleepSoon)); quietUntil = Date.now() + 4000; } }, 40e3);
+}
 
 function startNap() {
   S.session.napUntil = Date.now() + S.settings.napMin * 60e3;
@@ -2968,8 +2988,12 @@ function loop() {
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
     if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'edit')) {
-      if (!S.session.warned && S.session.activeMs >= limit - 60e3) { S.session.warned = true; if (!maybeIdiom('sleepSoon', 0.5)) sayAuto(fresh(LUCKY.sleepSoon)); }
-      if (S.session.activeMs >= limit) {
+      if (!S.session.warned && S.session.activeMs >= limit - 60e3) { S.session.warned = true; S.session.warnedAt = now; sleepSoon(); }
+      const dayLimit = S.settings.dailyMax * 60e3; // the day's limit: the same minute's notice
+      if (dayLimit && !T0.dayWarned && (S.playedMs[T0.date] || 0) >= dayLimit - 60e3) { T0.dayWarned = true; sleepSoon(); }
+      // the nap comes at least 45 s after "soon I'll need a nap" (a game can run past the limit: the warning then
+      // comes when it is over, and the nap a little later, not in the same second)
+      if (S.session.activeMs >= limit && now - (S.session.warnedAt || 0) >= 45e3) {
         S.session.napUntil = now + S.settings.napMin * 60e3;
         S.session.activeMs = 0;
         S.session.warned = false;
@@ -2997,7 +3021,7 @@ function loop() {
   flushPending(now);
   if (mode === 'main' && !sheetOpen && !modalOpen && windowActive() && now >= busyUntil && !chainQ.length && !antics.busy()) {
     const idleFor = now - lastInput;
-    if (idleFor < ACTIVE_MS && canAsk() && now - lastAskAt > ASK_EVERY && (T0.asks < 8 || turbo()) && now - lastSpeech > 20e3 && Math.random() < 0.3) startAsk(pickAsk());
+    if (idleFor < ACTIVE_MS && canAsk() && now - lastAskAt > ASK_EVERY && (T0.asks < 8 || turbo()) && now - lastSpeech > 8e3 && Math.random() < 0.3) startAsk(pickAsk());
     else if (idleFor < ACTIVE_MS && !ask && now - lastSpeech > 60e3) idleTalk();
     else if (idleFor >= ACTIVE_MS && idleFor < 10 * 60e3 && now - lastSpeech > 180e3) ambientTalk();
   }

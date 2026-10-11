@@ -7,6 +7,7 @@ import { sfx } from './sound.js';
 import { PROPS, decor as decorArt, PUMPKIN_FACES } from './art.js';
 
 const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90, SWIPE_MS = 280, SWIPE_PX = 55;
+export { DOUBLE_MS }; // main.js: a tap's word waits this long for a second tap
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
@@ -92,7 +93,8 @@ export function createAntics(api) {
     const now = Date.now();
     const list = Array.isArray(key) ? key : who === 'dog' ? DOG[key] : LUCKY.antics[key];
     const k = who + ':' + (Array.isArray(key) ? key[0]?.[1] : key);
-    if (!list?.length || now - (saidAt[k] || 0) < gap || Math.random() > chance) return 0;
+    const wait = gap > 0 && list?.length === 1 ? Math.max(gap, 120e3) : gap; // one line: not again within 2 min
+    if (!list?.length || now - (saidAt[k] || 0) < wait || Math.random() > chance) return 0;
     saidAt[k] = now;
     return api.say(list, who);
   }
@@ -1857,11 +1859,11 @@ export function createAntics(api) {
         at(a, 2700, () => [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy]) => away('🦋', [hx + dx, hy + dy])));
       },
       spots: () => {
-        fly('🐞', [x, y], paw(), 700, { size: 24, stay: 4300 });
-        at(a, 700, () => pose('happy', 3600, 'listen', 3400));
-        for (let i = 1; i <= 7; i++) at(a, 500 + i * 430, () => api.say([count(i)]));
-        at(a, 4000, () => { line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
-        at(a, 5000, () => away('🐞', paw()));
+        fly('🐞', [x, y], paw(), 700, { size: 24, stay: 5600 });
+        at(a, 700, () => pose('happy', 4800, 'listen', 4600));
+        for (let i = 1; i <= 7; i++) at(a, 500 + i * 560, () => api.say([count(i)])); // each number is heard whole
+        at(a, 5300, () => { line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
+        at(a, 6300, () => away('🐞', paw()));
       },
       bee: () => {
         const [hx, hy] = head();
