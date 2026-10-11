@@ -136,15 +136,25 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
   A new screen gets the holiday look by using those properties. `luckyPic()` draws Lucky with his holiday hat away from
   the scene.
 - **The pictures** are drawn in `art.js` (`eventScene`, `eventTop`) as a layer over the world in the same 400×700
-  picture, so they line up. Taps go through to the world underneath except on holiday things (`data-tap="ev…"`, eggs,
-  coins), which `antics.js` answers. Keep them outside the middle of the picture (about x 70–330, y 395–665), where
-  Lucky covers them.
-- **The calendar** (`openCalendar` in `main.js`) keeps the opened days in `S.calendar['<id>-<year>']`.
+  picture, so they line up. Taps go through to the world underneath except on holiday things (`data-tap="ev…"`),
+  which `antics.js` answers. Keep them outside the middle of the picture (about x 70–330, y 395–665), where Lucky
+  covers them. Things to find (Easter eggs, the leprechaun's coins) come from the scene as a second part and are drawn
+  by `huntScene` into `#hunt`, a layer above the decorations, so a decoration at its usual spot never hides one;
+  what was found today is kept in `S.today.found`.
+- **The calendar** (`openCalendar` in `main.js`) keeps the opened windows in `S.calendar['<id>-<year>']` by their own
+  day. A window opens on its day or any day after (the hearts keep the day's cap); `keptPresent()` hands over the
+  holiday's present on a visit in the week after the day if its window wasn't opened (`justPassed` in `events.js`).
+- **The last week:** the decorations are out for three weeks, but the day's holiday greeting, Tali's holiday lines and
+  trick-or-treat check `EV.days <= 7`, and New Year's countdown `EV.days === 0`. Coming back to the app or waking up
+  calls `updateEvent()` and `holidayHi()`, so a morning in memory still gets the holiday greeting.
 - **Holiday games:** `HOLIDAY_GAMES` in `holigames.js`. A game is `{ id, emoji, kind, energy, target: { easy, normal,
   hard }, theme }`; its name and hint are `g_<id>` and `g_<id>_hint` in `STR`. `kind` is a function from `arcade.js` or
   `'memory'` / `'simon'`. The shell (`openGame`) shows the difficulty, and `ctx.finish(points)` ends it: stars from the
-  target, the best in `S.games.best['<id>:<level>']`, hearts from `points / target`. Targets were set from a bot that
-  plays like a quick child; a child should reach three stars with good play.
+  target, the best in `S.games.best['<id>:<level>']`, hearts from `points / target`. A game counts from its start
+  (`onStart`), and its rewards are kept the moment it ends (`onScore`), before the end card is closed. Targets were
+  set from a bot that plays like a quick child, at about half of its score; a child should reach three stars with good
+  play. On Hard the shooters are faster and longer but no more crowded than Normal, and targets take the same hits:
+  one Lucky can shoot only so fast. The loop pauses while the page is hidden or the phone is turned sideways.
 
 - Nothing in the rules changes. Holiday lines live in `LUCKY.holiday` and `DOG.holiday` (greetings in the last week, on
   the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`.
@@ -155,7 +165,7 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 2,879 MP3 files, ~29 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 2,881 MP3 files, ~29 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
@@ -197,3 +207,5 @@ whether a trick starts when something is on the screen, and whether a sheet or a
 When changing speech or audio code, check on a real iPhone: first-tap audio unlock, silent switch,
 switching to another app and back (the sound must come back on the next tap), returning after a call, and offline mode.
 In Turbo mode the waits inside missions are 2 seconds, which is handy for checking them by hand.
+Lucky sleeps from 22:00 to 07:00 in the browser's time zone, so run such scripts in daytime or set `timezoneId` (or
+Playwright's fake clock) to a daytime hour; at night most checks only see the sleep screen.

@@ -11,7 +11,7 @@ Lucky and Tali are boys.
 | Nothing irreversible | Lucky never gets ill or dies; stats never drop below 15% |
 | No guilt | After a break he says "I missed you!"; no streaks to lose |
 | Watching is free, binging isn't | Just looking at Lucky costs nothing; only active play counts |
-| Breaks | 15 minutes of active play, then an hour of rest (Lucky naps in his garden). After 60 minutes a day he rests until the morning. At night (22:00–07:00) he sleeps |
+| Breaks | 15 minutes of active play, then an hour of rest (Lucky naps in his garden). After 60 minutes a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before). At night (22:00–07:00) he sleeps |
 | Life off the screen | Ninja missions and caring for a real bunny happen in the real world |
 | A clear finish line | "Today's plan": four small jobs, then a celebration and "go and play outside" |
 | No manipulation | No ads, purchases, push notifications, online features or data collection |
@@ -47,7 +47,10 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   doesn't run off to a scene. Leaving the scene (Wash, Decorate, a game, a mission, sleep) ends whatever was going on.
   In a big jump the bubble steps aside while Lucky is up there.
 - **Lines:** ~720 of Lucky's lines (chatter, care, the scenes, holidays, the sensei, tricks) plus scenes with Tali;
-  recent lines are not repeated.
+  his last 60 lines are not repeated, and a reaction with a single line is not said again within two minutes (he
+  still moves every time). A tap's word waits a moment for a second tap, so a double tap answers on its own.
+- **One visitor at a time:** the frog waits until Tali has gone home, the mood check-in comes after the first half
+  minute, and Tali comes only when the child has touched the screen in the last 30 seconds.
 - **Lucky's questions** (at most every 4 minutes, up to 8 a day). Lucky's lines are voiced; the child's
   answer choices are text only, so they can be shuffled without new recordings:
   favourite things, "would you rather", guess what I'm thinking, "do you know…?", guess my mood,
@@ -140,12 +143,12 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | Action | Mechanics |
 |---|---|
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
-| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). While a holiday is on, its three games instead (below). 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
+| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
 | ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky. The tray has categories (⭐ super, 🏡 home, 🌍 this world, 🗺️ other worlds, 📒 sticker albums) and a grid; a decoration already on the scene is marked ✓ and selected when tapped again |
-| 💬 Phrase of the day | A conversational phrase and a 3-question quiz |
+| 💬 Phrase of the day | A conversational phrase (all of them in turn, each once in 46 days) and a 3-question quiz: today's phrase and the ones from 3 and 10 days ago come back |
 | 🌙 Put to bed | Voluntary end of the session, with a bonus |
 
 Once a day Lucky asks how the child feels; if sad or cross, he offers ninja breathing.
@@ -187,13 +190,17 @@ and a step towards the next belt (3 stamps per belt).
 
 ## Progress
 
-- Hearts from care (daily caps per category) raise the level (up to 30). Every level brings something.
+- Hearts from care (daily caps per category) raise the level. Every level up to 27 brings something new; after the
+  last sticker the later levels bring bonus hearts (what the end of the collection should bring is an open question).
 - Belts: white → … → black → **Pink Master Belt** (3 missions per belt, ~3 weeks). Lucky's headband matches the current belt.
 - **Wardrobe:** 28 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
 - **8 worlds** by level, each with its own tappable details and Decorate items.
 - **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **37 badges**, the English tab (jokes, tongue twisters, sayings).
-- Pacing: stickers ~3.5 weeks, level items ~6 weeks, the last world ~1.5 months. Rewards arrive by days, not minutes.
+- Pacing, measured with a 60-day model of the real tables: all stickers in about 3 weeks; the last world in 4 weeks
+  with two sessions a day and 6 weeks with one; the level items in 5–9 weeks. An hour a day earns only about twice
+  what 12 minutes do. Two stickers in three come from the album closest to done, so the albums fill one after another
+  (about every three days) instead of all at once. Rewards arrive by days, not minutes.
 
 ## Holidays
 
@@ -213,12 +220,16 @@ their own things. Parents can switch it off; Turbo previews each holiday.
   opens with a toy; the clock counts down to midnight with fireworks; the mailbox sends him a love letter; the pot of
   gold makes him dance a jig. Easter eggs and the leprechaun's coins are hidden in every world to be found.
 - **The holiday calendar:** a button on the scene shows the days to go. A window opens each day (a treat and two
-  hearts), the holiday's own window holds a present. Missed days stay asleep.
+  hearts), the holiday's own window holds a present. Windows she missed wait for her (the hearts keep their daily
+  cap); a present left in the holiday's window is kept for a week after the day, and Lucky hands it over on the next
+  visit.
 - **Moments:** Tali comes trick-or-treating at Halloween, a ghost going past dims the scene, Cupid flies by, New Year's
   Day starts with a countdown and fireworks. Holiday greetings and chatter, holiday visitors and stickers.
 - **Holiday games** take the usual games' place (see Actions and games).
 
-Nothing in the rules, the care or the pacing changes.
+Nothing in the rules or the care changes. The calendar and the holiday games add about 5–10% hearts in the season.
+The greeting of the day, Tali's holiday lines and trick-or-treat (on his first visit of the day) belong to the last
+week and the day itself, so they don't repeat for three weeks.
 
 ## Parents' area
 

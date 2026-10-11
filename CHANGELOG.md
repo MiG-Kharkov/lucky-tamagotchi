@@ -3,6 +3,54 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.9.1] – 2026-10-12
+
+A review release: everything a full review of 1.9.0 found in the interface (on ordinary days and in every holiday,
+on three phones), the logic, Lucky's behaviour over a session and a day, the reward balance and language learning.
+
+### Changed
+- **Albums fill one after another.** Two stickers in three come from the album closest to done, so each album's
+  prize comes on a day of its own (about every three days) instead of all six within four days. The pace of
+  stickers and levels doesn't change.
+- **The holiday calendar doesn't lose anything.** Missed windows wait to be opened (the hearts keep their daily cap),
+  and a present left in the holiday's window is kept for a week: Lucky hands it over on the next visit.
+- **Hard is fair in the holiday shooters:** no more crowded than Normal, targets take as many hits, Lucky fires a
+  little faster, and the bosses are stronger. Three stars are reachable again; each shooter's targets are set from a
+  test bot, like the other games'.
+- **Lucky's pacing.** The frog waits until Tali has gone home, and the mood check-in comes after the first half
+  minute, so the first minutes of the day are no longer crowded. A reaction with a single line isn't repeated within
+  two minutes (he still moves) and Lucky remembers his last 60 lines; a tap's word waits for a possible second tap;
+  questions come after 8 s without a line instead of 20; Tali comes when she has touched the screen in the last 30 s.
+- **Rest comes with notice.** The day's limit gets a minute's warning like the nap; "Soon I'll need a rest" stays on
+  the screen a few seconds, comes again 20 s before, and the nap never starts right after a game.
+- **Language.** The phrases of the day come in a round (each once in 46 days), and the quiz asks today's phrase and
+  the ones from three and ten days ago. Chat with Lucky stays during holidays next to the three holiday games.
+- **One look everywhere.** Hints wait their turn instead of erasing each other and show at the bottom when a sheet is
+  open; every sticker comes in the same present window; sheet titles start with their button's icon; the mood
+  check-in offers no ready answer and has translations; grey text and button text are easier to read, and New Year's
+  yellow buttons have dark text; the food fact and the game hints come in both languages; Joy's icon is a balloon
+  (💗 stays the level's hearts).
+- **Small phones (iPhone SE).** Labels and tabs fit, a long line no longer covers Lucky's head (its text gets
+  smaller), the nap screen fits, the best score doesn't cover a game's name, today's calendar window is in view.
+
+### Fixed
+- Holiday lines meant for the last week (the morning greeting, Tali's holiday chatter, trick-or-treat) played for all
+  three weeks, and the New Year show on every start until 7 January.
+- Coming back to the app on a holiday morning said "I missed you" instead of the holiday greeting.
+- Lucky kept the last holiday's hat when one holiday handed over to the next (Christmas → New Year).
+- Easter eggs and the leprechaun's coins under decorations could not be found, so the hunt never ended: they are drawn
+  above the decorations now, and found ones stay found for the day.
+- Holiday stickers hidden after their holiday filled the world's places in Decorate.
+- A finished game counted and paid only when Done was tapped; a reload mid-game skipped the day's game limit.
+- Turning the phone mid-game kept the game running under the cover and could leave a boss off-screen; a second finger
+  broke the drag; Jingle Bells' repeated notes merged into one flash; balloons could carry Lucky off the top.
+- A calendar window tapped after midnight, a visitor caught during Tali's joke, Tali's hello in the middle of Lucky's
+  scene, the ghost's dimming that outlasted the ghost, the sun under the calendar button, Tali's buttons in Decorate, a
+  wrong parent password with no message, "a sticker!" on Tali's present when it was an outfit, Russian plurals
+  ("1 очко").
+- English that was Russian in disguise ("My tummy is full-full") and a few wrong Russian translations; "Do you have a
+  pet?" now gets "Yes, I've got a rabbit!". 12 new voice clips (2,881 in all).
+
 ## [1.9.0] – 2026-10-11
 
 ### Added
