@@ -13,6 +13,7 @@ import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, t
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, openGame } from './game.js';
 import { createAntics, gestures } from './antics.js';
+import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly } from './events.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -263,7 +264,7 @@ const antics = createAntics({
 });
 
 function confetti() {
-  const colors = ['#FF5FA2', '#FFD23F', '#8B6CFF', '#4CD37B', '#6FD3FF', '#FF9F43'];
+  const colors = EV && EV.stage >= 3 ? EV.confetti : ['#FF5FA2', '#FFD23F', '#8B6CFF', '#4CD37B', '#6FD3FF', '#FF9F43'];
   for (let i = 0; i < 46; i++) {
     const c = document.createElement('i');
     c.className = 'confetti';
@@ -366,7 +367,7 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
     <div class="rays"></div><div class="rv-glow"></div>
     <div class="rv-content">
       <div class="rv-level">${title}</div>
-      <button class="rv-gift" aria-label="gift"><span>🎁</span></button>
+      <button class="rv-gift" aria-label="gift"><span>${EV && EV.stage >= 3 ? EV.gift[0] : '🎁'}</span></button>
       <p class="rv-tap">${tr('rvTap')}</p>
     </div>
   </div>`;
@@ -470,8 +471,10 @@ const FRONT_Y = 85;
 function renderDecor() {
   fitDecor();
   const items = layout();
+  const holiday = EV && EV.stage >= 2 ? EV.stickers : [];
   const html = (front) => items.map((it, i) => {
     if ((it.y >= FRONT_Y) !== front) return '';
+    if (it.k === 'emoji' && HOLIDAY_ONLY.has(it.id) && !holiday.includes(it.id)) return ''; // back next year
     const w = it.k === 'decor' ? DECOR_W[it.id] : EMOJI_W;
     return `<div class="pl ${it.k === 'decor' ? 'pl-decor dec-' + it.id : 'pl-emoji'} ${SUPER.has(it.id) ? 'super' : ''} ${editSel === i ? 'sel' : ''}" data-i="${i}"
       style="left:${it.x}%;top:${it.y}%;--w:${w};--s:${it.s};--f:${it.f ? -1 : 1}"><div class="pl-in">${it.k === 'decor' ? art.decor(it.id) : `<span>${it.id}</span>`}</div></div>`;
@@ -550,6 +553,7 @@ function trayCats() {
     { id: 'super', icon: '⭐', label: tr('traySuper'), groups: [{ items: [
       ...DECOR.filter((d) => SUPER.has(d.id) && S.level >= d.level).map((d) => ({ k: 'decor', id: d.id })),
       ...allEmoji.filter((e) => SUPER.has(e)).map(emo)] }] },
+    ...(EV && EV.stage >= 2 ? [{ id: 'holiday', icon: EV.icon, label: L(EV.name), groups: [{ items: EV.stickers.map(emo) }] }] : []),
     { id: 'home', icon: '🏡', label: tr('trayHome'), groups: [{ items: DECOR.map((d) => ({ k: 'decor', id: d.id, lv: S.level < d.level ? d.level : 0 })) }] },
     { id: 'world', icon: '🌍', label: L(here.name), groups: [{ items: here.props.map(emo) }] },
     { id: 'worlds', icon: '🗺️', label: tr('trayWorlds'), groups: open.filter((pl) => pl.id !== here.id).map((pl) => ({ title: L(pl.name), items: pl.props.map(emo) })) },
@@ -750,6 +754,7 @@ function renderLucky(force = false) {
     ui.props = ui.lucky.lastChild;
   }
   ui.luckyArt.innerHTML = luckyArt({ face, wear: S.wear });
+  ui.lucky.classList.toggle('has-hat', !!S.wear?.head);
 }
 
 const STAT_ICONS = { hunger: '🥕', fun: '💗', clean: '🫧', energy: '⚡' };
@@ -768,6 +773,8 @@ function renderStats() {
 }
 
 function renderTop() {
+  const icon = (EV && EV.stage >= 3 ? EV.icon : '💗') + ' ', badge = $('#lvlCard .lvl-badge').firstChild;
+  if (badge.nodeValue !== icon) badge.nodeValue = icon;
   $('#lvlNum').textContent = S.level;
   $('#lvlLabel').textContent = tr('lv');
   $('#lvlBar').style.width = Math.round((S.hearts / st.levelNeed(S.level)) * 100) + '%';
@@ -795,7 +802,7 @@ function buildActions() {
 }
 
 function renderBg() {
-  ui.bg.innerHTML = art.scene(S.bg);
+  ui.bg.innerHTML = art.scene(S.bg) + holidayLayers(S.bg);
   shownSky = null;
   applyNinjaLook();
 }
@@ -805,6 +812,39 @@ function goPlace(id) {
   if (!S.worldsSeen.includes(id)) { S.worldsSeen.push(id); checkBadges(); }
   renderBg();
   renderDecor();
+}
+
+// ---------- holidays (events.js): the same game, decorated for a few weeks before each holiday ----------
+
+let EV = null; // the holiday that is on (with its stage), or null
+const SEASON_HAT = { halloween: 'witchHat' };
+const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
+const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage) + art.eventTop(EV.id, EV.stage) : '');
+
+function currentEvent() {
+  if (!S.settings.holidays) return null;
+  if (S.eventPreview) return eventPreview(S.eventPreview);
+  return eventOn(new Date());
+}
+
+// Called at start and every minute: when the holiday or its stage changes, redecorate
+function updateEvent(force = false) {
+  const ev = currentEvent(), key = ev ? ev.id + ev.stage : '';
+  if (!force && key === (EV ? EV.id + EV.stage : '')) return;
+  EV = ev;
+  const b = document.body;
+  [...b.classList].filter((c) => c.startsWith('ev-')).forEach((c) => b.classList.remove(c));
+  if (ev) {
+    b.classList.add('ev-' + ev.id);
+    for (let i = 1; i <= ev.stage; i++) b.classList.add('ev-s' + i);
+    b.style.setProperty('--ev-icon', `"${ev.icon}"`);
+  } else b.style.removeProperty('--ev-icon');
+  if (ui.props) antics.setSticky('season', ev && ev.stage >= 3 ? SEASON_HAT[ev.id] : null);
+  renderBg();
+  renderDecor();
+  renderTop();
+  if (mode === 'sleep') renderSleep(true);
+  if (mode === 'edit') renderTray();
 }
 
 // What Lucky says on arriving in a world (the dojo greets him with its gong)
@@ -1217,6 +1257,10 @@ const VISITORS = [
   { e: '🐉', w: 0.15, in: 'dojo castle space winter', path: 'glide', end: ['dragon'], flip: true },
 ];
 const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 2600, fall: 9000, float: 13000, rise: 10000 };
+// holiday visitors come in every world from their stage on
+const HOLIDAY_VISITORS = {
+  halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
+};
 
 // A flight path as keyframes in % of the scene, a little different every time
 function flightPath(kind) {
@@ -1241,7 +1285,8 @@ function maybeVisitor(now) {
   if (now < nextVisitorAt || mode !== 'main' || sheetOpen || modalOpen || !userActive()) return;
   nextVisitorAt = now + 100e3 + Math.random() * 80e3;
   const evening = st.minutesToBed(now, S.settings) <= 120;
-  const pool = VISITORS.filter((v) => (v.in === 'all' || v.in.split(' ').includes(S.bg)) && (!v.evening || evening) && v.e !== lastVisitor);
+  const holiday = (EV && HOLIDAY_VISITORS[EV.id] || []).filter((v) => EV.stage >= v.stage).map((v) => ({ ...v, in: 'all' }));
+  const pool = [...VISITORS, ...holiday].filter((v) => (v.in === 'all' || v.in.split(' ').includes(S.bg)) && (!v.evening || evening) && v.e !== lastVisitor);
   let r = Math.random() * pool.reduce((sum, v) => sum + v.w, 0);
   const v = pool.find((x) => (r -= x.w) < 0) || pool[0];
   if (!v) return;
@@ -1280,7 +1325,7 @@ function maybeSurprise(now, T0) {
   if (T0.surprise || ask || mode !== 'main' || sheetOpen || modalOpen || !userActive() || S.session.activeMs < 60e3 || ui.scene.querySelector('.surprise')) return;
   const b = document.createElement('button');
   b.className = 'surprise';
-  b.textContent = pick(['🎁', '🎁', '🎁', '🧺', '📦', '💝']);
+  b.textContent = pick(EV && EV.stage >= 3 ? EV.gift : ['🎁', '🎁', '🎁', '🧺', '📦', '💝']);
   const left = 18 + Math.random() * 60;
   b.style.left = left + '%';
   b.onclick = (e) => {
@@ -2321,7 +2366,7 @@ function renderSleep(force = false) {
   const m = MISSIONS[st.missionIndex(S, MISSIONS.length)];
   const time = fmtTime(until);
   ui.overlay.className = 'overlay show sleep-ov' + (night ? '' : ' rest');
-  const bgHtml = night ? art.scene('night') : `${art.scene(S.bg)}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
+  const bgHtml = night ? art.scene('night') + holidayLayers('night') : `${art.scene(S.bg)}${holidayLayers(S.bg)}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
   requestAnimationFrame(() => {
     const rd = ui.overlay.querySelector('.rest-decor'), bg = ui.overlay.querySelector('.sleep-bg');
     if (rd && bg) { const r = bg.getBoundingClientRect(); fitLayer(rd, r.width, r.height); }
@@ -2509,6 +2554,13 @@ const TURBO_TOOLS = [
   ['day', '🌅', () => { S.today = null; st.today(S); closeSheet(); toast('🌅 ' + tr('newDay'), 2000); }],
   ['nap', '💤', () => { closeSheet(); startNap(); }],
   ['idiom', '🎭', () => { closeSheet(); setTimeout(() => maybeIdiom('any', 1), 450); }],
+  ['holiday', '🎃', () => {
+    const ids = [null, ...EVENTS.map((e) => e.id)], i = ids.indexOf(S.eventPreview || null);
+    S.eventPreview = ids[(i + 1) % ids.length];
+    closeSheet();
+    updateEvent();
+    toast(S.eventPreview ? `${EVENT_BY_ID[S.eventPreview].icon} ${L(EVENT_BY_ID[S.eventPreview].name)}` : `📅 ${tr('holidayAuto')}`, 2500);
+  }],
 ];
 
 function openParent() {
@@ -2531,6 +2583,7 @@ function openParent() {
       <label>${tr('voice')}${tog('voice')}</label>
       <label>${tr('translate')}${tog('translate')}</label>
       <label>${tr('realPet')}${tog('realPet')}</label>
+      <label>${tr('holidays')}${tog('holidays')}</label>
     </div>
     <div class="card"><div class="card-title">${tr('modeTitle')}</div>
       <div class="tabs mode-tabs"><button class="tab ${turbo() ? '' : 'on'}" data-m="std">🐢 ${tr('modeStd')}</button><button class="tab ${turbo() ? 'on' : ''}" data-m="turbo">⚡ ${tr('modeTurbo')}</button></div>
@@ -2556,7 +2609,7 @@ function openParent() {
       x.onchange = () => { s[x.dataset.k] = /Min$|PerDay$|Max$/.test(x.dataset.k) ? Number(x.value) : x.value; st.save(S); loop(); };
     });
     root.querySelectorAll('input[type=checkbox]').forEach((x) => {
-      x.onchange = () => { s[x.dataset.k] = x.checked; setSound(s.sound); setVoice(s.voice); st.save(S); };
+      x.onchange = () => { s[x.dataset.k] = x.checked; setSound(s.sound); setVoice(s.voice); st.save(S); updateEvent(); };
     });
     root.querySelector('.wake').onclick = () => {
       S.session.napUntil = 0;
@@ -2683,7 +2736,8 @@ function loop() {
   } else if (!asleep && mode === 'sleep') exitSleep();
 
   updateDog(now, asleep);
-  ui.scene.classList.toggle('evening', st.minutesToBed(now, S.settings) <= 60);
+  if (tick % 60 === 0) updateEvent();
+  ui.scene.classList.toggle('evening', st.minutesToBed(now, S.settings) <= 60 || (EV?.id === 'halloween' && EV.stage >= 4));
 
   flushPending(now);
   if (mode === 'main' && !sheetOpen && !modalOpen && windowActive() && now >= busyUntil && !chainQ.length) {
@@ -2808,6 +2862,7 @@ function start() {
   renderDecor();
   renderLucky(true);
   applyNinjaLook();
+  updateEvent(true);
   migrateLayout();
   $('#beltChip').onclick = () => {
     if (mode !== 'main') return;
@@ -2840,6 +2895,6 @@ if ('serviceWorker' in navigator) {
 }
 
 
-if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]) };
+if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; } };
 
 start();

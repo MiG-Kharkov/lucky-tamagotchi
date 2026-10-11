@@ -369,6 +369,86 @@ ${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) 
   }
 }
 
+// ---------- holidays (events.js): pictures laid over a world, in the same 400×700 picture so they line up ----------
+// Nothing here can be tapped: taps go through to the world underneath.
+
+// where holiday things stand in each world: two big spots (L, R) and two small ones (l, r) on the ground,
+// kept away from the world's own things and from the middle where Lucky stands; sky: the height bats fly at
+const SPOTS = {
+  garden: { L: [44, 548], R: [356, 560], l: [20, 652], r: [382, 648], sky: 300 },
+  dojo: { L: [36, 566], R: [362, 574], l: [18, 662], r: [384, 664], sky: 280 },
+  candy: { L: [40, 566], R: [360, 572], l: [20, 660], r: [382, 652], sky: 300 },
+  beach: { L: [24, 548], R: [376, 538], l: [22, 676], r: [384, 684], sky: 300 },
+  winter: { L: [22, 646], R: [378, 548], l: [140, 684], r: [384, 668], sky: 300 },
+  space: { L: [28, 604], R: [382, 600], l: [22, 672], r: [384, 676], sky: 330 },
+  irish: { L: [22, 540], R: [384, 548], l: [18, 664], r: [386, 668], sky: 300 },
+  castle: { L: [28, 532], R: [380, 606], l: [20, 662], r: [384, 668], sky: 280 },
+  night: { L: [40, 602], R: [360, 606], l: [20, 666], r: [384, 668], sky: 300 },
+};
+const at = (x, y, s, inner, cls = '') => `<g transform="translate(${x} ${y}) scale(${s})"${cls ? ` class="${cls}"` : ''}>${inner}</g>`;
+
+// a jack-o'-lantern; lit ones glow (always at night and on the day itself)
+const pumpkin = (x, y, s = 1, lit = false) => at(x, y, s, `<ellipse cy="22" rx="27" ry="5" fill="#000" opacity=".12"/>
+  <path d="M-2 -17 q-2 -10 7 -14" stroke="#5B8A3C" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-12" cy="2" rx="14" ry="19" fill="#E86E14"/><ellipse cx="12" cy="2" rx="14" ry="19" fill="#E86E14"/><ellipse cy="2" rx="13" ry="20" fill="#FF922E"/>
+  <ellipse cx="-6" cy="-9" rx="4" ry="6" fill="#FFC27A" opacity=".55"/>
+  <g class="ev-face" fill="${lit ? '#FFE066' : '#6E2F0A'}"><path d="M-14 -5 l6 -8 6 8z M2 -5 l6 -8 6 8z"/><path d="M-14 7 q14 11 28 0 l-4 -1 -3 4 -4 -3 -3 3 -4 -3 -3 3 -3 -4z"/></g>`, 'ev-pumpkin' + (lit ? ' lit' : ''));
+// a bat flying across the sky (y: height, d: seconds for one crossing, delay: negative = already on its way)
+const bat = (y, d, delay, s = 1) => `<g class="ev-bat" style="--y:${y}px;--d:${d}s;--delay:${delay}s"><g transform="scale(${s})">
+  <path class="ev-wing" d="M0 0 q-10 -12 -24 -8 q6 4 4 10 q-6 -2 -10 2 q10 2 14 8 q4 -6 16 -6z M0 0 q10 -12 24 -8 q-6 4 -4 10 q6 -2 10 2 q-10 2 -14 8 q-4 -6 -16 -6z" fill="#3A2246"/>
+  <ellipse cy="2" rx="5" ry="7" fill="#3A2246"/><path d="M-4 -4 l1 -5 2 4z M4 -4 l-1 -5 -2 4z" fill="#3A2246"/><circle cx="-2" r="1.2" fill="#FFE066"/><circle cx="2" r="1.2" fill="#FFE066"/></g></g>`;
+// a friendly little ghost peeking out (put it before a pumpkin to have it behind)
+const ghost = (x, y, s = 1) => at(x, y, s, `<g class="ev-ghost"><path d="M-16 14 v-14 a16 16 0 0 1 32 0 v14 l-5.3 -5 -5.3 5 -5.4 -5 -5.3 5 -5.4 -5z" fill="#fff" stroke="#E6E0F0" stroke-width="1.5"/>
+  <ellipse cx="-6" cy="-2" rx="2.6" ry="3.6" fill="#3A2246"/><ellipse cx="6" cy="-2" rx="2.6" ry="3.6" fill="#3A2246"/><ellipse cy="6" rx="3" ry="2.4" fill="#3A2246"/>
+  <ellipse cx="-11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/><ellipse cx="11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/></g>`);
+// a wrapped sweet
+const sweet = (x, y, c, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M-12 -5 l6 5 -6 5z M12 -5 l-6 5 6 5z" fill="${c}"/><ellipse rx="7" ry="5.5" fill="${c}"/><path d="M-3 -4 q3 4 0 8" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7"/></g>`;
+const witchHat = (x, y, s = 1) => at(x, y, s, `<ellipse rx="22" ry="5" fill="#5B2A86"/><path d="M-12 -1 Q-4 -30 10 -40 Q6 -22 12 -1Z" fill="#6E35A0"/><path d="M-12 -4 Q0 0 12 -4 L12 -1 Q0 3 -12 -1Z" fill="#FF922E"/>`);
+
+function halloweenScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, lit = stage >= 4 || world === 'night';
+  const back = [], front = [];
+  front.push(pumpkin(...p.L, 1, lit), pumpkin(...p.R, 0.9, lit));
+  back.push(bat(p.sky, 16, -3));
+  if (stage >= 2) {
+    back.push(ghost(p.L[0] + 8, p.L[1] - 34, 0.85), bat(p.sky - 34, 12, -8, 0.8), bat(p.sky + 46, 19, -13, 0.7));
+    front.push(pumpkin(...p.l, 0.6, lit), pumpkin(...p.r, 0.62, lit));
+  }
+  if (stage >= 3) {
+    front.push(sweet(p.L[0] + 32, p.L[1] + 18, '#FF5FA2', -20), sweet(p.R[0] - 34, p.R[1] + 16, '#8B6CFF', 25), sweet(p.l[0] + 24, p.l[1] + 10, '#FFD23F', 10));
+    // the world's own characters dress up too
+    if (world === 'irish') front.push(witchHat(54, 456, 0.5), witchHat(272, 517, 0.45));
+    if (world === 'beach') front.push(witchHat(340, 586, 0.36));
+  }
+  if (stage >= 4) {
+    back.push(ghost(p.R[0] - 10, p.R[1] - 34, 0.7), bat(p.sky + 12, 9, -2, 0.9), bat(p.sky - 54, 11, -6, 0.6));
+  }
+  return back.join('') + front.join('');
+}
+
+// things along the top edge of the scene (HTML, so they stay at the top on every phone)
+const bunting = (colors) => {
+  const fw = 30, w = colors.length * fw;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="30" viewBox="0 0 ${w} 30"><path d="M0 4 Q${w / 2} 9 ${w} 4" stroke="#8C5A3C" stroke-width="1.5" fill="none"/>${colors.map((c, i) => `<path d="M${i * fw + 2} 4 L${i * fw + fw - 2} 4 L${i * fw + fw / 2} 26Z" fill="${c}"/>`).join('')}</svg>`;
+  return `<div class="ev-bunting" style="background-image:url('data:image/svg+xml,${encodeURIComponent(svg)}');background-size:${w}px 30px"></div>`;
+};
+const cobweb = '<svg class="ev-web" viewBox="0 0 100 100" aria-hidden="true"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9"><path d="M0 0 L100 32 M0 0 L80 80 M0 0 L32 100 M0 0 L100 0 M0 0 L0 100"/><path d="M22 0 Q19 13 18 18 Q12 19 0 22 M46 0 Q40 26 37 37 Q26 40 0 46 M72 0 Q64 40 57 57 Q40 64 0 72"/></g></svg>';
+const TOPS = {
+  halloween: (stage) => (stage >= 2 ? cobweb + '<div class="ev-spider"><span>🕷️</span></div>' : '') + (stage >= 3 ? bunting(['#FF8A1F', '#3A2246', '#7B3FB8']) : ''),
+};
+const SCENES = { halloween: halloweenScene };
+
+// the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
+export function eventScene(id, world, stage) {
+  const fn = SCENES[id];
+  const svg = fn ? fn(world, stage) : '';
+  return svg ? `<svg class="ev-layer" viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${svg}</svg>` : '';
+}
+export function eventTop(id, stage) {
+  const html = TOPS[id]?.(stage) || '';
+  return html ? `<div class="ev-top">${html}</div>` : '';
+}
+
 // ---------- props: things Lucky holds or wears for a moment (drawn in Lucky's coordinates, 200×210) ----------
 
 const em = (x, y, size, ch) => `<text x="${x}" y="${y}" font-size="${size}" text-anchor="middle" dominant-baseline="central">${ch}</text>`;
@@ -419,6 +499,10 @@ export const PROPS = {
     <ellipse cx="146" cy="64" rx="14" ry="7"/><circle cx="153" cy="59" r="6.5"/><circle cx="140" cy="60" r="5"/><circle cx="38" cy="108" r="4"/><circle cx="162" cy="112" r="4"/><circle cx="44" cy="132" r="3"/></g>` },
   cloverEar: { slot: 'ear', art: () => `<path d="M152 66 q-3 9 -10 13" stroke="#2E9E4E" stroke-width="2.4" fill="none" stroke-linecap="round"/>${shamrock(152, 58, 6.5)}` },
   sled: { slot: 'feet', art: () => em(100, 194, 80, '🛷') },
+  broom: { slot: 'feet', art: () => `<g transform="rotate(45 100 188)">${em(100, 190, 92, '🧹')}</g>` },
+  // holiday hats (slot 'season': hidden while he wears a hat or has something on his head)
+  witchHat: { slot: 'season', art: () => `<g transform="rotate(-8 100 48)"><ellipse cx="100" cy="49" rx="46" ry="9" fill="#5B2A86"/><path d="M75 47 Q90 -6 118 -28 Q110 6 125 47Z" fill="#6E35A0"/>
+    <path d="M77 40 Q100 47 124 40 L125 47 Q100 54 76 47Z" fill="#FF922E"/><circle cx="118" cy="-26" r="4.5" fill="#FFE066"/><path d="M94 22 l3 -6 3 6 -6 -4 h6z" fill="#FFE066" opacity=".9"/></g>` },
   ball: { slot: 'hand', art: () => `<g transform="translate(100 18)"><circle r="20" fill="#FF5FA2"/><path d="M0 0 L0 -20 A20 20 0 0 1 20 0Z M0 0 L0 20 A20 20 0 0 1 -20 0Z" fill="#fff"/><path d="M0 0 L20 0 A20 20 0 0 1 0 20Z" fill="#FFD23F"/><circle r="3.5" fill="#fff" stroke="#FF5FA2" stroke-width="1.5"/></g>` },
   clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
   hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },

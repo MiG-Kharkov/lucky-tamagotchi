@@ -155,7 +155,7 @@ export function createAntics(api) {
     if (!P || !ui.props) return;
     unprop(P.slot, true);
     const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', `pp pp-in pid-${id}`);
+    g.setAttribute('class', `pp pp-in pid-${id}${P.slot === 'season' ? ' season' : ''}`);
     g.innerHTML = P.art(arg);
     ui.props.appendChild(g);
     L.classList.add('p-' + P.slot);
@@ -1121,6 +1121,37 @@ export function createAntics(api) {
     press: () => sfx.pop(),
     tap: who((c) => { fly(emoji, [c.x, c.y], mouth(), 500, { size: 26 }); setTimeout(() => { api.setTemp('eat', 1600); sfx.crunch(); line(list, 1); }, 500); }),
   });
+  // Halloween stickers
+  const pumpkinPeek = (c) => {
+    const a = begin('pumpkin');
+    go(nextTo(c.el), 650);
+    at(a, 700, () => { pose('ok', 1200, 'sniff', 1200); sfx.sniff(); });
+    at(a, 1500, () => { popUp('👻', c.x, c.y - 26, 1700, 44, 'pop-rise'); sfx.boing(); pose('ok', 1000, 'startle', 1100); });
+    at(a, 2800, () => { pose('laugh', 1500, 'hop'); line(lineWith(LUCKY.antics.boo, 'Boo!'), 1, 0); api.reward(); });
+    at(a, 3800, end);
+  };
+  const ghostTale = (c) => {
+    const a = begin('ghostTale');
+    pose('happy', 2000, 'listen', 2000);
+    line('ghostStory', 1, 0);
+    at(a, 2300, () => { popUp('👻', c.x, c.y - 20, 1600, 46, 'pop-rise'); sfx.boing(); pose('ok', 900, 'startle', 1100); });
+    at(a, 3600, end);
+  };
+  const broomRide = (c) => {
+    const a = begin('broom');
+    go(nextTo(c.el, 12), 600);
+    at(a, 650, () => {
+      c.el.classList.add('popped');
+      onEnd(a, () => { c.el.classList.remove('popped'); api.hop(c.el, 'regrow', 900); });
+      prop('broom', 3200);
+      hold(a, 'balloonfly');
+      api.setTemp('laugh', 2200);
+      sfx.whoosh();
+      line('balloonFly', 1, 0);
+    });
+    at(a, 2700, () => { L.classList.remove('balloonfly'); a.cls.delete('balloonfly'); unprop('feet'); pose('laugh', 1500, 'land', 900); api.reward(); });
+    at(a, 3700, end);
+  };
   const kickSticker = {
     press: () => sfx.whoosh(),
     tap: who(() => { pose('laugh', 1200, 'kick', 1000); setTimeout(() => { const [x, y] = api.luckyPoint(0.95, 0.55); api.floatFx(x, y, '💥', 'spark'); sfx.bonk(); }, 380); line('kick', 1); }),
@@ -1251,6 +1282,12 @@ export function createAntics(api) {
       }),
     },
     '🎐': { press: (c) => { sfx.chime(); api.hop(c.el, 'wiggle'); }, tap: () => {} },
+    // Halloween: a ghost lives in the pumpkin; a ghost's story; a bat; a cobweb; a broom ride
+    '🎃': { press: () => sfx.pop(), tap: who((c) => pumpkinPeek(c)), double: (c) => { api.hop(c.el, 'bounce', 800); sfx.magic(); api.fxAt(c.x, c.y, ['✨', '🍬'], 6, 'spark'); } },
+    '👻': { press: () => sfx.magic(), tap: who((c) => ghostTale(c)) },
+    '🦇': visitorSticker('batloop', () => sfx.whoosh()),
+    '🕸️': { press: () => sfx.tap(), tap: who(() => { pose('ok', 1400, 'shiver', 900); L.querySelectorAll('.ear').forEach((x) => api.hop(x, 'wiggle')); }) },
+    '🧹': { press: () => sfx.whoosh(), tap: who((c) => broomRide(c)) },
     // stickers that do what the visitor they show does
     '🐞': visitorSticker('spots'),
     '🐝': visitorSticker('bee', () => sfx.buzz()),
@@ -1552,6 +1589,21 @@ export function createAntics(api) {
         api.reward();
       },
       owl: () => { popUp('🦉', x, y, 2600, 42); sfx.note(330); setTimeout(() => sfx.note(294), 450); pose('happy', 1800, 'listen', 1800); line('owl', 1, 0); },
+      // Halloween: a bat circles his head (like the dizzy butterfly)
+      batloop: () => {
+        const [hx, hy] = head(), pts = [[hx - 90, hy + 10], [hx, hy - 60], [hx + 90, hy + 10], [hx, hy + 70], [hx - 90, hy + 10]];
+        let from = [x, y];
+        pts.forEach((p, i) => { const f = from; at(a, i * 420, () => fly('🦇', f, p, 420, { size: 30 })); from = p; });
+        at(a, 300, () => { pose('laugh', 2300, 'pirouette', 1500); line('dizzyFly', 1, 0); });
+        at(a, pts.length * 420, () => { away('🦇', pts[pts.length - 1]); prop('dizzy', 2000); });
+      },
+      // Halloween: a ghost gives him a fright… and he says "Boo!" right back
+      ghostboo: () => {
+        popUp('👻', x, y, 1700, 54, 'pop-rise');
+        sfx.boing();
+        pose('ok', 1000, 'startle', 1100);
+        at(a, 1400, () => { pose('laugh', 1500, 'hop'); line(lineWith(LUCKY.antics.boo, 'Boo!'), 1, 0); });
+      },
       // snowflakes settle on his nose: brr
       flakes: () => {
         fly('❄️', [x, y], nose(), 900, { spin: 180, size: 24 });

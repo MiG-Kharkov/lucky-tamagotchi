@@ -67,7 +67,7 @@ function fresh() {
     // ninja missions: stars per skill, the scroll of stamps, today's mask and animal cloud
     ninja: { skills: {}, scroll: [], mask: null, cloud: null },
     session: { activeMs: 0, lastAt: 0, activeAt: 0, napUntil: 0, warned: false },
-    settings: { sessionMin: 15, napMin: 60, bedtime: '22:00', wake: '07:00', sound: true, realPet: true, translate: true, gamesPerDay: 3, dailyMax: 60, voice: true, voiceUri: { ru: '', en: '' } },
+    settings: { sessionMin: 15, napMin: 60, bedtime: '22:00', wake: '07:00', sound: true, realPet: true, translate: true, gamesPerDay: 3, dailyMax: 60, voice: true, holidays: true, voiceUri: { ru: '', en: '' } },
     playedMs: {},
     viewMs: {},
     lastGameAt: 0,
