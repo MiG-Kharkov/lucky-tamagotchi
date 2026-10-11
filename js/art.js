@@ -433,7 +433,9 @@ ${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) 
 }
 
 // ---------- holidays (events.js): pictures laid over a world, in the same 400×700 picture so they line up ----------
-// Nothing here can be tapped: taps go through to the world underneath.
+// Taps go through to the world underneath, except on the holiday things themselves (data-tap="ev…", and the Easter
+// eggs and leprechaun coins): each answers a tap, a double tap and a long press (antics.js), and Lucky joins in.
+// week: the holiday's last week (a few more things); stage 4: the day itself.
 
 // where holiday things stand in each world: two big spots (L, R) and two small ones (l, r) on the ground,
 // kept away from the world's own things and from the middle where Lucky stands; sky: the height bats fly at
@@ -449,131 +451,164 @@ const SPOTS = {
   night: { L: [40, 602], R: [360, 606], l: [20, 666], r: [384, 668], sky: 300 },
 };
 const at = (x, y, s, inner, cls = '') => `<g transform="translate(${x} ${y}) scale(${s})"${cls ? ` class="${cls}"` : ''}>${inner}</g>`;
+// a thing that answers taps: the tap target is an inner group, so its bounce doesn't undo the outer placement
+const tapG = (id, inner, cls = '', attrs = '') => `<g data-tap="${id}"${cls ? ` class="${cls}"` : ''}${attrs}>${inner}</g>`;
 
-// a jack-o'-lantern; lit ones glow (always at night and on the day itself)
-const pumpkin = (x, y, s = 1, lit = false) => at(x, y, s, `<ellipse cy="22" rx="27" ry="5" fill="#000" opacity=".12"/>
+// ----- Halloween -----
+// jack-o'-lantern faces: a double tap carves a new one (antics.js swaps them)
+export const PUMPKIN_FACES = [
+  '<path d="M-14 -5 l6 -8 6 8z M2 -5 l6 -8 6 8z"/><path d="M-14 7 q14 11 28 0 l-4 -1 -3 4 -4 -3 -3 3 -4 -3 -3 3 -3 -4z"/>',
+  '<circle cx="-7" cy="-6" r="4.5"/><circle cx="7" cy="-6" r="4.5"/><path d="M-11 5 q11 10 22 0 q-11 4 -22 0z"/>',
+  '<path d="M-14 -9 l8 4 -8 4z M14 -9 l-8 4 8 4z"/><ellipse cy="8" rx="6" ry="5"/>',
+  '<path d="M-13 -4 q4 -8 8 0z M5 -4 q4 -8 8 0z"/><path d="M-12 5 l4 4 4 -4 4 4 4 -4 4 4 -2 3 -16 0z"/>',
+];
+// a jack-o'-lantern; lit ones glow (always at night and on the day itself; a tap lights one for a moment)
+const pumpkin = (x, y, s = 1, lit = false, face = 0) => at(x, y, s, tapG('evPumpkin', `<ellipse cy="22" rx="27" ry="5" fill="#000" opacity=".12"/>
   <path d="M-2 -17 q-2 -10 7 -14" stroke="#5B8A3C" stroke-width="5" fill="none" stroke-linecap="round"/>
   <ellipse cx="-12" cy="2" rx="14" ry="19" fill="#E86E14"/><ellipse cx="12" cy="2" rx="14" ry="19" fill="#E86E14"/><ellipse cy="2" rx="13" ry="20" fill="#FF922E"/>
   <ellipse cx="-6" cy="-9" rx="4" ry="6" fill="#FFC27A" opacity=".55"/>
-  <g class="ev-face" fill="${lit ? '#FFE066' : '#6E2F0A'}"><path d="M-14 -5 l6 -8 6 8z M2 -5 l6 -8 6 8z"/><path d="M-14 7 q14 11 28 0 l-4 -1 -3 4 -4 -3 -3 3 -4 -3 -3 3 -3 -4z"/></g>`, 'ev-pumpkin' + (lit ? ' lit' : ''));
+  <g class="ev-face" fill="${lit ? '#FFE066' : '#6E2F0A'}">${PUMPKIN_FACES[face % PUMPKIN_FACES.length]}</g>`, 'ev-pumpkin' + (lit ? ' lit' : '')));
 // a bat flying across the sky (y: height, d: seconds for one crossing, delay: negative = already on its way)
-const bat = (y, d, delay, s = 1) => `<g class="ev-bat" style="--y:${y}px;--d:${d}s;--delay:${delay}s"><g transform="scale(${s})">
+const bat = (y, d, delay, s = 1) => `<g class="ev-bat" style="--y:${y}px;--d:${d}s;--delay:${delay}s"><g transform="scale(${s})">${tapG('evBat', `<circle r="20" fill="transparent"/>
   <path class="ev-wing" d="M0 0 q-10 -12 -24 -8 q6 4 4 10 q-6 -2 -10 2 q10 2 14 8 q4 -6 16 -6z M0 0 q10 -12 24 -8 q-6 4 -4 10 q6 -2 10 2 q-10 2 -14 8 q-4 -6 -16 -6z" fill="#3A2246"/>
-  <ellipse cy="2" rx="5" ry="7" fill="#3A2246"/><path d="M-4 -4 l1 -5 2 4z M4 -4 l-1 -5 -2 4z" fill="#3A2246"/><circle cx="-2" r="1.2" fill="#FFE066"/><circle cx="2" r="1.2" fill="#FFE066"/></g></g>`;
+  <ellipse cy="2" rx="5" ry="7" fill="#3A2246"/><path d="M-4 -4 l1 -5 2 4z M4 -4 l-1 -5 -2 4z" fill="#3A2246"/><circle cx="-2" r="1.2" fill="#FFE066"/><circle cx="2" r="1.2" fill="#FFE066"/>`)}</g></g>`;
 // a friendly little ghost peeking out (put it before a pumpkin to have it behind)
-const ghost = (x, y, s = 1) => at(x, y, s, `<g class="ev-ghost"><path d="M-16 14 v-14 a16 16 0 0 1 32 0 v14 l-5.3 -5 -5.3 5 -5.4 -5 -5.3 5 -5.4 -5z" fill="#fff" stroke="#E6E0F0" stroke-width="1.5"/>
+const ghost = (x, y, s = 1) => at(x, y, s, tapG('evGhost', `<g class="ev-ghost"><path d="M-16 14 v-14 a16 16 0 0 1 32 0 v14 l-5.3 -5 -5.3 5 -5.4 -5 -5.3 5 -5.4 -5z" fill="#fff" stroke="#E6E0F0" stroke-width="1.5"/>
   <ellipse cx="-6" cy="-2" rx="2.6" ry="3.6" fill="#3A2246"/><ellipse cx="6" cy="-2" rx="2.6" ry="3.6" fill="#3A2246"/><ellipse cy="6" rx="3" ry="2.4" fill="#3A2246"/>
-  <ellipse cx="-11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/><ellipse cx="11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/></g>`);
-// a wrapped sweet
-const sweet = (x, y, c, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})"><path d="M-12 -5 l6 5 -6 5z M12 -5 l-6 5 6 5z" fill="${c}"/><ellipse rx="7" ry="5.5" fill="${c}"/><path d="M-3 -4 q3 4 0 8" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7"/></g>`;
+  <ellipse cx="-11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/><ellipse cx="11" cy="3" rx="3" ry="2" fill="#FFB3D6" opacity=".7"/></g>`));
+// a wrapped sweet (Lucky eats it; it comes back a little later)
+const sweet = (x, y, c, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})">${tapG('evSweet', `<circle r="13" fill="transparent"/><path d="M-12 -5 l6 5 -6 5z M12 -5 l-6 5 6 5z" fill="${c}"/><ellipse rx="7" ry="5.5" fill="${c}"/><path d="M-3 -4 q3 4 0 8" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7"/>`, 'ev-sweet')}</g>`;
+const candyCorn = (x, y, r = 0) => `<g transform="translate(${x} ${y}) rotate(${r})">${tapG('evSweet', '<circle r="11" fill="transparent"/><path d="M0 -10 L8 8 Q0 11 -8 8Z" fill="#FFF6E0"/><path d="M-5.4 2 L5.4 2 L8 8 Q0 11 -8 8Z" fill="#FF922E"/><path d="M-2.6 -4 L2.6 -4 L5.4 2 L-5.4 2Z" fill="#FFD23F"/>', 'ev-sweet')}</g>`;
 const witchHat = (x, y, s = 1) => at(x, y, s, `<ellipse rx="22" ry="5" fill="#5B2A86"/><path d="M-12 -1 Q-4 -30 10 -40 Q6 -22 12 -1Z" fill="#6E35A0"/><path d="M-12 -4 Q0 0 12 -4 L12 -1 Q0 3 -12 -1Z" fill="#FF922E"/>`);
+// a bubbling cauldron of green potion
+const cauldron = (x, y, s = 1) => at(x, y, s, tapG('evCauldron', `<ellipse cy="26" rx="30" ry="5" fill="#000" opacity=".14"/>
+  <path d="M-18 18 l-7 9 M18 18 l7 9" stroke="#2E2A33" stroke-width="4" stroke-linecap="round"/>
+  <path d="M-27 -6 q-2 32 27 32 q29 0 27 -32z" fill="#2E2A33"/><path d="M-18 4 q4 14 16 16" stroke="#4A4652" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <ellipse cy="-6" rx="28" ry="7.5" fill="#3A3640"/><ellipse cy="-7" rx="23" ry="5" fill="#6FD34E"/>
+  <g class="ev-brew" fill="#B6F78E"><circle cx="-9" cy="-9" r="4"/><circle cx="5" cy="-11" r="3"/><circle cx="13" cy="-8" r="2.4"/></g>`, 'ev-cauldron'));
 
-function halloweenScene(world, stage) {
+function halloweenScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, lit = stage >= 4 || world === 'night';
   const back = [], front = [];
-  front.push(pumpkin(...p.L, 1, lit), pumpkin(...p.R, 0.9, lit));
-  back.push(bat(p.sky, 16, -3));
-  if (stage >= 2) {
-    back.push(ghost(p.L[0] + 8, p.L[1] - 34, 0.85), bat(p.sky - 34, 12, -8, 0.8), bat(p.sky + 46, 19, -13, 0.7));
-    front.push(pumpkin(...p.l, 0.6, lit), pumpkin(...p.r, 0.62, lit));
+  back.push(bat(p.sky, 16, -3), bat(p.sky - 34, 12, -8, 0.8), bat(p.sky + 46, 19, -13, 0.7));
+  back.push(ghost(p.L[0] + 8, p.L[1] - 34, 0.85));
+  front.push(pumpkin(...p.L, 1, lit, 0), cauldron(p.R[0] - 8, p.R[1] + 6, 0.8), pumpkin(p.R[0] + 6, p.R[1] + 44, 0.62, lit, 1),
+    pumpkin(...p.l, 0.6, lit, 3), pumpkin(...p.r, 0.62, lit, 2));
+  front.push(sweet(p.L[0] + 22, p.L[1] + 24, '#FF5FA2', -20), candyCorn(p.R[0] - 18, p.R[1] + 32, 15), sweet(p.l[0] + 24, p.l[1] + 10, '#FFD23F', 10));
+  // the world's own characters dress up too
+  if (world === 'irish') front.push(witchHat(54, 456, 0.5), witchHat(272, 517, 0.45));
+  if (world === 'beach') front.push(witchHat(340, 586, 0.36));
+  if (week || stage >= 4) {
+    back.push(ghost(p.R[0] - 10, p.R[1] - 46, 0.7), bat(p.sky + 12, 9, -2, 0.9));
+    front.push(candyCorn(p.r[0] - 26, p.r[1] + 10, -10), sweet(p.l[0] + 42, p.l[1] + 16, '#8B6CFF', 25));
   }
-  if (stage >= 3) {
-    front.push(sweet(p.L[0] + 32, p.L[1] + 18, '#FF5FA2', -20), sweet(p.R[0] - 34, p.R[1] + 16, '#8B6CFF', 25), sweet(p.l[0] + 24, p.l[1] + 10, '#FFD23F', 10));
-    // the world's own characters dress up too
-    if (world === 'irish') front.push(witchHat(54, 456, 0.5), witchHat(272, 517, 0.45));
-    if (world === 'beach') front.push(witchHat(340, 586, 0.36));
-  }
-  if (stage >= 4) {
-    back.push(ghost(p.R[0] - 10, p.R[1] - 34, 0.7), bat(p.sky + 12, 9, -2, 0.9), bat(p.sky - 54, 11, -6, 0.6));
-  }
+  if (stage >= 4) back.push(bat(p.sky - 54, 11, -6, 0.6), ghost(200, p.sky - 60, 0.6));
   return back.join('') + front.join('');
 }
 
-// Christmas and New Year
-const xmasTree = (x, y, s = 1, star = false, garland = false) => at(x, y, s, `<ellipse cy="40" rx="30" ry="5" fill="#000" opacity=".12"/>
+// ----- Christmas and New Year -----
+const xmasTree = (x, y, s = 1, star = false, garland = false) => at(x, y, s, tapG('evTree', `<ellipse cy="40" rx="30" ry="5" fill="#000" opacity=".12"/>
   <rect x="-5" y="26" width="10" height="14" fill="#8C5A3C"/>
   <path d="M0 -46 L22 -12 L12 -12 L30 14 L18 14 L36 30 L-36 30 L-18 14 L-30 14 L-12 -12 L-22 -12Z" fill="#2E9E4E"/>
   <path d="M0 -46 L12 -28 Q0 -24 -12 -28Z" fill="#3DBA63"/>
   ${garland ? '<path d="M-16 -6 Q2 2 18 -8 M-26 20 Q0 30 28 18" stroke="#FFD23F" stroke-width="2.4" fill="none"/>' : ''}
   <g class="ev-orn"><circle cx="-10" cy="-2" r="3.6" fill="#E2313B"/><circle cx="12" cy="6" r="3.6" fill="#FFD23F"/><circle cx="-16" cy="22" r="3.6" fill="#4D9BFF"/><circle cx="18" cy="24" r="3.6" fill="#E2313B"/><circle cx="2" cy="16" r="3.2" fill="#FF5FA2"/></g>
-  ${star ? `<g class="ev-star">${starPath(0, -50, 0.62)}</g>` : ''}`);
-const present = (x, y, s, c, r) => at(x, y, s, `<ellipse cy="14" rx="18" ry="3.5" fill="#000" opacity=".12"/><rect x="-15" y="-12" width="30" height="26" rx="3" fill="${c}"/><rect x="-17" y="-16" width="34" height="8" rx="2" fill="${c}"/>
-  <rect x="-3" y="-16" width="6" height="30" fill="${r}"/><path d="M0 -16 q-12 -12 -12 -2 q0 4 12 2 M0 -16 q12 -12 12 -2 q0 4 -12 2" stroke="${r}" stroke-width="3" fill="none"/>`);
-const cane = (x, y, s = 1) => at(x, y, s, `<path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
-  <path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#E2313B" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="4 5"/>`);
+  <g class="ev-star${star ? '' : ' off'}">${starPath(0, -50, 0.62)}</g>`, 'ev-tree'));
+const present = (x, y, s, c, r) => at(x, y, s, tapG('evPresent', `<ellipse cy="14" rx="18" ry="3.5" fill="#000" opacity=".12"/><rect x="-15" y="-12" width="30" height="26" rx="3" fill="${c}"/>
+  <rect x="-3" y="-12" width="6" height="26" fill="${r}"/>
+  <g class="ev-lid"><rect x="-17" y="-16" width="34" height="8" rx="2" fill="${c}"/><rect x="-3" y="-16" width="6" height="8" fill="${r}"/><path d="M0 -16 q-12 -12 -12 -2 q0 4 12 2 M0 -16 q12 -12 12 -2 q0 4 -12 2" stroke="${r}" stroke-width="3" fill="none"/></g>`, 'ev-present'));
+const cane = (x, y, s = 1) => at(x, y, s, tapG('evCane', `<rect x="-6" y="-16" width="26" height="44" fill="transparent"/><path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <path d="M0 26 V-8 a8 8 0 0 1 16 0" stroke="#E2313B" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="4 5"/>`));
 const santaHat = (x, y, s = 1) => at(x, y, s, `<path d="M-14 0 Q-4 -26 16 -22 Q8 -14 12 -2Z" fill="#E2313B"/><rect x="-16" y="-3" width="30" height="7" rx="3.5" fill="#fff"/><circle cx="17" cy="-22" r="4.5" fill="#fff"/>`);
+// a snowman for the worlds without snow (the winter world has its own)
+const snowman = (x, y, s = 1) => at(x, y, s, tapG('evSnowman', `<ellipse cy="34" rx="22" ry="4" fill="#000" opacity=".1"/><circle cy="16" r="19" fill="#fff" stroke="#DCE8FB" stroke-width="1.5"/><circle cy="-14" r="13" fill="#fff" stroke="#DCE8FB" stroke-width="1.5"/>
+  <circle cx="-4.5" cy="-16" r="1.8" fill="#2E2A33"/><circle cx="4.5" cy="-16" r="1.8" fill="#2E2A33"/><path d="M0 -12 l9 2 -9 2z" fill="#FF8A2B"/>
+  <path d="M-12 -3 q12 7 24 0 l-2 6 q-10 4 -20 0z" fill="#E2313B"/><circle cy="10" r="2" fill="#2E2A33"/><circle cy="19" r="2" fill="#2E2A33"/>
+  <path d="M-18 6 l-14 -10 M18 6 l14 -10" stroke="#8C5A3C" stroke-width="2.4" stroke-linecap="round"/>`, 'ev-snowman'));
 // ornaments on the pines of the winter world (they are drawn in the world itself)
 const pineBaubles = (x, y, s) => at(x, y, s, `<g class="ev-orn"><circle cx="-8" cy="-8" r="3.2" fill="#E2313B"/><circle cx="10" cy="4" r="3.2" fill="#FFD23F"/><circle cx="-16" cy="22" r="3.2" fill="#4D9BFF"/><circle cx="16" cy="26" r="3.2" fill="#FF5FA2"/><circle cx="2" cy="14" r="3" fill="#FFD23F"/></g>`);
-// a firework burst in the sky: rays that open and fade, again and again (d: its delay)
-const burst = (x, y, c, d, s = 1) => at(x, y, s, `<g class="ev-burst" style="--delay:${d}s">${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${(Math.cos(a) * 6).toFixed(1)} ${(Math.sin(a) * 6).toFixed(1)} L${(Math.cos(a) * 26).toFixed(1)} ${(Math.sin(a) * 26).toFixed(1)}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`; }).join('')}<circle r="3" fill="#fff"/></g>`);
-// Santa's sleigh crossing the sky now and then
-const sleigh = (y) => `<g class="ev-sleigh" style="--y:${y}px"><text font-size="30" dominant-baseline="central">🦌🦌🛷</text></g>`;
+// a firework burst in the sky: rays that open and fade, again and again (d: its delay); a tap sets one off there
+const burst = (x, y, c, d, s = 1) => at(x, y, s, tapG('evBurst', `<circle r="30" fill="transparent"/><g class="ev-burst" style="--delay:${d}s">${Array.from({ length: 12 }, (_, i) => { const a = (i / 12) * Math.PI * 2; return `<path d="M${(Math.cos(a) * 6).toFixed(1)} ${(Math.sin(a) * 6).toFixed(1)} L${(Math.cos(a) * 26).toFixed(1)} ${(Math.sin(a) * 26).toFixed(1)}" stroke="${c}" stroke-width="3" stroke-linecap="round"/>`; }).join('')}<circle r="3" fill="#fff"/></g>`));
+// Santa's sleigh crossing the sky now and then (in the last week and on the day)
+const sleigh = (y) => `<g class="ev-sleigh" style="--y:${y}px">${tapG('evSleigh', '<rect x="-4" y="-22" width="110" height="44" fill="transparent"/><text font-size="30" dominant-baseline="central">🦌🦌🛷</text>')}</g>`;
+// the New Year clock, a little before midnight (a long press counts down to it)
+const clock = (x, y, s = 1) => at(x, y, s, tapG('evClock', `<ellipse cy="34" rx="18" ry="3.5" fill="#000" opacity=".12"/><rect x="-4" y="14" width="8" height="20" fill="#8C5A3C"/>
+  <circle r="20" fill="#FFF8E6" stroke="#E2A800" stroke-width="4"/><circle r="2.5" fill="#2E2A33"/>
+  ${[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((i) => { const a = (i / 12) * Math.PI * 2; return `<circle cx="${(Math.sin(a) * 15).toFixed(1)}" cy="${(-Math.cos(a) * 15).toFixed(1)}" r="1.4" fill="#8A5A00"/>`; }).join('')}
+  <path class="ev-hand" d="M0 0 L0 -13" stroke="#2E2A33" stroke-width="2.6" stroke-linecap="round"/><path d="M0 0 L-5 -9" stroke="#2E2A33" stroke-width="3" stroke-linecap="round"/>`, 'ev-clock'));
+// party balloons on a string (a tap pops one into confetti; it grows back)
+const partyBalloon = (x, y, s, c) => at(x, y, s, tapG('evBalloon', `<path d="M0 0 q-5 -16 1 -30" stroke="#9A8AA0" stroke-width="1.4" fill="none"/>
+  <g class="ev-bob"><ellipse cx="1" cy="-44" rx="12" ry="15" fill="${c}"/><path d="M-2 -29 l3 3 3 -3z" fill="${c}"/><ellipse cx="-4" cy="-50" rx="3" ry="5" fill="#fff" opacity=".45"/></g>`, 'ev-balloon'));
 
-function christmasScene(world, stage) {
+function christmasScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
-  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 0.9, stage >= 4, stage >= 2), present(p.L[0] + 34, p.L[1] + 18, 0.7, '#E2313B', '#FFD23F'));
-  if (stage >= 2) {
-    if (world !== 'winter') back.push(snow(18));
-    if (world === 'winter') front.push(pineBaubles(40, 412, 1.1), pineBaubles(355, 398, 1.3), pineBaubles(300, 434, 0.8));
-    front.push(present(...p.R, 0.85, '#2E9E4E', '#E2313B'), present(p.R[0] - 26, p.R[1] + 14, 0.6, '#4D9BFF', '#fff'), cane(p.l[0] + 4, p.l[1] - 20, 0.8), cane(p.r[0] - 8, p.r[1] - 22, 0.7));
-  }
-  if (stage >= 3) {
-    if (world === 'irish') front.push(santaHat(52, 457, 0.55), santaHat(270, 518, 0.5));
-    if (world === 'beach') front.push(santaHat(338, 588, 0.4));
-    front.push(present(p.l[0] + 30, p.l[1] + 8, 0.55, '#FF5FA2', '#fff'));
-  }
-  if (stage >= 4) back.push(sleigh(p.sky - 20));
+  if (world !== 'winter') back.push(snow(18));
+  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 1, stage >= 4 || week, true), present(p.L[0] + 24, p.L[1] + 26, 0.75, '#E2313B', '#FFD23F'));
+  if (world === 'winter') front.push(pineBaubles(40, 412, 1.1), pineBaubles(355, 398, 1.3), pineBaubles(300, 434, 0.8));
+  else front.push(snowman(p.R[0] - 2, p.R[1] - 12, 0.85));
+  front.push(present(p.R[0] - 18, p.R[1] + 34, 0.8, '#2E9E4E', '#E2313B'), present(p.R[0] + 16, p.R[1] + 40, 0.6, '#4D9BFF', '#fff'), cane(p.l[0] + 4, p.l[1] - 20, 0.8), cane(p.r[0] - 8, p.r[1] - 22, 0.7));
+  if (world === 'irish') front.push(santaHat(52, 457, 0.55), santaHat(270, 518, 0.5));
+  if (world === 'beach') front.push(santaHat(338, 588, 0.4));
+  front.push(present(p.l[0] + 30, p.l[1] + 8, 0.55, '#FF5FA2', '#fff'));
+  if (week || stage >= 4) back.push(sleigh(p.sky - 20));
   return back.join('') + front.join('');
 }
 
-function newYearScene(world, stage) {
+function newYearScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
   back.push(burst(70, p.sky - 30, '#FFD23F', -0.5), burst(330, p.sky - 50, '#FF5FA2', -1.7, 0.9), burst(210, p.sky - 70, '#6FD3FF', -2.6, 0.8));
-  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 0.95, true, true), present(p.L[0] + 34, p.L[1] + 18, 0.7, '#8B6CFF', '#FFD23F'), present(...p.R, 0.8, '#E2313B', '#fff'));
+  front.push(xmasTree(p.L[0] + 6, p.L[1] - 18, 0.95, true, true), present(p.L[0] + 24, p.L[1] + 26, 0.7, '#8B6CFF', '#FFD23F'), clock(p.R[0] - 4, p.R[1] - 6, 0.9),
+    present(p.R[0] + 14, p.R[1] + 40, 0.65, '#E2313B', '#fff'));
+  front.push(partyBalloon(p.l[0] + 12, p.l[1] + 4, 0.8, '#FF5FA2'), partyBalloon(p.r[0] - 14, p.r[1] + 2, 0.75, '#FFD23F'));
   if (world !== 'winter') back.push(snow(12));
-  if (stage >= 4) {
-    back.push(burst(130, p.sky + 10, '#9BE15D', -3.3, 0.7), burst(280, p.sky + 20, '#FF922E', -0.9, 0.75));
-    front.push(`<text class="ev-year" x="200" y="${p.sky - 40}" text-anchor="middle" font-size="44" font-weight="900" fill="#FFD23F" stroke="#E2A800" stroke-width="1.5">${new Date().getFullYear()}</text>`);
-  }
+  if (week || stage >= 4) back.push(burst(130, p.sky + 10, '#9BE15D', -3.3, 0.7), burst(280, p.sky + 20, '#FF922E', -0.9, 0.75));
+  if (stage >= 4) front.push(`<text class="ev-year" x="200" y="${p.sky - 40}" text-anchor="middle" font-size="44" font-weight="900" fill="#FFD23F" stroke="#E2A800" stroke-width="1.5">${new Date().getFullYear()}</text>`);
   return back.join('') + front.join('');
 }
 
-// Valentine's Day
+// ----- Valentine's Day -----
 const HEART = 'M0 7 C-13 -3 -11 -16 0 -9 C11 -16 13 -3 0 7Z';
-const heartBalloon = (x, y, s, c) => at(x, y, s, `<path d="M0 0 q-6 -18 2 -34" stroke="#9A8AA0" stroke-width="1.4" fill="none"/><g class="ev-bob"><path transform="translate(2 -44) scale(1.6)" d="${HEART}" fill="${c}"/>
-  <ellipse cx="-4" cy="-52" rx="3" ry="5" fill="#fff" opacity=".45"/></g>`);
+const heartBalloon = (x, y, s, c) => at(x, y, s, tapG('evHeartBalloon', `<path d="M0 0 q-6 -18 2 -34" stroke="#9A8AA0" stroke-width="1.4" fill="none"/><g class="ev-bob"><path transform="translate(2 -44) scale(1.6)" d="${HEART}" fill="${c}"/>
+  <ellipse cx="-4" cy="-52" rx="3" ry="5" fill="#fff" opacity=".45"/></g>`, 'ev-balloon'));
 // hearts drifting up from the grass, one after another
-const risingHeart = (x, y, c, d, s = 1) => `<g class="ev-rise" style="--delay:${d}s"><path transform="translate(${x} ${y}) scale(${s})" d="${HEART}" fill="${c}"/></g>`;
-function valentineScene(world, stage) {
+const risingHeart = (x, y, c, d, s = 1) => `<g class="ev-rise" style="--delay:${d}s">${tapG('evHeart', `<circle cx="${x}" cy="${y}" r="${14 * s}" fill="transparent"/><path transform="translate(${x} ${y}) scale(${s})" d="${HEART}" fill="${c}"/>`)}</g>`;
+const rose = (x, y, s = 1) => at(x, y, s, tapG('evRose', `<rect x="-12" y="-30" width="24" height="44" fill="transparent"/><path d="M0 12 v-22" stroke="#2E9E4E" stroke-width="2.4"/><path d="M0 0 q8 -2 9 -9 q-7 1 -9 6" fill="#3DBA63"/>
+  <circle cy="-14" r="8" fill="#E2313B"/><path d="M-5 -15 q5 -6 10 0 q-5 5 -10 0z M-3 -12 q3 3 6 0" stroke="#A5121D" stroke-width="1.4" fill="none"/>`, 'ev-rose'));
+// a mailbox full of love letters (a tap sends one to Lucky)
+const mailbox = (x, y, s = 1) => at(x, y, s, tapG('evMailbox', `<ellipse cy="38" rx="16" ry="3.5" fill="#000" opacity=".12"/><rect x="-3" y="4" width="6" height="34" fill="#8C5A3C"/>
+  <path d="M-16 6 v-14 a16 12 0 0 1 32 0 v14z" fill="#FF5FA2"/><path d="M-16 6 h32" stroke="#E23D86" stroke-width="2"/><rect x="12" y="-14" width="3" height="16" fill="#E2313B"/><path d="M15 -14 h8 v6 h-8z" fill="#E2313B"/>
+  <path transform="translate(0 -3) scale(.6)" d="${HEART}" fill="#fff"/>`, 'ev-mailbox'));
+function valentineScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
-  front.push(heartBalloon(p.L[0] + 4, p.L[1] + 18, 1, '#FF5FA2'), heartBalloon(p.R[0] - 4, p.R[1] + 16, 0.9, '#E2313B'));
+  front.push(heartBalloon(p.L[0] + 4, p.L[1] + 18, 1, '#FF5FA2'), heartBalloon(p.R[0] - 18, p.R[1] + 18, 0.9, '#E2313B'), mailbox(p.R[0] + 8, p.R[1] + 4, 0.8));
+  front.push(rose(p.l[0] + 10, p.l[1] - 4, 0.9), rose(p.l[0] + 28, p.l[1] + 4, 0.75), rose(p.r[0] - 12, p.r[1] - 4, 0.85));
   [[60, '#FF5FA2', -1], [150, '#E2313B', -3.2], [250, '#FF8FC0', -5.1], [340, '#FF5FA2', -2.2]].forEach(([x, c, d]) => back.push(risingHeart(x, 640, c, d, 0.9)));
-  if (stage >= 4) {
-    front.push(heartBalloon(p.l[0] + 6, p.l[1] + 12, 0.7, '#B78CFF'), heartBalloon(p.r[0] - 6, p.r[1] + 12, 0.7, '#FF8FC0'));
-    [[100, '#FF8FC0', -4.2], [300, '#E2313B', -0.6], [200, '#FF5FA2', -6]].forEach(([x, c, d]) => back.push(risingHeart(x, 660, c, d, 0.7)));
-  }
+  if (week || stage >= 4) front.push(heartBalloon(p.l[0] + 6, p.l[1] + 12, 0.7, '#B78CFF'), heartBalloon(p.r[0] - 6, p.r[1] + 12, 0.7, '#FF8FC0'));
+  if (stage >= 4) [[100, '#FF8FC0', -4.2], [300, '#E2313B', -0.6], [200, '#FF5FA2', -6]].forEach(([x, c, d]) => back.push(risingHeart(x, 660, c, d, 0.7)));
   return back.join('') + front.join('');
 }
 
-// St Patrick's Day
+// ----- St Patrick's Day -----
 const leprechaunHat = (x, y, s = 1) => at(x, y, s, `<ellipse rx="20" ry="4.5" fill="#1E7A3A"/><path d="M-12 -1 L-10 -26 H10 L12 -1Z" fill="#2E9E4E"/><rect x="-11" y="-9" width="22" height="5" fill="#2E2A33"/><rect x="-4" y="-10" width="8" height="7" fill="none" stroke="#FFD23F" stroke-width="2"/>`);
 const rainbowPot = (x, y, s = 1) => at(x, y, s, `${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) => `<path d="M${-58 + i * 5} 0 A${58 - i * 5} ${58 - i * 5} 0 0 1 ${58 - i * 5} 0" stroke="${c}" stroke-width="5" fill="none" opacity=".8"/>`).join('')}
-  <g transform="translate(46 -4)"><path d="M-14 4 q-3 -12 14 -12 q17 0 14 12 q-2 9 -14 9 q-12 0 -14 -9z" fill="#2E2A33"/><rect x="-15" y="-10" width="30" height="5" rx="2.5" fill="#3A3640"/>
-  <circle cx="-6" cy="-12" r="4" fill="#FFD23F"/><circle cx="3" cy="-14" r="4" fill="#FFC21A"/><circle cx="9" cy="-11" r="4" fill="#FFD23F"/></g>`);
-const clover3 = (x, y, r = 5) => `<g transform="translate(${x} ${y})" fill="#2E9E4E"><circle cy="${-r}" r="${r}"/><circle cx="${-r}" cy="${r * 0.3}" r="${r}"/><circle cx="${r}" cy="${r * 0.3}" r="${r}"/><path d="M0 ${r} q1 ${r} 3 ${r * 1.6}" stroke="#2E9E4E" stroke-width="1.6" fill="none"/></g>`;
-function patrickScene(world, stage) {
+  ${tapG('evPot', `<g transform="translate(46 -4)"><circle r="20" fill="transparent"/><path d="M-14 4 q-3 -12 14 -12 q17 0 14 12 q-2 9 -14 9 q-12 0 -14 -9z" fill="#2E2A33"/><rect x="-15" y="-10" width="30" height="5" rx="2.5" fill="#3A3640"/>
+  <circle cx="-6" cy="-12" r="4" fill="#FFD23F"/><circle cx="3" cy="-14" r="4" fill="#FFC21A"/><circle cx="9" cy="-11" r="4" fill="#FFD23F"/></g>`)}`);
+const clover3 = (x, y, r = 5) => `<g transform="translate(${x} ${y})">${tapG('evClover', `<circle r="${r * 2.2}" fill="transparent"/><g fill="#2E9E4E"><circle cy="${-r}" r="${r}"/><circle cx="${-r}" cy="${r * 0.3}" r="${r}"/><circle cx="${r}" cy="${r * 0.3}" r="${r}"/></g><path d="M0 ${r} q1 ${r} 3 ${r * 1.6}" stroke="#2E9E4E" stroke-width="1.6" fill="none"/>`)}</g>`;
+// the leprechaun's gold coins, hidden around every world (found with a tap, like Easter eggs)
+const coin = (x, y, i) => at(x, y, 1, `<g data-tap="coin" data-coin="${i}" class="ev-coin"><circle r="13" fill="transparent"/><ellipse cy="9" rx="8" ry="2" fill="#000" opacity=".12"/><circle r="8" fill="#FFD23F" stroke="#E6A800" stroke-width="2"/><path d="M-2.5 -3.5 q5 -2 5 3.5 q0 5 -5 3.5" stroke="#E6A800" stroke-width="1.6" fill="none"/></g>`);
+function patrickScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, front = [];
   front.push(clover3(p.L[0], p.L[1] + 10, 7), clover3(p.L[0] + 26, p.L[1] + 24, 5), clover3(p.R[0], p.R[1] + 14, 6), clover3(p.r[0] - 10, p.r[1], 5));
-  if (stage >= 3) {
-    if (world !== 'irish') front.push(rainbowPot(p.R[0] - 40, p.R[1] + 8, 0.75));
-    if (world === 'irish') front.push(leprechaunHat(52, 458, 0.55), leprechaunHat(271, 519, 0.5));
-    if (world === 'beach') front.push(leprechaunHat(338, 589, 0.42));
-    front.push(clover3(p.l[0] + 8, p.l[1] + 6, 5), clover3(120, 676, 4), clover3(290, 682, 4));
-  }
+  if (world !== 'irish') front.push(rainbowPot(p.R[0] - 40, p.R[1] + 8, 0.75));
+  if (world === 'irish') front.push(leprechaunHat(52, 458, 0.55), leprechaunHat(271, 519, 0.5));
+  if (world === 'beach') front.push(leprechaunHat(338, 589, 0.42));
+  front.push(clover3(p.l[0] + 8, p.l[1] + 6, 5), clover3(120, 676, 4), clover3(290, 682, 4));
+  const hide = [[p.L[0] + 14, p.L[1] + 40], [p.r[0] - 30, p.r[1] + 6], [p.l[0] + 36, p.l[1] + 14], [96, 690], [306, 692]];
+  hide.slice(0, week || stage >= 4 ? 5 : 3).forEach(([x, y], i) => front.push(coin(x, y, i)));
   return front.join('');
 }
 
-// Easter: painted eggs hidden around the scene (an egg hunt: they can be found with a tap), a basket, chicks
+// ----- Easter: painted eggs hidden around the scene (an egg hunt: they can be found with a tap), a basket, chicks -----
 const EGG_LOOKS = [['#FFB3D6', '#FF5FA2', 'zig'], ['#B5E8FF', '#4D9BFF', 'dots'], ['#FFF2A8', '#FF922E', 'band'], ['#C7F2B5', '#2E9E4E', 'zig'], ['#D9C7FF', '#8B6CFF', 'dots'], ['#FFE066', '#E2A800', 'gold']];
 function egg(x, y, s, look, i) {
   const [base, line, kind] = look;
@@ -583,31 +618,32 @@ function egg(x, y, s, look, i) {
         : '<path d="M-3 -8 l2 3 3 1 -3 1 -2 3 -1 -3 -3 -1 3 -1z" fill="#fff" opacity=".9"/>';
   return at(x, y, s, `<g data-tap="egg" data-egg="${i}" class="ev-egg${kind === 'gold' ? ' gold' : ''}"><ellipse cy="13" rx="10" ry="2.5" fill="#000" opacity=".12"/><path d="M0 -14 C9 -14 12 0 11 4 C10 11 5 13 0 13 C-5 13 -10 11 -11 4 C-12 0 -9 -14 0 -14Z" fill="${base}" stroke="#fff" stroke-width="1"/>${deco}</g>`);
 }
-const chick = (x, y, s = 1) => at(x, y, s, `<g class="ev-bob"><ellipse cy="2" rx="10" ry="9" fill="#FFE066"/><circle cy="-8" r="7" fill="#FFE066"/><circle cx="-2.5" cy="-9" r="1.2" fill="#3A2216"/><circle cx="2.5" cy="-9" r="1.2" fill="#3A2216"/>
-  <path d="M-2 -6 l2 3 2 -3z" fill="#FF922E"/><path d="M-8 1 q-6 -2 -6 4 q4 -1 6 1" fill="#FFD23F"/></g>`);
-const basket = (x, y, s = 1) => at(x, y, s, `<ellipse cy="16" rx="26" ry="4" fill="#000" opacity=".12"/><path d="M-22 -2 a22 22 0 0 1 44 0" stroke="#C98E5A" stroke-width="3.5" fill="none"/>
-  <ellipse cx="-10" cy="-2" rx="6" ry="8" fill="#FFB3D6"/><ellipse cx="2" cy="-4" rx="6" ry="8" fill="#B5E8FF"/><ellipse cx="13" cy="-2" rx="6" ry="8" fill="#FFF2A8"/>
-  <path d="M-24 -2 h48 l-6 18 h-36z" fill="#E0A86E"/><path d="M-22 4 h44 M-20 10 h40" stroke="#C98E5A" stroke-width="2"/>`);
-const tulip = (x, y, c, s = 1) => at(x, y, s, `<path d="M0 0 v-18" stroke="#2E9E4E" stroke-width="2.4"/><path d="M0 -6 q-7 -2 -8 -9 q6 1 8 7" fill="#3DBA63"/><path d="M-6 -26 q6 -8 12 0 q0 8 -6 9 q-6 -1 -6 -9z M-6 -26 l3 4 3 -6 3 6 3 -4" fill="${c}"/>`);
-function easterScene(world, stage) {
+const chick = (x, y, s = 1) => at(x, y, s, tapG('evChick', `<circle cy="-2" r="14" fill="transparent"/><g class="ev-bob"><ellipse cy="2" rx="10" ry="9" fill="#FFE066"/><circle cy="-8" r="7" fill="#FFE066"/><circle cx="-2.5" cy="-9" r="1.2" fill="#3A2216"/><circle cx="2.5" cy="-9" r="1.2" fill="#3A2216"/>
+  <path d="M-2 -6 l2 3 2 -3z" fill="#FF922E"/><path d="M-8 1 q-6 -2 -6 4 q4 -1 6 1" fill="#FFD23F"/></g>`));
+const basket = (x, y, s = 1) => at(x, y, s, tapG('evBasket', `<ellipse cy="16" rx="26" ry="4" fill="#000" opacity=".12"/><path d="M-22 -2 a22 22 0 0 1 44 0" stroke="#C98E5A" stroke-width="3.5" fill="none"/>
+  <g class="ev-inbasket"><ellipse cx="-10" cy="-2" rx="6" ry="8" fill="#FFB3D6"/><ellipse cx="2" cy="-4" rx="6" ry="8" fill="#B5E8FF"/><ellipse cx="13" cy="-2" rx="6" ry="8" fill="#FFF2A8"/></g>
+  <path d="M-24 -2 h48 l-6 18 h-36z" fill="#E0A86E"/><path d="M-22 4 h44 M-20 10 h40" stroke="#C98E5A" stroke-width="2"/>`));
+const tulip = (x, y, c, s = 1) => at(x, y, s, tapG('evTulip', `<rect x="-10" y="-34" width="20" height="36" fill="transparent"/><path d="M0 0 v-18" stroke="#2E9E4E" stroke-width="2.4"/><path d="M0 -6 q-7 -2 -8 -9 q6 1 8 7" fill="#3DBA63"/><path d="M-6 -26 q6 -8 12 0 q0 8 -6 9 q-6 -1 -6 -9z M-6 -26 l3 4 3 -6 3 6 3 -4" fill="${c}"/>`, 'ev-tulip'));
+function easterScene(world, stage, week) {
   const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
   // where the eggs hide: next to the big spots, in the corners, along the bottom
-  const hide = [[p.L[0] + 30, p.L[1] + 20], [p.R[0] - 30, p.R[1] + 18], [p.l[0] + 6, p.l[1] + 10], [p.r[0] - 6, p.r[1] + 8], [118, 684], [286, 688]];
-  const n = stage >= 4 ? 6 : stage >= 3 ? 5 : stage >= 2 ? 4 : 3;
+  const hide = [[p.L[0] + 22, p.L[1] + 28], [p.R[0] - 12, p.R[1] + 22], [p.l[0] + 6, p.l[1] + 10], [p.r[0] - 6, p.r[1] + 8], [118, 684], [286, 688]];
+  const n = stage >= 4 ? 6 : week ? 5 : 4;
   hide.slice(0, n).forEach(([x, y], i) => front.push(egg(x, y, 1, EGG_LOOKS[n === 6 && i === 5 ? 5 : i % 5], i)));
   front.push(basket(p.L[0] + 2, p.L[1] - 4, 0.9));
-  if (stage >= 2) front.push(tulip(p.R[0] + 4, p.R[1] + 6, '#FF5FA2'), tulip(p.R[0] + 16, p.R[1] + 10, '#FFD23F', 0.85), tulip(p.L[0] - 12, p.L[1] + 26, '#B78CFF', 0.85));
-  if (stage >= 3) front.push(chick(p.L[0] + 46, p.L[1] + 8, 0.9), chick(p.R[0] - 48, p.R[1] + 4, 0.8));
+  front.push(tulip(p.R[0] + 4, p.R[1] + 6, '#FF5FA2'), tulip(p.R[0] + 16, p.R[1] + 10, '#FFD23F', 0.85), tulip(p.L[0] - 12, p.L[1] + 26, '#B78CFF', 0.85));
+  front.push(chick(p.l[0] + 40, p.l[1] - 10, 0.9), chick(p.r[0] - 40, p.r[1] - 12, 0.8));
   return back.join('') + front.join('');
 }
 
-// things along the top edge of the scene (HTML, so they stay at the top on every phone)
+// things along the top edge of the scene (HTML, so they stay at the top on every phone); the spider and the lights
+// answer taps
 const heartString = () => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="30" viewBox="0 0 60 30"><path d="M0 3 Q30 9 60 3" stroke="#C8456B" stroke-width="1.2" fill="none"/><path transform="translate(15 14) scale(.8)" d="${HEART}" fill="#FF5FA2"/><path transform="translate(45 14) scale(.8)" d="${HEART}" fill="#E2313B"/><path d="M15 5 v4 M45 5 v4" stroke="#C8456B" stroke-width="1"/></svg>`;
   return `<div class="ev-bunting" style="background-image:url('data:image/svg+xml,${encodeURIComponent(svg)}');background-size:60px 30px"></div>`;
 };
 // a string of fairy lights: the bulbs twinkle one after another
-const lights = (colors) => `<svg class="ev-lights" viewBox="0 0 400 34" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q50 18 100 6 T200 6 T300 6 T400 6" stroke="#2E5E3A" stroke-width="1.6" fill="none"/>${
+const lights = (colors) => `<svg class="ev-lights" data-tap="evLights" viewBox="0 0 400 34" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q50 18 100 6 T200 6 T300 6 T400 6" stroke="#2E5E3A" stroke-width="1.6" fill="none"/>${
   Array.from({ length: 16 }, (_, i) => { const x = 12 + i * 25, y = 7 + Math.abs(Math.sin(((x % 100) / 100) * Math.PI)) * 9; return `<g transform="translate(${x} ${y.toFixed(1)})"><rect x="-2.5" y="-1" width="5" height="4" fill="#556"/><ellipse class="ev-bulb b${i % 3}" cy="8" rx="4.2" ry="6" fill="${colors[i % colors.length]}"/></g>`; }).join('')}</svg>`;
 const tinsel = '<svg class="ev-tinsel" viewBox="0 0 400 26" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q25 22 50 6 T100 6 T150 6 T200 6 T250 6 T300 6 T350 6 T400 6" stroke="#FFD23F" stroke-width="5" fill="none" stroke-dasharray="2 2"/><path d="M0 4 Q25 18 50 4 T100 4 T150 4 T200 4 T250 4 T300 4 T350 4 T400 4" stroke="#D9DEE8" stroke-width="3" fill="none" stroke-dasharray="1 3"/></svg>';
 const bunting = (colors) => {
@@ -617,23 +653,23 @@ const bunting = (colors) => {
 };
 const cobweb = '<svg class="ev-web" viewBox="0 0 100 100" aria-hidden="true"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9"><path d="M0 0 L100 32 M0 0 L80 80 M0 0 L32 100 M0 0 L100 0 M0 0 L0 100"/><path d="M22 0 Q19 13 18 18 Q12 19 0 22 M46 0 Q40 26 37 37 Q26 40 0 46 M72 0 Q64 40 57 57 Q40 64 0 72"/></g></svg>';
 const TOPS = {
-  halloween: (stage) => (stage >= 2 ? cobweb + '<div class="ev-spider"><span>🕷️</span></div>' : '') + (stage >= 3 ? bunting(['#FF8A1F', '#3A2246', '#7B3FB8']) : ''),
-  christmas: (stage) => (stage >= 2 ? lights(['#E2313B', '#FFD23F', '#2E9E4E', '#4D9BFF']) : ''),
+  halloween: () => cobweb + '<div class="ev-spider" data-tap="evSpider"><span>🕷️</span></div>' + bunting(['#FF8A1F', '#3A2246', '#7B3FB8']),
+  christmas: () => lights(['#E2313B', '#FFD23F', '#2E9E4E', '#4D9BFF']),
   newyear: () => tinsel + lights(['#FFD23F', '#FF5FA2', '#6FD3FF', '#9BE15D']),
   valentine: () => heartString(),
-  patrick: (stage) => (stage >= 2 ? bunting(['#2E9E4E', '#FFFFFF', '#FF8A1F']) : ''),
-  easter: (stage) => (stage >= 2 ? bunting(['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5']) : ''),
+  patrick: () => bunting(['#2E9E4E', '#FFFFFF', '#FF8A1F']),
+  easter: () => bunting(['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5']),
 };
 const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene, valentine: valentineScene, patrick: patrickScene, easter: easterScene };
 
 // the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
-export function eventScene(id, world, stage) {
+export function eventScene(id, world, stage, week = false) {
   const fn = SCENES[id];
-  const svg = fn ? fn(world, stage) : '';
+  const svg = fn ? fn(world, stage, week) : '';
   return svg ? `<svg class="ev-layer" viewBox="0 0 400 700" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${svg}</svg>` : '';
 }
 export function eventTop(id, stage) {
-  const html = TOPS[id]?.(stage) || '';
+  const html = stage >= 2 ? TOPS[id]?.(stage) || '' : '';
   return html ? `<div class="ev-top">${html}</div>` : '';
 }
 

@@ -886,7 +886,7 @@ const HOLIDAY_CARRIER = { halloween: '🦇', christmas: '🎅', newyear: '🎅',
 const HOLIDAY_RIDE = { halloween: '🧹', christmas: '🛷', newyear: '🛷' };
 const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown' };
 const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
-const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage) + art.eventTop(EV.id, EV.stage) : '');
+const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage, EV.days <= 7) + art.eventTop(EV.id, EV.stage) : '');
 
 function currentEvent() {
   if (!S.settings.holidays) return null;
@@ -896,8 +896,9 @@ function currentEvent() {
 
 // Called at start and every minute: when the holiday or its stage changes, redecorate
 function updateEvent(force = false) {
-  const ev = currentEvent(), key = ev ? ev.id + ev.stage : '';
-  if (!force && key === (EV ? EV.id + EV.stage : '')) return;
+  const keyOf = (e) => (e ? e.id + e.stage + (e.days <= 7 ? 'w' : '') : ''); // the last week brings a few more things
+  const ev = currentEvent(), key = keyOf(ev);
+  if (!force && key === keyOf(EV)) return;
   EV = ev;
   const b = document.body;
   [...b.classList].filter((c) => c.startsWith('ev-')).forEach((c) => b.classList.remove(c));

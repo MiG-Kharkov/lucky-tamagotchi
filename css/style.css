@@ -1141,7 +1141,7 @@ body.editing .bubble { pointer-events: none; opacity: .88; }
 .ev-bunting { position: absolute; left: -10px; right: -10px; top: 0; height: 30px; background-repeat: repeat-x; filter: drop-shadow(0 2px 2px #0002); transform-origin: 50% 0; animation: evSway 5s ease-in-out infinite alternate; }
 @keyframes evSway { to { transform: translateY(2px) rotate(.5deg); } }
 .bg svg.ev-web { position: absolute; inset: 0 0 auto auto; width: 84px; height: 84px; transform: scaleX(-1); }
-.ev-spider { position: absolute; left: 34%; top: 0; width: 1.5px; height: 60px; background: #ffffffcc; transform-origin: 50% 0; animation: evSpider 6s ease-in-out infinite; }
+.ev-spider { position: absolute; left: 58%; top: 0; width: 1.5px; height: 60px; background: #ffffffcc; transform-origin: 50% 0; animation: evSpider 6s ease-in-out infinite; }
 .ev-spider span { position: absolute; left: 50%; bottom: -12px; transform: translateX(-50%); font-size: 22px; line-height: 1; }
 @keyframes evSpider { 0%, 100% { height: 40px; } 50% { height: 96px; } }
 .ev-pumpkin.lit { filter: drop-shadow(0 0 6px #FFB347); }
@@ -1563,3 +1563,42 @@ body.ev-easter.ev-s3 {
 /* Halloween: a touch of dusk over the scene all season (full dusk on the day itself) */
 .ev-halloween.ev-s3 .dusk { opacity: .14; }
 .ev-halloween.ev-s4 .scene .dusk { opacity: .3; }
+/* holiday things answer taps (art.js eventScene, antics.js) */
+.ev-top [data-tap] { pointer-events: auto; cursor: pointer; }
+.ev-pumpkin.glow { filter: drop-shadow(0 0 7px #FFB347); }
+.ev-pumpkin.glow .ev-face { fill: #FFE066; }
+.ev-sweet { transition: opacity .3s; }
+.ev-sweet.eaten { opacity: 0; pointer-events: none; }
+.ev-brew circle { animation: evBrew 1.8s ease-in infinite; transform-box: fill-box; transform-origin: center; }
+.ev-brew circle:nth-child(2) { animation-delay: -.6s; } .ev-brew circle:nth-child(3) { animation-delay: -1.2s; }
+@keyframes evBrew { 0% { transform: translateY(4px) scale(.4); opacity: 0; } 30% { opacity: 1; } 100% { transform: translateY(-14px) scale(1.1); opacity: 0; } }
+.ev-cauldron.boil .ev-brew circle { animation-duration: .5s; }
+.lucky.potion .l-art { filter: hue-rotate(var(--potion, 200deg)) saturate(1.3); }
+.ev-bat.fast { animation-duration: 2.5s; }
+[data-tap].spook { animation: spook .9s ease-in-out; }
+@keyframes spook { 30% { transform: scale(1.35) translateY(-6px); } 60% { transform: scale(.9); } }
+[data-tap].twirl { animation: twirlIt 1.3s ease-in-out; }
+@keyframes twirlIt { to { transform: rotate(360deg); } }
+.ev-spider.drop { animation: evSpiderDrop 1.7s ease-in-out; }
+@keyframes evSpiderDrop { 0% { height: 60px; } 40%, 60% { height: 150px; } 100% { height: 60px; } }
+.ev-spider.climb { animation: evSpiderUp 1.3s ease-in-out; }
+@keyframes evSpiderUp { 50% { height: 12px; } }
+.ev-tree.sparkle .ev-orn circle { animation: evOrn .3s ease-in-out infinite alternate; }
+@keyframes evOrn { to { opacity: .35; } }
+.ev-tree.sparkle { filter: drop-shadow(0 0 6px #FFE066); }
+.ev-star.off { display: none; }
+.ev-lid { transform-box: fill-box; transform-origin: 0% 100%; transition: transform .35s cubic-bezier(.3, 1.4, .5, 1); }
+.ev-present.open .ev-lid { transform: translate(-6px, -12px) rotate(-24deg); }
+[data-tap].rattle { animation: rattle .3s ease-in-out 3; }
+@keyframes rattle { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+[data-tap].wobble { transform-origin: 50% 100%; animation: wobble 1s ease-in-out; }
+.ev-lights.flash .ev-bulb { animation: evBulb .25s ease-in-out infinite; }
+.ev-balloon { transition: opacity .25s, transform .25s; }
+.ev-balloon.popped { opacity: 0; transform: scale(.3); pointer-events: none; }
+.ev-coin.found { opacity: 0; pointer-events: none; transition: opacity .5s; }
+.ev-coin { animation: evEgg 4.5s ease-in-out infinite; transform-origin: 50% 90%; }
+[data-tap].hopIt { animation: hopIt .6s cubic-bezier(.3, 1.6, .5, 1); }
+@keyframes hopIt { 40% { transform: translateY(-10px); } }
+@media (prefers-reduced-motion: reduce) {
+  .ev-brew circle, .ev-coin { animation: none !important; }
+}

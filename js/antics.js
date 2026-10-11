@@ -4,10 +4,11 @@
 
 import { LUCKY, DOG, CHATS } from './i18n.js';
 import { sfx } from './sound.js';
-import { PROPS, decor as decorArt } from './art.js';
+import { PROPS, decor as decorArt, PUMPKIN_FACES } from './art.js';
 
 const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90, SWIPE_MS = 280, SWIPE_PX = 55;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const pick = (a) => a[Math.floor(Math.random() * a.length)];
 
 // Gestures on elements found by find(target):
 //   press  - every tap, at once (p.second is true for the second tap of a double tap)
@@ -887,8 +888,254 @@ export function createAntics(api) {
       else line(gold ? 'goldenEgg' : LUCKY.sensei.found, 1, 0);
     },
   };
-  // the world was drawn again: eggs found before stay found
-  function refreshEggs() { ui.bg.querySelectorAll('.ev-egg').forEach((e) => { if (foundEggs.has(eggKey(e))) e.classList.add('found'); }); }
+  // the leprechaun's gold coins: found the same way, one coin flies to Lucky
+  const foundCoins = new Set();
+  const coinKey = (el) => api.world() + ':' + el.dataset.coin;
+  R.coin = {
+    press: () => sfx.catch(),
+    tap: (c) => {
+      if (foundCoins.has(coinKey(c.el))) return;
+      foundCoins.add(coinKey(c.el));
+      c.el.classList.add('found');
+      const left = ui.bg.querySelectorAll('.ev-coin:not(.found)').length;
+      fly('🪙', [c.x, c.y], paw(), 700, { arc: 50, spin: 360, size: 24 });
+      api.fxAt(c.x, c.y, ['✨', '🍀'], 5, 'spark');
+      sfx.sparkle();
+      api.reward();
+      if (!api.free()) return;
+      pose('laugh', 1400, 'clap');
+      line(left ? [...H.coin, ...LUCKY.sensei.found] : LUCKY.sensei.huntDone, 1, 0);
+      if (!left) setTimeout(() => { if (api.free()) { pose('laugh', 1900, 'jig', 1900); sfx.jig(); } }, 1600);
+    },
+  };
+  // the world was drawn again: eggs and coins found before stay found
+  function refreshEggs() {
+    ui.bg.querySelectorAll('.ev-egg').forEach((e) => { if (foundEggs.has(eggKey(e))) e.classList.add('found'); });
+    ui.bg.querySelectorAll('.ev-coin').forEach((e) => { if (foundCoins.has(coinKey(e))) e.classList.add('found'); });
+  }
+
+  // ---------- holiday things in the worlds (art.js eventScene): each answers, and Lucky joins in ----------
+  const H = LUCKY.holidayThings, HOL = LUCKY.holiday;
+  // a class for a while (a lit pumpkin, an open present, a popped balloon)
+  const forAWhile = (el, cls, ms) => { el.classList.add(cls); clearTimeout(el['_' + cls]); el['_' + cls] = setTimeout(() => el.classList.remove(cls), ms); };
+  const evLine = (list, words) => lineWith(list || [], words);
+  const toys = ['🧸', '🚂', '🪀', '🎈', '🪁', '🧩', '🎨', '🥁'];
+  R.evPumpkin = {
+    press: (c) => { sfx.pop(); api.fxAt(c.x, c.y - 10, ['✨'], 2, 'spark'); },
+    tap: who(oneOf('evPumpkin',
+      (c) => { forAWhile(c.el, 'glow', 4500); sfx.chime(); pose('happy', 1500, 'hop'); line(evLine(HOL.halloween?.idle, 'pumpkins'), 0.9); },
+      (c) => {
+        const [x, y] = topOf(c.el);
+        popUp('👻', x, y - 8, 2000, 34, 'pop-rise');
+        sfx.boing();
+        pose('ok', 1000, 'startle', 1100);
+        setTimeout(() => api.setTemp('laugh', 1400), 1000);
+        line('pumpkinGhost', 1);
+      })),
+    // a new face carved
+    double: (c) => {
+      const f = c.el.querySelector('.ev-face');
+      c.el.face = ((c.el.face ?? Math.floor(Math.random() * 4)) + 1) % PUMPKIN_FACES.length;
+      if (f) f.innerHTML = PUMPKIN_FACES[c.el.face];
+      sfx.magic();
+      api.fxAt(c.x, c.y, ['✨'], 6, 'spark');
+      if (api.free() && !api.talking()) { pose('laugh', 1300, 'clap'); line(H.pumpkinFace, 0.9); }
+    },
+    // its lid comes off: it's full of sweets
+    long: who((c) => {
+      const from = topOf(c.el);
+      ['🍬', '🍭', '🍫'].forEach((e, i) => setTimeout(() => fly(e, from, mouth(), 650, { arc: 60, spin: 300, size: 24 }), i * 220));
+      setTimeout(() => { api.setTemp('eat', 1800); sfx.crunch(); }, 700);
+      api.boost('hunger', 3);
+      line(H.pumpkinSweets, 1);
+      api.reward();
+    }),
+  };
+  R.evGhost = {
+    press: () => sfx.whoosh(),
+    tap: who((c) => { popUp('💨', c.x, c.y, 900, 26); api.hop(c.el, 'spook', 900); sfx.boing(); pose('ok', 1000, 'startle', 1100); setTimeout(() => api.setTemp('laugh', 1500), 1000); line('ghostBoo', 1); }),
+    double: (c) => { api.hop(c.el, 'twirl', 1300); sfx.magic(); api.fxAt(c.x, c.y, ['✨', '👻'], 3, 'spark'); },
+    // a ghost story in the dark
+    long: who(() => { const a = begin('ghostStory'); dark(3800); pose('ok', 1600, 'listen', 1600); at(a, 300, () => line('ghostStory', 1, 0)); at(a, 2600, () => { sfx.boing(); pose('laugh', 1200, 'startle', 1100); }); at(a, 3900, end); }),
+  };
+  R.evBat = {
+    press: () => sfx.squeak(),
+    tap: who((c) => { forAWhile(c.el.closest('.ev-bat'), 'fast', 3000); pose('ok', 900, 'squash', 700); line(H.bat, 0.8); }),
+    double: who((c) => visitor('batloop', c.x, c.y)), // it circles his head
+  };
+  R.evSweet = {
+    press: () => sfx.pop(),
+    tap: who((c) => {
+      if (c.el.classList.contains('eaten')) return;
+      fly(pick(['🍬', '🍭', '🍬']), [c.x, c.y], mouth(), 600, { spin: 300, size: 24 });
+      forAWhile(c.el, 'eaten', 20000);
+      setTimeout(() => { api.setTemp('eat', 1500); sfx.crunch(); }, 600);
+      api.boost('hunger', 2);
+      line('lick', 0.8);
+    }),
+  };
+  R.evCauldron = {
+    press: (c) => { sfx.bubble(); setTimeout(() => sfx.bubble(), 140); api.fxAt(c.x, c.y - 20, ['🫧'], 3, 'spark'); },
+    tap: who((c) => { forAWhile(c.el, 'boil', 1800); api.fxAt(...topOf(c.el), ['✨', '💚', '🫧'], 6, 'spark'); sfx.magic(); pose('happy', 1400, 'hop'); line(H.potion, 0.9); }),
+    // a sip of the potion: Lucky changes colour for a moment
+    double: who((c) => {
+      const a = begin('potion');
+      sfx.magic();
+      api.fxAt(...topOf(c.el), ['💜', '💚', '💙', '✨'], 10, 'spark');
+      at(a, 450, () => { L.style.setProperty('--potion', pick(['110deg', '200deg', '280deg'])); hold(a, 'potion', 3600); pose('surprised', 1500, 'hop'); line(H.potionColour, 1, 0); });
+      at(a, 4200, end);
+    }),
+    // something jumps out of the pot
+    long: who((c) => {
+      const [x, y] = topOf(c.el);
+      fly(pick(['🦇', '🐸', '⭐', '🍬', '🦉']), [x, y], [x + (x < 200 ? 90 : -90), y - 150], 1200, { arc: 60, spin: 360, size: 32 });
+      sfx.boing();
+      pose('ok', 900, 'startle', 1100);
+      setTimeout(() => api.setTemp('laugh', 1500), 900);
+      line(evLine(HOL.halloween?.idle, 'witch'), 0.9);
+    }),
+  };
+  R.evSpider = {
+    press: () => sfx.squeak(),
+    tap: (c) => { api.hop(c.el, 'drop', 1700); if (api.free() && !api.talking()) { pose('ok', 1000, 'startle', 1100); line('cobweb', 0.9); } },
+    double: (c) => api.hop(c.el, 'climb', 1300),
+  };
+  R.evTree = {
+    press: (c) => { sfx.chime(); api.fxAt(c.x, c.y, ['✨'], 3, 'spark'); },
+    tap: who((c) => { forAWhile(c.el, 'sparkle', 2400); pose('happy', 1500, 'hop'); line(H.treeSparkle, 0.8); }),
+    // shaking the tree: the snow on it lands on Lucky
+    double: who(() => { const a = begin('treeSnow'); prop('snowcap', 4000); hold(a, 'shiver', 1300); sfx.bubble(); line('snowHead', 1, 0); at(a, 2800, () => { sfx.shake(); api.hop(L, 'shakeOff', 1200); kitUnprop('head'); }); at(a, 4000, end); }),
+    // Lucky puts the star on top
+    long: who((c) => {
+      const star = c.el.querySelector('.ev-star');
+      if (!star?.classList.contains('off')) { pose('happy', 1500, 'proud', 1200); line(H.treeSparkle, 0.8); return; }
+      fly('⭐', head(), topOf(c.el), 800, { arc: 50, spin: 360, size: 26 });
+      setTimeout(() => { star.classList.remove('off'); sfx.sparkle(); api.fxAt(...topOf(c.el), ['✨', '🌟'], 6, 'spark'); }, 800);
+      pose('happy', 1600, 'proud', 1200);
+      line('treeStar', 1);
+      api.reward();
+    }),
+  };
+  R.evPresent = {
+    press: () => sfx.tap(),
+    tap: (c) => { api.hop(c.el, 'rattle', 900); sfx.shake(); if (api.free() && !api.talking()) { pose('ok', 1200, 'listen', 1200); line(H.presentShake, 0.8); } },
+    // it opens: a toy pops out, and it wraps itself up again
+    double: who((c) => {
+      if (c.el.classList.contains('open')) return;
+      forAWhile(c.el, 'open', 4200);
+      const [x, y] = topOf(c.el);
+      popUp(pick(toys), x, y - 12, 2400, 34, 'pop-rise');
+      sfx.sparkle();
+      api.fxAt(x, y, ['🎉', '✨'], 6, 'spark');
+      pose('laugh', 1500, 'clap');
+      line(H.presentToy, 1);
+      api.reward();
+    }),
+    long: who((c) => { pose('happy', 1800, 'hug'); api.hearts(...centerOf(c.el), 4); line(LUCKY.surprise, 0.7); }),
+  };
+  R.evCane = {
+    press: () => sfx.lick(),
+    tap: who(() => { api.setTemp('eat', 1300); sfx.lick(); setTimeout(() => sfx.lick(), 300); line('lick', 0.8); }),
+  };
+  R.evSnowman = {
+    press: () => sfx.pop(),
+    tap: who(() => { pose('happy', 1500, 'wave', 1200); line('snowmanHi', 0.8); }),
+    double: who((c) => { fly('⚪', paw(), centerOf(c.el), 600, { arc: 40, size: 18 }); setTimeout(() => { api.hop(c.el, 'wobble', 1000); sfx.pop(); api.fxAt(...centerOf(c.el), ['❄️'], 4, 'spark'); }, 600); pose('laugh', 1200, 'throw', 700); line('snowball', 0.9); }),
+    long: who(() => { pose('happy', 1600, 'hug'); setTimeout(() => api.hop(L, 'shiver', 900), 900); line('snowmanCold', 0.9); }),
+  };
+  R.evLights = {
+    press: () => sfx.chime(),
+    tap: (c) => { forAWhile(c.el, 'flash', 1800); if (api.free() && !api.talking()) { pose('happy', 1400, 'hop'); line(H.lights, 0.7); } },
+  };
+  R.evSleigh = {
+    press: () => { sfx.chime(); setTimeout(() => sfx.chime(), 300); },
+    // Santa drops presents as he goes
+    tap: who((c) => {
+      const y = feet()[1];
+      for (let i = 0; i < 3; i++) setTimeout(() => fly('🎁', [c.x + i * 18, c.y], [c.x + i * 34 - 34, y], 1100, { spin: 200, size: 26, stay: 1500 }), i * 260);
+      pose('happy', 1600, 'wave', 1200);
+      line([...LUCKY.antics.santa, ...LUCKY.antics.reindeer], 1);
+      api.reward();
+    }),
+  };
+  R.evBurst = {
+    press: (c) => { sfx.launch(); setTimeout(() => { sfx.sparkle(); api.fxAt(c.x, c.y, ['🎆', '✨', '🎇', '💥'], 10, 'spark'); }, 450); },
+    tap: who(() => { setTimeout(() => pose('laugh', 1200, 'hop'), 450); line('fireworks', 0.8); }),
+  };
+  R.evClock = {
+    press: () => { sfx.tick(); setTimeout(() => sfx.tick(), 320); },
+    tap: who(() => { pose('ok', 1400, 'listen', 1400); line('midnight', 0.8); }),
+    // the countdown to midnight, with fireworks
+    long: who(() => countdown()),
+  };
+  // Lucky counts down from five and the sky fills with fireworks (New Year)
+  function countdown() {
+    const a = begin('countdown');
+    const nums = LUCKY.sensei.count;
+    [5, 4, 3, 2, 1].forEach((n, i) => at(a, i * 950, () => { sfx.tick(); api.say([nums[n - 1]]); api.hop(L, 'hop', 600); }));
+    at(a, 5 * 950, () => {
+      const r = sceneRect();
+      for (let i = 0; i < 9; i++) setTimeout(() => { const x = 40 + Math.random() * (r.width - 80), y = 40 + Math.random() * r.height * 0.35; sfx.sparkle(); api.fxAt(x, y, ['🎆', '🎇', '✨', '💥'], 8, 'spark'); }, i * 260);
+      pose('laugh', 2400, 'binky');
+      api.say(HOL.newyear?.greet || LUCKY.antics.midnight);
+      api.reward();
+    });
+    at(a, 5 * 950 + 3400, end);
+  }
+  R.evBalloon = {
+    press: () => sfx.pop(),
+    tap: (c) => {
+      if (c.el.classList.contains('popped')) return;
+      forAWhile(c.el, 'popped', 6000);
+      sfx.bonk();
+      api.fxAt(...topOf(c.el), EVENT_ID() === 'valentine' ? ['💗', '💖', '💕'] : ['🎉', '🎊', '✨'], 8, 'spark');
+      if (api.free() && !api.talking()) line(EVENT_ID() === 'valentine' ? HOL.valentine?.idle : 'balloonPop', 0.8);
+    },
+  };
+  R.evHeartBalloon = R.evBalloon;
+  R.evHeart = {
+    press: (c) => { sfx.kiss(); api.hearts(c.x, c.y, 5); },
+    tap: who(() => { pose('happy', 1400, 'hop'); line('cupid', 0.6); }),
+  };
+  R.evRose = {
+    press: () => sfx.pop(),
+    tap: who(() => { pose('ok', 1500, 'sniff', 1500); sfx.sniff(); line('sniff', 0.8); }),
+    double: who((c) => { fly('🌹', centerOf(c.el), head(), 700, { arc: 40, size: 26 }); setTimeout(() => { pose('happy', 1600, 'kiss'); api.hearts(...head(), 6); }, 700); line(H.roseGift, 1); }),
+  };
+  R.evMailbox = {
+    press: () => sfx.knock(),
+    tap: who((c) => {
+      fly('💌', topOf(c.el), mouth(), 900, { arc: 50, spin: 20, size: 28, stay: 900 });
+      setTimeout(() => { sfx.happy(); pose('happy', 1800, 'hug'); api.hearts(...head(), 6); }, 900);
+      line('loveLetter', 1);
+    }),
+  };
+  R.evClover = {
+    press: (c) => { sfx.pop(); api.floatFx(c.x, c.y, '☘️', 'fly-up'); },
+    tap: who(oneOf('evClover',
+      () => { prop('cloverEar', 7000); sfx.chime(); pose('laugh', 1500, 'binky'); line('fourLeaf', 1); api.reward(); },
+      () => { api.setTemp('eat', 1300); sfx.crunch(); line('cloverEat', 0.8); })),
+  };
+  R.evPot = {
+    press: (c) => { sfx.sparkle(); api.fxAt(c.x, c.y, ['🪙', '✨'], 6, 'spark'); },
+    tap: who(() => { prop('coins', 2400); pose('laugh', 1900, 'jig', 1900); sfx.jig(); line('jig', 0.9); api.reward(); }),
+    double: who(() => { rainbow(); sfx.chime(); pose('happy', 1500, 'hop'); line('rainbowGold', 1); }),
+    long: who(() => { const a = begin('heavy'); hold(a, 'strain', 1800); api.setTemp('sad', 1800); line('heavy', 1, 0); at(a, 1900, end); }),
+  };
+  R.evChick = {
+    press: (c) => { sfx.note(1319); setTimeout(() => sfx.note(1568), 140); api.hop(c.el, 'hopIt', 600); },
+    tap: who(() => { pose('happy', 1500, 'clap'); line('chick', 0.8); }),
+  };
+  R.evBasket = {
+    press: () => sfx.tap(),
+    tap: who((c) => { const e = c.el.querySelector('.ev-inbasket'); if (e) api.hop(e, 'wiggle', 700); pose('happy', 1400, 'hop'); line(HOL.easter?.idle, 0.8); }),
+  };
+  R.evTulip = {
+    press: (c) => { sfx.bubble(); api.hop(c.el, 'bloom', 1800); },
+    tap: who(() => { pose('ok', 1500, 'sniff', 1500); sfx.sniff(); line(LUCKY.flowers, 0.7); }),
+  };
+  const kitUnprop = (slot) => unprop(slot);
+  const EVENT_ID = () => api.event()?.id;
 
   // the animal cloud from the 'Sharp eyes' mission
   R.skypet = {

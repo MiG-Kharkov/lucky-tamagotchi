@@ -953,6 +953,20 @@ export const LUCKY = {
     chick: [['Пи-пи! Привет, цыплёнок!', 'Peep-peep! Hello, little chick!']],
     goldenEgg: [['Золотое яйцо! Вот это находка!', 'A golden egg! What a find!']],
   },
+  // ---------- holiday things in the worlds that answer taps (antics.js) ----------
+  holidayThings: {
+    potion: [['Буль-буль! Волшебное зелье!', 'Bubble, bubble! A magic potion!']],
+    potionColour: [['Ой! От зелья я поменял цвет!', 'Oops! The potion changed my colour!']],
+    pumpkinFace: [['У тыквы новое лицо!', 'The pumpkin has a new face!']],
+    pumpkinSweets: [['Тыква полна конфет!', 'The pumpkin is full of sweets!']],
+    bat: [['Летучая мышка! Лети, малышка!', 'A little bat! Fly, little bat!']],
+    presentShake: [['Что там внутри? Гремит!', "What's inside? It rattles!"]],
+    presentToy: [['Игрушка! Обожаю подарки!', 'A toy! I love presents!']],
+    treeSparkle: [['Ёлка сверкает!', 'The tree is sparkling!']],
+    lights: [['Мигают огоньки!', 'The lights are twinkling!']],
+    roseGift: [['Эта розочка для тебя!', 'This rose is for you!']],
+    coin: [['Золотая монетка! Это лепрекон спрятал!', 'A gold coin! The leprechaun hid it!']],
+  },
   // ---------- Lucky's tricks (tricks.js): new ways to answer a touch, and the rare big tricks ----------
   tricks: {
     shy: [['Ой, я из-за тебя краснею!', "Oh, you're making me blush!"]],
