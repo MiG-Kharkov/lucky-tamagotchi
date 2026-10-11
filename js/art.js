@@ -103,7 +103,8 @@ export function setLuckyFace(root, face) {
 // wear is { head, face, neck, body }; outfit (a single item) is kept for old saves.
 // Parts the animations move: .head, .ear-l/.ear-r, .face-eyes, .nose, .body, .tummy, .feet, .paw-l/.paw-r (in front
 // of everything, so they can wave, clap or cover his eyes), .tail (the pom-pom peeking out on the right).
-export function lucky({ face = 'ok', wear = null, outfit = null, belt = '#FF4F9A' } = {}) {
+// extra: something drawn on top of him in his own coordinates (the holiday hat away from the scene)
+export function lucky({ face = 'ok', wear = null, outfit = null, belt = '#FF4F9A', extra = '' } = {}) {
   const u = uid();
   if (!wear) wear = outfit && WEAR_BY_ID[outfit] ? { [WEAR_BY_ID[outfit].slot]: outfit } : {};
   const W = wearLayers(wear, belt);
@@ -144,6 +145,7 @@ ${W.back}
   <g pointer-events="none"><g class="w-face">${W.over}</g>${W.neck}<g class="w-head">${W.head}</g></g>
 </g>
 <g class="paws">${paw('paw-l', 84)}${paw('paw-r', 116)}</g>
+${extra}
 </svg>`;
 }
 

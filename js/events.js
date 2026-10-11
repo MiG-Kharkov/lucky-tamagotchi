@@ -1,7 +1,8 @@
-// Holidays. For a few weeks before each one the worlds slowly fill with decorations, a little more every week,
-// and on the day itself everything is out. Only pictures change: the rules, the timings and the voice stay the same.
-// Stages: 1 three weeks before (a few small things), 2 two weeks before (more), 3 the last week (everything: Lucky's
-// hat, Tali's bow, the interface, holiday visitors and stickers), 4 the day itself (and the days after it).
+// Holidays. For a few weeks before each one the game is dressed up for it: the worlds, the interface on every screen,
+// Lucky's hat, visitors, stickers, games and little holiday moments. In the last week a few more things come out, and
+// the day itself has its own. The rules, the timings and the care stay the same.
+// Stages: 3 from the first day (everything; `days <= 7` adds the last week's extras), 4 the day itself (and the days
+// after it). Stages 1 and 2 are the quieter looks of earlier versions; Turbo can still show them.
 
 const DAY = 864e5;
 
@@ -41,7 +42,7 @@ export function holidayOnly(regular) {
 
 // calendar days, so a time change doesn't move a holiday
 const dayNo = (d) => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY);
-const stageFor = (days) => (days <= 0 ? 4 : days <= 7 ? 3 : days <= 14 ? 2 : 1);
+const stageFor = (days) => (days <= 0 ? 4 : 3);
 
 // The holiday that is on today with its stage and how many days are left (0 on the day), or null.
 // If two overlap (an early Easter and St Patrick's Day) the one further along wins.
@@ -63,5 +64,6 @@ export function eventOn(now = new Date()) {
 export function eventPreview(spec) {
   const [id, n] = String(spec).split(':');
   const ev = EVENT_BY_ID[id];
-  return ev ? { ...ev, days: 0, stage: Math.min(4, Math.max(1, Number(n) || 4)), preview: true } : null;
+  const stage = Math.min(4, Math.max(1, Number(n) || 4));
+  return ev ? { ...ev, days: stage === 4 ? 0 : 5, stage, preview: true } : null;
 }

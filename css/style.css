@@ -49,11 +49,11 @@ input, select { font: inherit; }
 .s-body { flex: 1; min-width: 0; }
 .s-name { display: block; font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .s-bar { height: 7px; border-radius: 5px; background: #F4E6F0; overflow: hidden; }
-.s-bar i { display: block; height: 100%; border-radius: 5px; transition: width .8s; }
-.stat[data-k=hunger] i { background: linear-gradient(90deg, #FFB25B, #FF8A3D); }
-.stat[data-k=fun] i { background: linear-gradient(90deg, #FF9CCB, #FF5FA2); }
-.stat[data-k=clean] i { background: linear-gradient(90deg, #8FE3FF, #4DB8FF); }
-.stat[data-k=energy] i { background: linear-gradient(90deg, #FFE36B, #FFC21A); }
+.s-bar i { display: block; height: 100%; border-radius: 5px; transition: width .8s; background: var(--b); }
+.stat[data-k=hunger] { --b: linear-gradient(90deg, #FFB25B, #FF8A3D); }
+.stat[data-k=fun] { --b: linear-gradient(90deg, #FF9CCB, #FF5FA2); }
+.stat[data-k=clean] { --b: linear-gradient(90deg, #8FE3FF, #4DB8FF); }
+.stat[data-k=energy] { --b: linear-gradient(90deg, #FFE36B, #FFC21A); }
 .stat.low { animation: nudge 2.4s ease-in-out infinite; }
 @keyframes nudge { 0%, 90%, 100% { transform: none; } 94% { transform: rotate(-3deg); } 97% { transform: rotate(3deg); } }
 
@@ -1454,3 +1454,112 @@ body:not(.ready) #app { visibility: hidden; }
 .boot-retry { margin-top: 18px; padding: 12px 20px; border-radius: 18px; background: #fff; box-shadow: var(--shadow); color: var(--pink-d); font-weight: 800;
   text-decoration: none; opacity: 0; pointer-events: none; animation: bootRetry .4s ease-out 10s forwards; }
 @keyframes bootRetry { to { opacity: 1; pointer-events: auto; } }
+
+/* ---------- holidays on every screen (1.9.0): from the first day the whole interface wears the holiday ----------
+   Each holiday sets its colours and decorations in custom properties; the rules below use them on the top bar,
+   the stat bars, the scene frame, the action buttons, buttons, sheets, windows, hints, questions and games. */
+body.ev-halloween.ev-s3 {
+  --ev-1: #FF8A1F; --ev-ink: #5A2A86; --ev-card: #FFF7EF; --ev-line: #FFC994; --ev-frame: #FFB061; --ev-sheet: #FFF8F2;
+  --ev-pat: repeating-linear-gradient(-45deg, #FFFFFF80 0 3px, transparent 3px 8px);
+  --ev-bar: linear-gradient(90deg, #FFD23F, #FF8A1F 55%, #8B4FD6);
+  --ev-btn: linear-gradient(180deg, #FFA24C, #FF7A12); --ev-btn-edge: #C2560A;
+  --ev-head: linear-gradient(90deg, #FFE2C4, #EBDCFF);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #8A4FD6 0%, #3B1F66 60%, #1E1233 100%);
+  --ev-a1: "🦇"; --ev-a2: "🎃"; --ev-a3: "🕸️"; --ev-a4: "👻"; --ev-a5: "🍬";
+  --ev-s1: "🍬"; --ev-s2: "🎃"; --ev-s3: "👻"; --ev-s4: "🌙"; --ev-lvl: "🕷️";
+}
+body.ev-christmas.ev-s3 {
+  --ev-1: #E2313B; --ev-ink: #B3202A; --ev-card: #F1F7FF; --ev-line: #F6B9BD; --ev-frame: #F6B9BD; --ev-sheet: #FBFDFF;
+  --ev-pat: repeating-linear-gradient(-45deg, #FFFFFFB0 0 3px, transparent 3px 7px);
+  --ev-bar: linear-gradient(90deg, #2E9E4E, #E2313B);
+  --ev-btn: linear-gradient(180deg, #F0525B, #D62531); --ev-btn-edge: #9E1520;
+  --ev-head: linear-gradient(90deg, #E4F6EA, #FFE4E6);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #2E9E4E 0%, #145A2B 60%, #0B3319 100%);
+  --ev-a1: "❄️"; --ev-a2: "🎁"; --ev-a3: "🔔"; --ev-a4: "⭐"; --ev-a5: "🧦";
+  --ev-s1: "🍪"; --ev-s2: "🎁"; --ev-s3: "❄️"; --ev-s4: "⭐"; --ev-lvl: "🎄";
+}
+body.ev-newyear.ev-s3 {
+  --ev-1: #E2A800; --ev-ink: #8A5A00; --ev-card: #FFFDF5; --ev-line: #FFE08A; --ev-frame: #FFE066; --ev-sheet: #FFFDF6;
+  --ev-pat: radial-gradient(circle, #FFFFFFB0 1.2px, transparent 1.6px) 0 0 / 6px 6px;
+  --ev-bar: linear-gradient(90deg, #FFD23F, #FF5FA2 50%, #8B6CFF);
+  --ev-btn: linear-gradient(180deg, #FFD23F, #F0A800); --ev-btn-edge: #B07A00;
+  --ev-head: linear-gradient(90deg, #FFF3C4, #E9E4FF);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #4B3FA0 0%, #221A5A 60%, #0F0B2E 100%);
+  --ev-a1: "🎉"; --ev-a2: "✨"; --ev-a3: "🎈"; --ev-a4: "🎆"; --ev-a5: "🕛";
+  --ev-s1: "🍰"; --ev-s2: "🎉"; --ev-s3: "✨"; --ev-s4: "🎆"; --ev-lvl: "🎊";
+}
+body.ev-valentine.ev-s3 {
+  --ev-1: #FF3F7F; --ev-ink: #C21F5B; --ev-card: #FFF5F8; --ev-line: #FFB3CC; --ev-frame: #FF9EC0; --ev-sheet: #FFF6F9;
+  --ev-pat: radial-gradient(circle at 30% 50%, #FFFFFF99 1.5px, transparent 2px) 0 0 / 7px 7px;
+  --ev-bar: linear-gradient(90deg, #FF9EC0, #FF3F7F 60%, #E2313B);
+  --ev-btn: linear-gradient(180deg, #FF6FA0, #F0306E); --ev-btn-edge: #B51650;
+  --ev-head: linear-gradient(90deg, #FFE0EA, #FFD0DE);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #E2477E 0%, #8A1F48 60%, #4A0F27 100%);
+  --ev-a1: "💗"; --ev-a2: "💌"; --ev-a3: "🌹"; --ev-a4: "💘"; --ev-a5: "🧸";
+  --ev-s1: "🍫"; --ev-s2: "💝"; --ev-s3: "🌹"; --ev-s4: "💘"; --ev-lvl: "💞";
+}
+body.ev-patrick.ev-s3 {
+  --ev-1: #2E9E4E; --ev-ink: #1E7A3A; --ev-card: #F6FFF7; --ev-line: #A8E0B6; --ev-frame: #8FD6A0; --ev-sheet: #F7FFF8;
+  --ev-pat: repeating-linear-gradient(90deg, #FFFFFF66 0 4px, transparent 4px 9px);
+  --ev-bar: linear-gradient(90deg, #2E9E4E, #FFFFFF 50%, #FF8A1F);
+  --ev-btn: linear-gradient(180deg, #45B866, #2E9E4E); --ev-btn-edge: #1E6B35;
+  --ev-head: linear-gradient(90deg, #DDF5E2, #FFEBD4);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #2E9E4E 0%, #155C2A 60%, #0A3317 100%);
+  --ev-a1: "☘️"; --ev-a2: "🌈"; --ev-a3: "🪙"; --ev-a4: "🎩"; --ev-a5: "🍀";
+  --ev-s1: "🍀"; --ev-s2: "🌈"; --ev-s3: "☘️"; --ev-s4: "🪙"; --ev-lvl: "🍀";
+}
+body.ev-easter.ev-s3 {
+  --ev-1: #B78CFF; --ev-ink: #7A52C7; --ev-card: #FFFDF7; --ev-line: #E2D2FF; --ev-frame: #FFE7A8; --ev-sheet: #FFFEF8;
+  --ev-pat: radial-gradient(circle, #FFFFFFB0 1.5px, transparent 2px) 0 0 / 7px 7px;
+  --ev-bar: linear-gradient(90deg, #FFB3D6, #FFE066 35%, #B5E8FF 70%, #C7F2B5);
+  --ev-btn: linear-gradient(180deg, #C9A6FF, #A27BF0); --ev-btn-edge: #7550C2;
+  --ev-head: linear-gradient(90deg, #FFF3C4, #E3F4FF);
+  --ev-reveal: radial-gradient(circle at 50% 42%, #B78CFF 0%, #6E4FB8 60%, #3A2770 100%);
+  --ev-a1: "🐣"; --ev-a2: "🥚"; --ev-a3: "🌷"; --ev-a4: "🦋"; --ev-a5: "🐰";
+  --ev-s1: "🥚"; --ev-s2: "🐣"; --ev-s3: "🌷"; --ev-s4: "🌞"; --ev-lvl: "🐰";
+}
+/* the top bar, the stat bars and the action buttons */
+.ev-s3 .lvl, .ev-s3 .stat, .ev-s3 .act, .ev-s3 .icon-btn, .ev-s3 .belt-chip, .ev-s3 .word-btn { background: var(--ev-card); box-shadow: inset 0 0 0 2px var(--ev-line), var(--shadow); }
+.ev-s3 .lvl, .ev-s3 .stat, .ev-s3 .act { position: relative; }
+.ev-s3 .lvl-badge b, .ev-s3 .a-name { color: var(--ev-ink); }
+.ev-s3 .bar i { background: var(--ev-pat), var(--ev-bar); }
+.ev-s3 .s-bar i { background: var(--ev-pat), var(--b); }
+.ev-s3 .lvl::after, .ev-s3 .stat::after, .ev-s3 .act::after { position: absolute; pointer-events: none; line-height: 1; filter: drop-shadow(0 1px 1px #0002); }
+.ev-s3 .lvl::after { content: var(--ev-lvl); right: 6px; bottom: -6px; font-size: 16px; transform: rotate(-10deg); }
+.ev-s3 .stat::after { right: -4px; top: -7px; font-size: 13px; transform: rotate(14deg); }
+.ev-s3 .stat[data-k=hunger]::after { content: var(--ev-s1); }
+.ev-s3 .stat[data-k=fun]::after { content: var(--ev-s2); }
+.ev-s3 .stat[data-k=clean]::after { content: var(--ev-s3); }
+.ev-s3 .stat[data-k=energy]::after { content: var(--ev-s4); }
+.ev-s3 .act::after { right: -2px; top: -8px; font-size: 16px; transform: rotate(12deg); }
+.ev-s3 .act:nth-child(1)::after { content: var(--ev-a1); }
+.ev-s3 .act:nth-child(2)::after { content: var(--ev-a2); }
+.ev-s3 .act:nth-child(3)::after { content: var(--ev-a3); }
+.ev-s3 .act:nth-child(4)::after { content: var(--ev-a4); }
+.ev-s3 .act:nth-child(5)::after { content: var(--ev-a5); }
+/* Christmas: snow on top of every card */
+.ev-christmas.ev-s3 .lvl::before, .ev-christmas.ev-s3 .stat::before, .ev-christmas.ev-s3 .act::before {
+  content: ""; position: absolute; left: 4px; right: 4px; top: -3px; height: 10px; pointer-events: none;
+  background: radial-gradient(circle at 6px 4px, #fff 5px, transparent 5.5px) 0 2px / 12px 9px repeat-x, linear-gradient(#fff, #fff) 0 0 / 100% 5px no-repeat;
+  border-radius: 8px 8px 0 0; filter: drop-shadow(0 1px 1px #9DB8D866);
+}
+/* Halloween: a little cobweb in a corner of the scene's buttons and a spider on the level card */
+.ev-halloween.ev-s3 .lvl::after { bottom: auto; top: 100%; right: 18px; transform: none; animation: evDangle 3s ease-in-out infinite; transform-origin: 50% 0; }
+@keyframes evDangle { 50% { translate: 0 4px; rotate: 6deg; } }
+/* the scene, buttons, sheets, windows, hints and questions */
+.ev-s3 .scene { box-shadow: var(--shadow), inset 0 0 0 4px var(--ev-frame); }
+.ev-s3 .btn.pink { background: var(--ev-btn); box-shadow: 0 4px 0 var(--ev-btn-edge); }
+.ev-s3 .sheet { background: var(--ev-sheet); }
+.ev-s3 .sheet-head { background: var(--ev-head); border-radius: 18px; padding: 8px 8px 8px 14px; }
+.ev-s3 .tab.on, .ev-s3 .tray-cat:not(.on) { color: var(--ev-ink); }
+.ev-s3 .chip.on, .ev-s3 .tray-cat.on { background: var(--ev-1); }
+.ev-s3 .modal-card { position: relative; box-shadow: inset 0 0 0 3px var(--ev-line), 0 20px 50px #4A2B4F55; }
+.ev-s3 .modal-card::before { content: var(--ev-icon); position: absolute; left: 50%; top: -24px; translate: -50% 0; font-size: 40px; filter: drop-shadow(0 3px 4px #0003); pointer-events: none; }
+.ev-s3 .modal.reveal-host { background: var(--ev-reveal); }
+.ev-s3 .toast { box-shadow: inset 0 0 0 2px var(--ev-line), 0 10px 30px #4A2B4F33; }
+.ev-s3 .toast::before { content: var(--ev-icon); float: right; margin-left: 8px; font-size: 22px; }
+.ev-s3 .choice { box-shadow: 0 4px 0 var(--ev-line), var(--shadow); }
+.ev-s3 .game-card { box-shadow: inset 0 0 0 3px var(--ev-line), var(--shadow); }
+/* Halloween: a touch of dusk over the scene all season (full dusk on the day itself) */
+.ev-halloween.ev-s3 .dusk { opacity: .14; }
+.ev-halloween.ev-s4 .scene .dusk { opacity: .3; }

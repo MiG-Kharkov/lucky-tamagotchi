@@ -35,6 +35,8 @@ const dayDone = (T0 = S.today) => !turbo() && S.settings.dailyMax > 0 && (S.play
 const addH = (n, cat, cap) => st.addHearts(S, turbo() ? n * 5 : n, cat, turbo() ? Infinity : cap);
 // Lucky with a headband in the current belt colour
 const luckyArt = (o) => art.lucky({ ...o, belt: BELTS[S.belt].color });
+// Lucky away from the scene (missions, sleep, windows, games) wears the holiday hat too, unless he has a hat on
+const luckyPic = (o) => luckyArt({ ...o, extra: EV && EV.stage >= 3 && !o.wear?.head ? art.PROPS[SEASON_HAT[EV.id]]?.art() || '' : '' });
 
 const ui = {
   top: $('#top'), stats: $('#stats'), scene: $('#scene'), bg: $('#bg'), bubble: $('#bubble'),
@@ -301,7 +303,7 @@ const tricks = createTricks({
   quiet: quietNow,
   free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
   clearBubble: () => { if (Date.now() >= busyUntil) hideBubble(); },
-  luckyArt: (face) => luckyArt({ face, wear: wornNow() }),
+  luckyArt: (face) => luckyPic({ face, wear: wornNow() }),
   outfits: () => WEAR.filter((w) => ownsWear(w) && S.wear[w.slot] !== w.id),
   dressUp: (id) => { tempWear = id ? { [WEAR_BY_ID[id].slot]: id } : null; renderLucky(true); },
   wearing: (id) => Object.values(wornNow()).includes(id),
@@ -845,14 +847,14 @@ function renderTop() {
 
 const ACTIONS = [
   { id: 'feed', e: '🥕', fn: () => openFeed() },
-  { id: 'play', e: '🎈', fn: () => openPlay() },
+  { id: 'play', e: () => (EV && EV.stage >= 3 ? EV.icon : '🎈'), fn: () => openPlay() },
   { id: 'wash', e: '🫧', fn: () => startWash() },
   { id: 'dojo', e: '🥷', fn: () => openDojo() },
   { id: 'collection', e: '🎀', fn: () => openCollection() },
 ];
 
 function buildActions() {
-  ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${a.e}</span><span class="a-name">${tr(a.id)}</span></button>`).join('');
+  ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${typeof a.e === 'function' ? a.e() : a.e}</span><span class="a-name">${tr(a.id)}</span></button>`).join('');
   ui.actions.querySelectorAll('.act').forEach((b) => {
     b.onclick = () => {
       if (mode !== 'main') return;
@@ -905,6 +907,7 @@ function updateEvent(force = false) {
     b.style.setProperty('--ev-icon', `"${ev.icon}"`);
   } else b.style.removeProperty('--ev-icon');
   if (ui.props) antics.setSticky('season', ev && ev.stage >= 3 ? SEASON_HAT[ev.id] : null);
+  buildActions();
   renderBg();
   renderDecor();
   renderTop();
@@ -1740,7 +1743,7 @@ function maybeMood(T0) {
   T0.mood = 'asked';
   sayAuto(LUCKY.moodAsk[0]);
   showModal({
-    art: luckyArt({ face: 'ok', wear: S.wear }),
+    art: luckyPic({ face: 'ok', wear: S.wear }),
     title: tr('moodTitle'),
     buttons: MOODS.map(([id, e]) => ({
       label: `${e} ${tr('mood_' + id)}`,
@@ -1828,9 +1831,9 @@ function startGame(game) {
   cover(true);
   openGame(ui.overlay, game, {
     tr, sfx, lang: S.lang,
-    svgOk: luckyArt({ face: 'ok', wear: S.wear }),
-    svgHappy: luckyArt({ face: 'laugh', wear: S.wear }),
-    svgSad: luckyArt({ face: 'sad', wear: S.wear }),
+    svgOk: luckyPic({ face: 'ok', wear: S.wear }),
+    svgHappy: luckyPic({ face: 'laugh', wear: S.wear }),
+    svgSad: luckyPic({ face: 'sad', wear: S.wear }),
     onCancel: closeGame,
     onEnd: (score) => {
       const T0 = st.today(S);
@@ -1942,7 +1945,7 @@ function startMission(m) {
   cover(true);
   openMission(ui.overlay, m, {
     lang: S.lang, translate: S.settings.translate, fast: turbo(), tr,
-    luckyArt: (face) => luckyArt({ face, wear: S.wear }),
+    luckyArt: (face) => luckyPic({ face, wear: S.wear }),
     onClose: closeGame,
     onDone: (result) => { closeGame(); missionComplete(m, result); },
   });
@@ -2499,7 +2502,7 @@ function renderSleep(force = false) {
       <h1>${night ? tr('nightTitle') : done ? tr('dayDoneTitle') : tr('napTitle')} 🌙</h1>
       <p>${night ? tr('nightSub', { time }) : done ? tr('dayDoneSub', { time }) : tr('napSub', { time })}</p>
       ${night ? '' : `<p class="rest-note">${tr('restNote')}</p>`}
-      <div class="sleep-lucky">${luckyArt({ face: 'sleep', wear: S.wear })}<div class="zzz"><span>z</span><span>z</span><span>Z</span></div></div>
+      <div class="sleep-lucky">${luckyPic({ face: 'sleep', wear: S.wear })}<div class="zzz"><span>z</span><span>z</span><span>Z</span></div></div>
       ${!night && !S.today.missionDone ? `<div class="card idea"><div class="muted">${tr('napIdea')}</div><div class="task"><span class="t-emoji">${m.emoji}</span>${bi(m.text)}</div></div>` : ''}
     </div>`;
   ui.overlay.querySelector('.sleep-lucky').onclick = (e) => {
@@ -2561,7 +2564,7 @@ function startNap() {
 function askBed() {
   if (mode !== 'main') return;
   showModal({
-    art: luckyArt({ face: 'tired', wear: S.wear }),
+    art: luckyPic({ face: 'tired', wear: S.wear }),
     title: tr('putToBed'),
     buttons: [
       { label: `🌙 ${tr('yes')}`, onClick: () => {
