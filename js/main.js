@@ -3018,6 +3018,7 @@ function start() {
 
   if (!S.onboarded) { S.onboarded = true; st.save(S); }
   if (mode === 'main') greet(gap);
+  document.body.classList.add('ready'); // the waking-up screen goes away
 }
 
 // Offline cache only on real https hosting. In local development remove any old cache

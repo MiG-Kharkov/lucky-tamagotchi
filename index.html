@@ -18,6 +18,12 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <!-- shown until the game has started (a slow connection right after an update can take a while) -->
+  <div class="boot" id="boot" aria-hidden="true">
+    <div class="boot-bunny">🐰</div>
+    <p class="boot-text">Lucky is waking up…<small>Лаки просыпается…</small></p>
+    <a class="boot-retry" href="./">↻ Tap to try again<small>Нажми, чтобы попробовать ещё раз</small></a>
+  </div>
   <div id="app">
     <header class="top" id="top">
       <button class="lvl" id="lvlCard">
