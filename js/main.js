@@ -803,6 +803,7 @@ function buildActions() {
 
 function renderBg() {
   ui.bg.innerHTML = art.scene(S.bg) + holidayLayers(S.bg);
+  antics.refreshEggs();
   shownSky = null;
   applyNinjaLook();
 }
@@ -817,7 +818,7 @@ function goPlace(id) {
 // ---------- holidays (events.js): the same game, decorated for a few weeks before each holiday ----------
 
 let EV = null; // the holiday that is on (with its stage), or null
-const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat' };
+const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown' };
 const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
 const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage) + art.eventTop(EV.id, EV.stage) : '');
 
@@ -1262,6 +1263,9 @@ const HOLIDAY_VISITORS = {
   halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
   christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['wish'], stage: 3 }],
   newyear: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '❄️', w: 1, path: 'fall', end: ['tongue', 'flakes'], stage: 3 }],
+  valentine: [{ e: '💌', w: 3, path: 'float', end: ['love'], stage: 3 }],
+  patrick: [{ e: '🍀', w: 3, path: 'flutter', end: ['luck'], stage: 2 }],
+  easter: [{ e: '🐣', w: 3, path: 'jump', end: ['chick'], stage: 2 }, { e: '🦋', w: 2, path: 'flutter', end: ['nose', 'ear', 'circle', 'family'], stage: 2 }],
 };
 
 // A flight path as keyframes in % of the scene, a little different every time

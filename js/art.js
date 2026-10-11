@@ -475,7 +475,74 @@ function newYearScene(world, stage) {
   return back.join('') + front.join('');
 }
 
+// Valentine's Day
+const HEART = 'M0 7 C-13 -3 -11 -16 0 -9 C11 -16 13 -3 0 7Z';
+const heartBalloon = (x, y, s, c) => at(x, y, s, `<path d="M0 0 q-6 -18 2 -34" stroke="#9A8AA0" stroke-width="1.4" fill="none"/><g class="ev-bob"><path transform="translate(2 -44) scale(1.6)" d="${HEART}" fill="${c}"/>
+  <ellipse cx="-4" cy="-52" rx="3" ry="5" fill="#fff" opacity=".45"/></g>`);
+// hearts drifting up from the grass, one after another
+const risingHeart = (x, y, c, d, s = 1) => `<g class="ev-rise" style="--delay:${d}s"><path transform="translate(${x} ${y}) scale(${s})" d="${HEART}" fill="${c}"/></g>`;
+function valentineScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
+  front.push(heartBalloon(p.L[0] + 4, p.L[1] + 18, 1, '#FF5FA2'), heartBalloon(p.R[0] - 4, p.R[1] + 16, 0.9, '#E2313B'));
+  [[60, '#FF5FA2', -1], [150, '#E2313B', -3.2], [250, '#FF8FC0', -5.1], [340, '#FF5FA2', -2.2]].forEach(([x, c, d]) => back.push(risingHeart(x, 640, c, d, 0.9)));
+  if (stage >= 4) {
+    front.push(heartBalloon(p.l[0] + 6, p.l[1] + 12, 0.7, '#B78CFF'), heartBalloon(p.r[0] - 6, p.r[1] + 12, 0.7, '#FF8FC0'));
+    [[100, '#FF8FC0', -4.2], [300, '#E2313B', -0.6], [200, '#FF5FA2', -6]].forEach(([x, c, d]) => back.push(risingHeart(x, 660, c, d, 0.7)));
+  }
+  return back.join('') + front.join('');
+}
+
+// St Patrick's Day
+const leprechaunHat = (x, y, s = 1) => at(x, y, s, `<ellipse rx="20" ry="4.5" fill="#1E7A3A"/><path d="M-12 -1 L-10 -26 H10 L12 -1Z" fill="#2E9E4E"/><rect x="-11" y="-9" width="22" height="5" fill="#2E2A33"/><rect x="-4" y="-10" width="8" height="7" fill="none" stroke="#FFD23F" stroke-width="2"/>`);
+const rainbowPot = (x, y, s = 1) => at(x, y, s, `${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) => `<path d="M${-58 + i * 5} 0 A${58 - i * 5} ${58 - i * 5} 0 0 1 ${58 - i * 5} 0" stroke="${c}" stroke-width="5" fill="none" opacity=".8"/>`).join('')}
+  <g transform="translate(46 -4)"><path d="M-14 4 q-3 -12 14 -12 q17 0 14 12 q-2 9 -14 9 q-12 0 -14 -9z" fill="#2E2A33"/><rect x="-15" y="-10" width="30" height="5" rx="2.5" fill="#3A3640"/>
+  <circle cx="-6" cy="-12" r="4" fill="#FFD23F"/><circle cx="3" cy="-14" r="4" fill="#FFC21A"/><circle cx="9" cy="-11" r="4" fill="#FFD23F"/></g>`);
+const clover3 = (x, y, r = 5) => `<g transform="translate(${x} ${y})" fill="#2E9E4E"><circle cy="${-r}" r="${r}"/><circle cx="${-r}" cy="${r * 0.3}" r="${r}"/><circle cx="${r}" cy="${r * 0.3}" r="${r}"/><path d="M0 ${r} q1 ${r} 3 ${r * 1.6}" stroke="#2E9E4E" stroke-width="1.6" fill="none"/></g>`;
+function patrickScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, front = [];
+  front.push(clover3(p.L[0], p.L[1] + 10, 7), clover3(p.L[0] + 26, p.L[1] + 24, 5), clover3(p.R[0], p.R[1] + 14, 6), clover3(p.r[0] - 10, p.r[1], 5));
+  if (stage >= 3) {
+    if (world !== 'irish') front.push(rainbowPot(p.R[0] - 40, p.R[1] + 8, 0.75));
+    if (world === 'irish') front.push(leprechaunHat(52, 458, 0.55), leprechaunHat(271, 519, 0.5));
+    if (world === 'beach') front.push(leprechaunHat(338, 589, 0.42));
+    front.push(clover3(p.l[0] + 8, p.l[1] + 6, 5), clover3(120, 676, 4), clover3(290, 682, 4));
+  }
+  return front.join('');
+}
+
+// Easter: painted eggs hidden around the scene (an egg hunt: they can be found with a tap), a basket, chicks
+const EGG_LOOKS = [['#FFB3D6', '#FF5FA2', 'zig'], ['#B5E8FF', '#4D9BFF', 'dots'], ['#FFF2A8', '#FF922E', 'band'], ['#C7F2B5', '#2E9E4E', 'zig'], ['#D9C7FF', '#8B6CFF', 'dots'], ['#FFE066', '#E2A800', 'gold']];
+function egg(x, y, s, look, i) {
+  const [base, line, kind] = look;
+  const deco = kind === 'zig' ? `<path d="M-9 0 l3 -3 3 3 3 -3 3 3 3 -3 3 3" stroke="${line}" stroke-width="1.8" fill="none"/>`
+    : kind === 'dots' ? `<g fill="${line}"><circle cx="-4" cy="-5" r="1.8"/><circle cx="4" cy="-2" r="1.8"/><circle cx="-3" cy="4" r="1.8"/><circle cx="5" cy="6" r="1.5"/></g>`
+      : kind === 'band' ? `<path d="M-10 1 h20" stroke="${line}" stroke-width="3.2"/><path d="M-9 -4 h18" stroke="#fff" stroke-width="1.4"/>`
+        : '<path d="M-3 -8 l2 3 3 1 -3 1 -2 3 -1 -3 -3 -1 3 -1z" fill="#fff" opacity=".9"/>';
+  return at(x, y, s, `<g data-tap="egg" data-egg="${i}" class="ev-egg${kind === 'gold' ? ' gold' : ''}"><ellipse cy="13" rx="10" ry="2.5" fill="#000" opacity=".12"/><path d="M0 -14 C9 -14 12 0 11 4 C10 11 5 13 0 13 C-5 13 -10 11 -11 4 C-12 0 -9 -14 0 -14Z" fill="${base}" stroke="#fff" stroke-width="1"/>${deco}</g>`);
+}
+const chick = (x, y, s = 1) => at(x, y, s, `<g class="ev-bob"><ellipse cy="2" rx="10" ry="9" fill="#FFE066"/><circle cy="-8" r="7" fill="#FFE066"/><circle cx="-2.5" cy="-9" r="1.2" fill="#3A2216"/><circle cx="2.5" cy="-9" r="1.2" fill="#3A2216"/>
+  <path d="M-2 -6 l2 3 2 -3z" fill="#FF922E"/><path d="M-8 1 q-6 -2 -6 4 q4 -1 6 1" fill="#FFD23F"/></g>`);
+const basket = (x, y, s = 1) => at(x, y, s, `<ellipse cy="16" rx="26" ry="4" fill="#000" opacity=".12"/><path d="M-22 -2 a22 22 0 0 1 44 0" stroke="#C98E5A" stroke-width="3.5" fill="none"/>
+  <ellipse cx="-10" cy="-2" rx="6" ry="8" fill="#FFB3D6"/><ellipse cx="2" cy="-4" rx="6" ry="8" fill="#B5E8FF"/><ellipse cx="13" cy="-2" rx="6" ry="8" fill="#FFF2A8"/>
+  <path d="M-24 -2 h48 l-6 18 h-36z" fill="#E0A86E"/><path d="M-22 4 h44 M-20 10 h40" stroke="#C98E5A" stroke-width="2"/>`);
+const tulip = (x, y, c, s = 1) => at(x, y, s, `<path d="M0 0 v-18" stroke="#2E9E4E" stroke-width="2.4"/><path d="M0 -6 q-7 -2 -8 -9 q6 1 8 7" fill="#3DBA63"/><path d="M-6 -26 q6 -8 12 0 q0 8 -6 9 q-6 -1 -6 -9z M-6 -26 l3 4 3 -6 3 6 3 -4" fill="${c}"/>`);
+function easterScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, back = [], front = [];
+  // where the eggs hide: next to the big spots, in the corners, along the bottom
+  const hide = [[p.L[0] + 30, p.L[1] + 20], [p.R[0] - 30, p.R[1] + 18], [p.l[0] + 6, p.l[1] + 10], [p.r[0] - 6, p.r[1] + 8], [118, 684], [286, 688]];
+  const n = stage >= 4 ? 6 : stage >= 3 ? 5 : stage >= 2 ? 4 : 3;
+  hide.slice(0, n).forEach(([x, y], i) => front.push(egg(x, y, 1, EGG_LOOKS[n === 6 && i === 5 ? 5 : i % 5], i)));
+  front.push(basket(p.L[0] + 2, p.L[1] - 4, 0.9));
+  if (stage >= 2) front.push(tulip(p.R[0] + 4, p.R[1] + 6, '#FF5FA2'), tulip(p.R[0] + 16, p.R[1] + 10, '#FFD23F', 0.85), tulip(p.L[0] - 12, p.L[1] + 26, '#B78CFF', 0.85));
+  if (stage >= 3) front.push(chick(p.L[0] + 46, p.L[1] + 8, 0.9), chick(p.R[0] - 48, p.R[1] + 4, 0.8));
+  return back.join('') + front.join('');
+}
+
 // things along the top edge of the scene (HTML, so they stay at the top on every phone)
+const heartString = () => {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="60" height="30" viewBox="0 0 60 30"><path d="M0 3 Q30 9 60 3" stroke="#C8456B" stroke-width="1.2" fill="none"/><path transform="translate(15 14) scale(.8)" d="${HEART}" fill="#FF5FA2"/><path transform="translate(45 14) scale(.8)" d="${HEART}" fill="#E2313B"/><path d="M15 5 v4 M45 5 v4" stroke="#C8456B" stroke-width="1"/></svg>`;
+  return `<div class="ev-bunting" style="background-image:url('data:image/svg+xml,${encodeURIComponent(svg)}');background-size:60px 30px"></div>`;
+};
 // a string of fairy lights: the bulbs twinkle one after another
 const lights = (colors) => `<svg class="ev-lights" viewBox="0 0 400 34" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 6 Q50 18 100 6 T200 6 T300 6 T400 6" stroke="#2E5E3A" stroke-width="1.6" fill="none"/>${
   Array.from({ length: 16 }, (_, i) => { const x = 12 + i * 25, y = 7 + Math.abs(Math.sin(((x % 100) / 100) * Math.PI)) * 9; return `<g transform="translate(${x} ${y.toFixed(1)})"><rect x="-2.5" y="-1" width="5" height="4" fill="#556"/><ellipse class="ev-bulb b${i % 3}" cy="8" rx="4.2" ry="6" fill="${colors[i % colors.length]}"/></g>`; }).join('')}</svg>`;
@@ -490,8 +557,11 @@ const TOPS = {
   halloween: (stage) => (stage >= 2 ? cobweb + '<div class="ev-spider"><span>🕷️</span></div>' : '') + (stage >= 3 ? bunting(['#FF8A1F', '#3A2246', '#7B3FB8']) : ''),
   christmas: (stage) => (stage >= 2 ? lights(['#E2313B', '#FFD23F', '#2E9E4E', '#4D9BFF']) : ''),
   newyear: () => tinsel + lights(['#FFD23F', '#FF5FA2', '#6FD3FF', '#9BE15D']),
+  valentine: () => heartString(),
+  patrick: (stage) => (stage >= 2 ? bunting(['#2E9E4E', '#FFFFFF', '#FF8A1F']) : ''),
+  easter: (stage) => (stage >= 2 ? bunting(['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5']) : ''),
 };
-const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene };
+const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene, valentine: valentineScene, patrick: patrickScene, easter: easterScene };
 
 // the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
 export function eventScene(id, world, stage) {
@@ -560,6 +630,13 @@ export const PROPS = {
     <path d="M77 40 Q100 47 124 40 L125 47 Q100 54 76 47Z" fill="#FF922E"/><circle cx="118" cy="-26" r="4.5" fill="#FFE066"/><path d="M94 22 l3 -6 3 6 -6 -4 h6z" fill="#FFE066" opacity=".9"/></g>` },
   santaHat: { slot: 'season', art: () => `<g transform="rotate(-10 100 46)"><path d="M70 46 Q84 -4 124 -6 Q150 -4 156 26 Q140 8 128 16 Q132 32 130 46Z" fill="#E2313B"/>
     <path d="M100 4 Q112 -2 124 4" stroke="#FF6B73" stroke-width="3" fill="none" opacity=".7"/><rect x="66" y="40" width="70" height="14" rx="7" fill="#fff"/><circle cx="156" cy="28" r="9" fill="#fff"/></g>` },
+  heartBand: { slot: 'season', art: () => `<path d="M62 62 Q100 22 138 62" stroke="#FF5FA2" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path d="M78 42 q-6 -16 -16 -24 M122 42 q6 -16 16 -24" stroke="#C8456B" stroke-width="2" fill="none"/>
+    <g class="pp-boing"><path transform="translate(60 16) scale(1.1)" d="${HEART}" fill="#E2313B"/><path transform="translate(140 16) scale(1.1)" d="${HEART}" fill="#FF5FA2"/></g>` },
+  leprechaunHat: { slot: 'season', art: () => `<g transform="rotate(-8 100 46)"><ellipse cx="100" cy="47" rx="44" ry="9" fill="#1E7A3A"/><path d="M76 46 L80 -8 H120 L124 46Z" fill="#2E9E4E"/>
+    <rect x="78" y="22" width="44" height="10" fill="#2E2A33"/><rect x="92" y="20" width="16" height="14" fill="none" stroke="#FFD23F" stroke-width="3.5"/>${shamrock(112, 4, 5)}</g>` },
+  flowerCrown: { slot: 'season', art: () => `<path d="M58 66 Q100 34 142 66" stroke="#3DBA63" stroke-width="4" fill="none"/>${[[62, 62, '#FFB3D6'], [80, 48, '#FFF2A8'], [100, 43, '#B5E8FF'], [120, 48, '#FFB3D6'], [138, 62, '#D9C7FF']]
+    .map(([x, y, c]) => `<g transform="translate(${x} ${y})">${[0, 72, 144, 216, 288].map((a) => `<circle cy="-5" r="4.5" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="3" fill="#FFD23F"/></g>`).join('')}` },
   partyHat: { slot: 'season', art: () => `<g transform="rotate(12 100 44)"><path d="M84 46 L104 -14 L124 46Z" fill="#8B6CFF"/><path d="M94 16 L114 16 M89 31 L119 31" stroke="#FFD23F" stroke-width="5"/>
     <path d="M80 44 Q104 52 128 44" stroke="#FF5FA2" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="104" cy="-16" r="6" fill="#FF5FA2"/>
     <path d="M104 -22 l-6 -10 M104 -22 l6 -10 M104 -22 v-12" stroke="#FFD23F" stroke-width="2.4" stroke-linecap="round"/></g>` },

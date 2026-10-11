@@ -841,6 +841,31 @@ export function createAntics(api) {
     },
   };
 
+  // Easter: painted eggs hidden in the world. Each one is found once (a chick hatches);
+  // Lucky praises every find with the sensei's words, and when all are found: "All found! Ninja detective!"
+  const foundEggs = new Set();
+  const eggKey = (el) => api.world() + ':' + el.dataset.egg;
+  R.egg = {
+    press: () => sfx.pop(),
+    tap: (c) => {
+      if (foundEggs.has(eggKey(c.el))) return;
+      foundEggs.add(eggKey(c.el));
+      c.el.classList.add('found');
+      const gold = c.el.classList.contains('gold'), left = ui.bg.querySelectorAll('.ev-egg:not(.found)').length;
+      popUp('🐣', c.x, c.y - 12, 1900, 30, 'pop-rise');
+      api.fxAt(c.x, c.y, gold ? ['✨', '🌟'] : ['✨'], gold ? 8 : 4, 'spark');
+      sfx.happy();
+      api.hearts(c.x, c.y, 3);
+      api.reward();
+      if (!api.free()) return;
+      pose('laugh', 1400, 'clap');
+      if (!left) line(LUCKY.sensei.huntDone, 1, 0);
+      else line(gold ? 'fishGem' : LUCKY.sensei.found, 1, 0);
+    },
+  };
+  // the world was drawn again: eggs found before stay found
+  function refreshEggs() { ui.bg.querySelectorAll('.ev-egg').forEach((e) => { if (foundEggs.has(eggKey(e))) e.classList.add('found'); }); }
+
   // the animal cloud from the 'Sharp eyes' mission
   R.skypet = {
     press: (c) => { sfx.magic(); api.hop(c.el, 'wiggle', 800); },
@@ -1108,7 +1133,7 @@ export function createAntics(api) {
     '🌷': 'flower', '🌼': 'flower', '🪷': 'flower', '🌸': 'flower', '🌻': 'flower', '🦀': 'crab', '🐑': 'sheep', '🍭': 'lolly', '🍬': 'lolly', '🧁': 'lolly',
     '🐚': 'shell', '☃️': 'snowman', '🌲': 'pine', '🎄': 'pine', '🪐': 'planet', '🌟': 'star', '⭐': 'star', '☘️': 'clover', '🍀': 'clover',
     '🏮': 'lamp', '🎋': 'bamboo', '🌴': 'palm', '❄️': 'pine', '🏯': 'pagoda', '⛩️': 'pagoda', '🍩': 'lolly', '🍪': 'lolly', '🎂': 'lolly', '🍦': 'lolly',
-    '🌧️': 'cloud', '🌠': 'star', '☄️': 'star', '🌍': 'planet', '🏰': 'castle', '🌙': 'crater', '⛄': 'snowman',
+    '🌧️': 'cloud', '🌠': 'star', '☄️': 'star', '🌍': 'planet', '🏰': 'castle', '🌙': 'crater', '⛄': 'snowman', '🌹': 'flower', '💐': 'flower', '🪙': 'gold',
   };
   const say1 = (key, sound) => ({ press: (c) => { sound(); api.hop(c.el, 'wiggle'); }, tap: who(() => { pose('happy', 1400, 'hop'); line(key, 0.9); }) });
   // a sticker that plays a visitor's scene (several kinds: a different one each time)
@@ -1308,6 +1333,15 @@ export function createAntics(api) {
     '🎊': { press: () => sfx.pop(), tap: who((c) => { api.fxAt(c.x, c.y, ['🎊', '✨', '🎉'], 10, 'spark'); pose('laugh', 1400, 'binky'); sfx.sparkle(); }) },
     '🕛': { press: () => sfx.tick(), tap: (c) => { [0, 500, 1000].forEach((d) => setTimeout(() => sfx.tick(), d)); setTimeout(() => D.rocket.double(c), 1500); } },
     '✨': { press: () => sfx.sparkle(), tap: who(() => { const a = begin('sparkle'); hold(a, 'glow', 2000); api.fxAt(...head(), ['✨', '⭐'], 8, 'spark'); sfx.magic(); pose('happy', 2000, 'proud', 1200); at(a, 2100, end); }) },
+    // Valentine's Day, St Patrick's Day and Easter
+    '💌': visitorSticker('love', () => sfx.pop()),
+    '💝': { press: () => sfx.pop(), tap: who((c) => { presentOpen(c); setTimeout(() => api.hearts(c.x, c.y, 6), 1250); }) },
+    '💘': { press: () => sfx.whoosh(), tap: who((c) => { fly('💘', [c.x, c.y], head(), 600, { size: 30 }); setTimeout(() => { sfx.happy(); api.hearts(...head(), 8); pose('happy', 1600, 'hug'); }, 600); }) },
+    '🧸': { press: () => sfx.tap(), tap: who(() => { sfx.happy(); pose('happy', 1600, 'hug'); api.hearts(...head(), 5); line(LUCKY.hug, 1); }) },
+    '🎩': { press: () => sfx.pop(), tap: who(() => { prop('tophat', 8000); sfx.pop(); pose('happy', 1600, 'proud', 1200); }) },
+    '🥚': { press: () => sfx.pop(), tap: who((c) => { api.hop(c.el, 'wiggle', 600); setTimeout(() => { popUp('🐣', c.x, c.y - 16, 1900, 30, 'pop-rise'); sfx.happy(); pose('laugh', 1400, 'clap'); line(LUCKY.sensei.found, 1); }, 600); }) },
+    '🧺': { press: () => sfx.pop(), tap: who((c) => { ['🥚', '🐣', '🥚'].forEach((e, i) => setTimeout(() => fly(e, [c.x, c.y], [c.x + (i - 1) * 50, c.y - 70], 700, { arc: 40, size: 24 }), i * 200)); sfx.sparkle(); pose('happy', 1500, 'clap'); line(LUCKY.sensei.found, 1); }) },
+    '🐰': { press: () => sfx.boing(), tap: who(() => { pose('laugh', 1400, 'binky'); setTimeout(() => line(lineWith(LUCKY.facts, 'love company'), 1), 400); }) },
     // stickers that do what the visitor they show does
     '🐞': visitorSticker('spots'),
     '🐝': visitorSticker('bee', () => sfx.buzz()),
@@ -1624,6 +1658,23 @@ export function createAntics(api) {
         pose('ok', 1000, 'startle', 1100);
         at(a, 1400, () => { pose('laugh', 1500, 'hop'); line(lineWith(LUCKY.antics.boo, 'Boo!'), 1, 0); });
       },
+      // Valentine's Day: a love letter flies to him: hearts, a hug, "I love you!"
+      love: () => {
+        fly('💌', [x, y], api.luckyPoint(0.6, 0.55), 800, { arc: 40, size: 30, stay: 900 });
+        at(a, 800, () => { sfx.happy(); pose('happy', 1800, 'hug'); api.hearts(...head(), 7); line(lineWith(LUCKY.tap, 'I love you'), 1, 0); });
+      },
+      // St Patrick's Day: a four-leaf clover lands behind his ear
+      luck: () => {
+        fly('🍀', [x, y], api.luckyPoint(0.75, 0.28), 800, { arc: 40, spin: 180, size: 26 });
+        at(a, 800, () => { prop('cloverEar', 9000); sfx.chime(); api.fxAt(...head(), ['✨', '🍀'], 5, 'spark'); pose('laugh', 1500, 'binky'); line('fourLeaf', 1, 0); api.reward(); });
+      },
+      // Easter: a chick hops over and stays by his feet for a moment
+      chick: () => {
+        const to = api.luckyPoint(1.02, 0.9);
+        fly('🐣', [x, y], to, 900, { arc: 50, size: 30, stay: 2400 });
+        at(a, 900, () => { sfx.happy(); pose('happy', 1800, 'clap'); api.hearts(...to, 4); });
+        at(a, 3300, () => fly('🐣', to, [w + 40, to[1]], 1000, { arc: 30, size: 30 }));
+      },
       // snowflakes settle on his nose: brr
       flakes: () => {
         fly('❄️', [x, y], nose(), 900, { spin: 180, size: 24 });
@@ -1753,6 +1804,7 @@ export function createAntics(api) {
   return {
     // a tap on Lucky while he hides: 'You found me!' (true if handled)
     luckyTap: () => !!act?.onLuckyTap?.(),
+    refreshEggs,
     // a chat line is starting: act it out (main.js calls this before each line of a chat or a prank)
     chat(en) {
       const fx = CHAT_FX[en];

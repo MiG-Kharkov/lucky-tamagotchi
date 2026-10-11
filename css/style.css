@@ -1184,7 +1184,27 @@ body.ev-newyear.ev-s3 { --ev-deco: "✨"; background: radial-gradient(circle at 
 .ev-newyear.ev-s3 .dog-body::after { content: "🎉"; position: absolute; left: 40%; top: -4%; font-size: min(7vw, 28px); pointer-events: none; }
 .ev-newyear.ev-s3 .pl.dec-hutch .pl-in::after, .ev-newyear.ev-s3 .pl.dec-igloo .pl-in::after, .ev-newyear.ev-s3 .pl.dec-tent .pl-in::after,
 .ev-newyear.ev-s3 .pl.dec-castle .pl-in::after { content: "🎁"; position: absolute; left: -6%; bottom: -2%; font-size: calc(var(--w) * .24cqw); pointer-events: none; }
+/* Valentine's Day, St Patrick's Day, Easter */
+.bg svg.ev-layer [data-tap] { pointer-events: auto; }
+.ev-egg { animation: evEgg 4s ease-in-out infinite; transform-origin: 50% 90%; }
+.ev-egg.gold { filter: drop-shadow(0 0 4px #FFD23F); }
+.ev-egg.found { opacity: 0; pointer-events: none; transition: opacity .5s; }
+@keyframes evEgg { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-8deg); } 92% { transform: rotate(6deg); } }
+.ev-rise { animation: evRise 7s ease-in var(--delay, 0s) infinite; }
+@keyframes evRise { 0% { transform: translate(0, 0); opacity: 0; } 10% { opacity: .9; } 100% { transform: translate(18px, -360px); opacity: 0; } }
+.ev-bob { animation: evBob 2.6s ease-in-out infinite; }
+@keyframes evBob { 50% { transform: translateY(-5px) rotate(3deg); } }
+.pp-boing { transform-box: fill-box; transform-origin: 50% 100%; animation: evBoing 1.4s ease-in-out infinite; }
+@keyframes evBoing { 25% { transform: rotate(-6deg) translateY(-2px); } 75% { transform: rotate(6deg) translateY(1px); } }
+body.ev-valentine.ev-s3 { --ev-deco: "💕"; background: radial-gradient(circle at 20% 0%, #FFF0F5, #FFD3E4 55%, #FFC2D6); }
+.ev-valentine.ev-s3 .dog-body::after { content: "💘"; position: absolute; left: 40%; top: -3%; font-size: min(7vw, 28px); pointer-events: none; }
+body.ev-patrick.ev-s3 { --ev-deco: "🍀"; background: radial-gradient(circle at 20% 0%, #F2FFF4, #D4F5DA 55%, #FFE8CC); }
+.ev-patrick.ev-s3 .dog-body::after { content: "☘️"; position: absolute; left: 40%; top: -3%; font-size: min(7vw, 28px); pointer-events: none; }
+.ev-patrick.ev-s2 .pl.dec-hutch .pl-in::after, .ev-patrick.ev-s2 .pl.dec-tent .pl-in::after, .ev-patrick.ev-s2 .pl.dec-castle .pl-in::after { content: "☘️"; position: absolute; left: -6%; bottom: -2%; font-size: calc(var(--w) * .22cqw); pointer-events: none; }
+body.ev-easter.ev-s3 { --ev-deco: "🌸"; background: radial-gradient(circle at 20% 0%, #FFFDF2, #E8F6FF 55%, #FCE3F3); }
+.ev-easter.ev-s3 .dog-body::after { content: "🌷"; position: absolute; left: 30%; top: 2%; font-size: min(7vw, 28px); transform: rotate(-20deg); pointer-events: none; }
+.ev-easter.ev-s2 .pl.dec-hutch .pl-in::after, .ev-easter.ev-s2 .pl.dec-tent .pl-in::after, .ev-easter.ev-s2 .pl.dec-igloo .pl-in::after { content: "🥚"; position: absolute; left: -4%; bottom: -2%; font-size: calc(var(--w) * .2cqw); pointer-events: none; }
 @media (prefers-reduced-motion: reduce) {
-  .ev-bat, .ev-sleigh, .ev-burst { display: none; }
-  .ev-ghost, .ev-bunting, .ev-spider, .ev-bulb, .ev-star, .ev-year, .ev-pumpkin .ev-face { animation: none !important; }
+  .ev-bat, .ev-sleigh, .ev-burst, .ev-rise { display: none; }
+  .ev-ghost, .ev-bunting, .ev-spider, .ev-bulb, .ev-star, .ev-year, .ev-pumpkin .ev-face, .ev-egg, .ev-bob, .pp-boing { animation: none !important; }
 }
