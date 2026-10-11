@@ -257,6 +257,7 @@ const antics = createAntics({
   boost: (k, n) => { st.boost(S, k, n); renderStats(); },
   stat,
   idiom: (when, chance) => maybeIdiom(when, chance),
+  event: () => EV,
   active: () => userActive(),
   toast: (html) => toast(html, 2500),
   // best scores (keepy-uppy): true when it's a new record
@@ -818,6 +819,9 @@ function goPlace(id) {
 // ---------- holidays (events.js): the same game, decorated for a few weeks before each holiday ----------
 
 let EV = null; // the holiday that is on (with its stage), or null
+// who drops the daily surprise and what Tali rides in on, in a holiday's last week
+const HOLIDAY_CARRIER = { halloween: '🦇', christmas: '🎅', newyear: '🎅', valentine: '🕊️', patrick: '🐦', easter: '🐣' };
+const HOLIDAY_RIDE = { halloween: '🧹', christmas: '🛷', newyear: '🛷' };
 const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown' };
 const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
 const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage) + art.eventTop(EV.id, EV.stage) : '');
@@ -1356,8 +1360,10 @@ function maybeSurprise(now, T0) {
     b.appendChild(chute);
     b.animate([{ bottom: '105%' }, { bottom: '5%' }], { duration: 2800, easing: 'ease-out' }).onfinish = () => chute.remove();
   } else if (how === 'bird') {
-    antics.fly('🐦', [-40, r.height * 0.2], [x, r.height * 0.25], 1000, { size: 34 });
-    setTimeout(() => antics.fly('🐦', [x, r.height * 0.25], [r.width + 40, r.height * 0.1], 1000, { size: 34 }), 1000);
+    // in a holiday's last week someone else brings it: a bat, Santa, a chick…
+    const bird = (EV && EV.stage >= 3 && HOLIDAY_CARRIER[EV.id]) || '🐦';
+    antics.fly(bird, [-40, r.height * 0.2], [x, r.height * 0.25], 1000, { size: 34 });
+    setTimeout(() => antics.fly(bird, [x, r.height * 0.25], [r.width + 40, r.height * 0.1], 1000, { size: 34 }), 1000);
     b.animate([{ bottom: '75%', opacity: 0 }, { bottom: '75%', opacity: 1, offset: 0.4 }, { bottom: '5%' }], { duration: 1900, easing: 'ease-in' });
   } else if (how === 'dig') {
     b.animate([{ transform: 'translateX(-50%) translateY(70px) scale(.3)' }, { transform: 'translateX(-50%) translateY(-12px) scale(1.1)', offset: 0.7 }, { transform: 'translateX(-50%)' }], { duration: 1100, easing: 'ease-out' });
@@ -2087,7 +2093,7 @@ function dogArrive() {
   // he runs in, jumps in from the sky, pops out of the ground, spins in or rolls in on a skateboard
   const entry = pick(['enter', 'enterJump', 'enterDig', 'enterSpin', 'enterSkate']);
   hop(body, entry, 1900);
-  if (entry === 'enterSkate') { ui.dog.insertAdjacentHTML('beforeend', '<span class="skate">🛹</span>'); setTimeout(() => ui.dog.querySelector('.skate')?.remove(), 1500); sfx.whoosh(); }
+  if (entry === 'enterSkate') { ui.dog.insertAdjacentHTML('beforeend', `<span class="skate">${(EV && EV.stage >= 3 && HOLIDAY_RIDE[EV.id]) || '🛹'}</span>`); setTimeout(() => ui.dog.querySelector('.skate')?.remove(), 1500); sfx.whoosh(); }
   if (entry === 'enterDig') setTimeout(() => { const d = body.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); fxAt(d.left - sc.left + d.width / 2, d.bottom - sc.top - 10, ['💨', '🌱'], 6, 'spark'); sfx.puff(); }, 200);
   if (entry === 'enterJump') setTimeout(() => sfx.boing(), 500);
   const gift = ui.dog.querySelector('.gift');

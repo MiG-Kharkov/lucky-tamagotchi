@@ -334,8 +334,11 @@ export function createAntics(api) {
       api.fxAt(c.x, c.y + 20, w === 'candy' ? ['🍬', '🍭'] : w === 'winter' ? ['❄️'] : ['💧'], 8, 'drop');
     },
     tap: who((c) => {
-      if (api.world() !== 'candy' && api.world() !== 'winter' && api.idiom?.('cloud', 0.35)) return; // "It's raining cats and dogs!"
-      const a = begin('rain'), w = api.world(), [hx, hy] = head();
+      // in the last week before Halloween a cloud may rain sweets anywhere, before Christmas it may snow
+      const ev = api.event?.(), swap = ev?.stage >= 3 && Math.random() < 0.4 && { halloween: 'candy', christmas: 'winter' }[ev.id];
+      const w = swap || api.world();
+      if (w !== 'candy' && w !== 'winter' && api.idiom?.('cloud', 0.35)) return; // "It's raining cats and dogs!"
+      const a = begin('rain'), [hx, hy] = head();
       if (w === 'candy') {
         for (let i = 0; i < 5; i++) at(a, i * 220, () => { fly(i % 2 ? '🍬' : '🍭', [c.x, c.y], mouth(), 600, { spin: 200, size: 26 }); });
         at(a, 700, () => { api.setTemp('eat', 1400); sfx.yum(); line('candyRain'); });

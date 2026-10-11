@@ -1204,6 +1204,13 @@ body.ev-patrick.ev-s3 { --ev-deco: "🍀"; background: radial-gradient(circle at
 body.ev-easter.ev-s3 { --ev-deco: "🌸"; background: radial-gradient(circle at 20% 0%, #FFFDF2, #E8F6FF 55%, #FCE3F3); }
 .ev-easter.ev-s3 .dog-body::after { content: "🌷"; position: absolute; left: 30%; top: 2%; font-size: min(7vw, 28px); transform: rotate(-20deg); pointer-events: none; }
 .ev-easter.ev-s2 .pl.dec-hutch .pl-in::after, .ev-easter.ev-s2 .pl.dec-tent .pl-in::after, .ev-easter.ev-s2 .pl.dec-igloo .pl-in::after { content: "🥚"; position: absolute; left: -4%; bottom: -2%; font-size: calc(var(--w) * .2cqw); pointer-events: none; }
+/* missions in a holiday's last week */
+.ev-halloween.ev-s3 .ninja-mission { background: linear-gradient(#FFE8D1, #E6D6FF); }
+.ev-christmas.ev-s3 .ninja-mission { background: linear-gradient(#F2FAFF, #FFE1E6); }
+.ev-newyear.ev-s3 .ninja-mission { background: linear-gradient(#FFF7DB, #E4E0FF); }
+.ev-valentine.ev-s3 .ninja-mission { background: linear-gradient(#FFE6EF, #FFD0E1); }
+.ev-patrick.ev-s3 .ninja-mission { background: linear-gradient(#E9FBEC, #FFF1DE); }
+.ev-easter.ev-s3 .ninja-mission { background: linear-gradient(#FFFBE6, #E6F4FF); }
 @media (prefers-reduced-motion: reduce) {
   .ev-bat, .ev-sleigh, .ev-burst, .ev-rise { display: none; }
   .ev-ghost, .ev-bunting, .ev-spider, .ev-bulb, .ev-star, .ev-year, .ev-pumpkin .ev-face, .ev-egg, .ev-bob, .pp-boing { animation: none !important; }
