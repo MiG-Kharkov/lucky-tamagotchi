@@ -3,6 +3,17 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.10.1] – 2026-10-12
+
+### Added
+- **The whole collection complete.** When she has every outfit, world, decoration and sticker, a window says so, once
+  ("The whole collection is complete! 100%"), with confetti and a word from Lucky, and the collection shows 🏆 100%.
+  Nothing new is given for it; the presents after it are bonus hearts, as before.
+
+### Removed
+- The greetings spoken in Thai (on her birthday and at Songkran). Songkran stays as it was, and Lucky still tells her
+  a few Thai words in his usual voice. 3,005 voice clips in all.
+
 ## [1.10.0] – 2026-10-12
 
 The family's own holidays, and a game pitched a little older: the girl Lucky was made for is growing up.

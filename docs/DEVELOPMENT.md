@@ -171,7 +171,7 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
 
 - Nothing in the rules changes. Holiday lines live in `LUCKY.holiday` and `DOG.holiday` (greetings in the last week, on
   the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`. `LUCKY.holiday[id].hello` are lines in
-  the family's other languages that follow the greeting on the day itself; a `DOG.holiday` entry can be `{ before, day }`
+  Ukrainian that follow the greeting on the day itself; a `DOG.holiday` entry can be `{ before, day }`
   (Tali's birthday wishes wait for the day).
 - Holiday stickers (Decorate gets a holiday category from stage 2) show only while their holiday is on and come back
   next year; parents can switch the decorations off. In Turbo the 🎃 tool previews each holiday in turn.
@@ -180,7 +180,7 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 3,009 MP3 files, ~32 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 3,005 MP3 files, ~32 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
@@ -189,9 +189,9 @@ Tali is **Orus**, the frog is **Charon**. 3,009 MP3 files, ~32 MB. If a line has
   Never commit or share it.
 - **Google returned 429** (per-minute quota): wait a minute and run the script again.
 - A word in the other language ("Привет!" on the English side) is read by that language's voice (`voiceLang` in
-  `tools/tts.mjs`). A line in Thai, or in Ukrainian (it has і, ї, є or ґ), is read by the Thai or Ukrainian voice of the
-  same character, on either side; whatever it has in brackets (how it sounds, what it means) is only shown, not spoken
-  (`speechText` in `js/voicekey.js`). A line whose two sides sound the same shows no second line in the bubble.
+  `tools/tts.mjs`). A line in Ukrainian (it has і, ї, є or ґ) is read by the Ukrainian voice of the same character, on
+  either side; what it has in brackets (what it means) is only shown, not spoken (`speechText` in `js/voicekey.js`).
+  A line whose two sides sound the same shows no second line in the bubble.
 - **Change a voice or pitch:** `js/voicekey.js` → `VOICES`. `rate` is the playback speed-up; higher means a higher voice.
   If you change `voice`, delete `audio/` and record everything again.
 - **Compare voices:** `node tools/voice-trial.mjs`, then open `/voice-trial/`.

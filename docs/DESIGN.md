@@ -32,9 +32,9 @@ with the verb: "Will you have a cup of tea?" "I will!"), sayings ("Don't spill t
 and the questions she really gets asked: where she's from, what languages she speaks, when her birthday is, her pets.
 The riddle frog has harder riddles too.
 
-The family's other languages come with their holidays: on her birthday, at Songkran and on Ukrainian Independence Day
-Lucky also says the greeting in Ukrainian or Thai, in those languages' voices (how it sounds and what it means are
-shown in brackets).
+Ukrainian comes with the family's holidays: on her birthday and on Ukrainian Independence Day Lucky also says the
+greeting in Ukrainian, in a Ukrainian voice (what it means is shown in brackets). At Songkran he tells her a few Thai
+words in his usual voice.
 
 ## Mood
 
@@ -205,8 +205,9 @@ and a step towards the next belt (3 stamps per belt).
 
 ## Progress
 
-- Hearts from care (daily caps per category) raise the level. Every level up to 27 brings something new; after the
-  last sticker the later levels bring bonus hearts (what the end of the collection should bring is an open question).
+- Hearts from care (daily caps per category) raise the level. Every level up to 27 brings something new. When the whole
+  collection is complete (every outfit, world, decoration and sticker), a window says so, once, and the collection
+  shows 🏆 100%; the presents after it are bonus hearts.
 - Belts: white → … → black → **Pink Master Belt** (3 missions per belt, ~3 weeks). Lucky's headband matches the current belt.
 - **Wardrobe:** 28 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
@@ -247,7 +248,7 @@ the day itself add their own things. Parents can switch it off; Turbo previews e
   cap); a present left in the holiday's window is kept for a week after the day, and Lucky hands it over on the next
   visit.
 - **Moments:** Tali comes trick-or-treating at Halloween, a ghost going past dims the scene, Cupid flies by, New Year's
-  Day starts with a countdown and fireworks. On her birthday Lucky greets her (in Ukrainian and Thai too) and gives her
+  Day starts with a countdown and fireworks. On her birthday Lucky greets her (in Ukrainian too) and gives her
   a card from him and Tali with what they have done together: days, jokes, missions, stickers, her belt (never her
   age). On St Nicholas Day there is a present under the pillow (kept for her until Christmas Eve if she comes later).
   Holiday greetings and chatter, holiday visitors and stickers.
