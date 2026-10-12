@@ -494,7 +494,7 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
         <div class="m-btns"><button class="btn pink big rv-ok">${primary}</button>
         ${main.kind === 'outfit' || main.kind === 'place' ? `<button class="btn rv-later">${tr('rvLater')}</button>` : ''}</div>`;
       sfx.happy();
-      const finish = (worn) => { sfx.tap(); done(); setTimeout(() => sayAuto(fresh(worn && LUCKY.wearSay[main.id] ? LUCKY.wearSay[main.id] : line)), 300); };
+      const finish = (worn) => { sfx.tap(); done(); setTimeout(() => sayAuto(fresh(worn && LUCKY.wearSay[main.id] ? LUCKY.wearSay[main.id] : line)), 300); collectionCheck(); };
       content.querySelector('.rv-ok').onclick = () => {
         if (main.kind === 'outfit') wearIt(main);
         if (main.kind === 'place') goPlace(main.id);
@@ -769,6 +769,18 @@ function finishEdit(silent = false) {
 // An item is available if unlocked by level or received as a present / album prize
 const ownsWear = (w) => (w.level && S.level >= w.level) || S.owned.includes(w.id);
 const albumReward = (id) => ALBUMS.find((a) => a.reward === id);
+
+// The whole collection: every outfit, world, decoration and sticker. When it is complete, a window says so, once
+// (nothing more to give: the presents after it are bonus hearts)
+const collectionFull = () => WEAR.every(ownsWear) && PLACES.every((pl) => S.level >= pl.level) && DECOR.every((d) => S.level >= d.level)
+  && STICKERS.every((s) => S.stickers.includes(s));
+function collectionCheck() {
+  if (S.collectionDone || turbo() || !S.onboarded || !collectionFull()) return;
+  S.collectionDone = true;
+  st.save(S);
+  showModal({ art: luckyPic({ face: 'laugh', wear: S.wear }), title: tr('collFullTitle'), text: tr('collFullText', { n: STICKERS.length }),
+    buttons: [{ label: tr('hooray'), onClick: () => { confetti(); sfx.levelup(); setTimeout(() => sayAuto(fresh(LUCKY.collectionFull)), 400); } }] });
+}
 
 // Counters for badges
 function stat(key, n = 1) {
@@ -2290,7 +2302,7 @@ function collectionBody(tab) {
 
 function openCollection(tab = 'outfits') {
   const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'english'];
-  const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}</p>
+  const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}${collectionFull() ? ' · 🏆 100%' : ''}</p>
     <div class="tabs coll-tabs">${tabs.map((t) => `<button class="tab ${t === tab ? 'on' : ''}" data-t="${t}">${tr(t)}</button>`).join('')}</div>${collectionBody(tab)}`;
   openSheet('🎀 ' + tr('collection'), html, (root) => {
     const again = () => { const y = root.scrollTop; openCollection(tab); ui.sheet.scrollTop = y; };
@@ -3313,6 +3325,7 @@ function start() {
 
   if (!S.onboarded) { S.onboarded = true; st.save(S); }
   if (mode === 'main') greet(gap);
+  setTimeout(collectionCheck, 6000); // a collection that was already complete gets its window too
   document.body.classList.add('ready'); // the waking-up screen goes away
 }
 
