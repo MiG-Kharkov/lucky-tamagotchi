@@ -130,6 +130,19 @@ first day it is stage 3 (everything), `days <= 7` adds the last week's extras, a
 are the quieter looks of earlier versions, still reachable in Turbo previews). `main.js` checks the calendar every minute
 (`updateEvent`: the scene is redrawn only when the look changes) and sets `body.ev-<id>` plus `ev-s1`…`ev-s4`.
 
+- The child's birthday is a holiday too: its date is `CONFIG.child.birthday` (`[month, day]`, no year: the game never
+  knows or says her age). The phrase of the day "When is your birthday?" is built from the same date.
+- **When two are on at once** (`eventOn`): a holiday's day beats the days after one, and those beat the days before;
+  then `prio` (Songkran and Independence Day have 1, so a late Easter keeps its days), then the nearer one. New Year
+  stays one day after 1 January so the birthday can start on the 3rd.
+- Optional fields: `today` (how the calendar says "it's … today" when the name doesn't fit: "your birthday"), `span`
+  (a holiday of several days: Songkran's three days all count as "today").
+- **St Nicholas** (6 December) is not a holiday of its own but a moment inside Christmas: `nicholasDay()` gives the eve
+  and the day their greeting, and `nicholasPresent()` hands over a present once a year (on the day after the greeting,
+  later until Christmas Eve).
+- **Her birthday:** after the greeting, `birthdayCard()` shows a card from Lucky and Tali with what they have done
+  together (once a year; `S.bdCard` is the year). The mood check-in and the presents kept from New Year wait for it.
+
 - **The interface:** each holiday sets custom properties on `body.ev-<id>.ev-s3` (`--ev-1`, `--ev-ink`, `--ev-card`,
   `--ev-line`, `--ev-pat` for the bars, `--ev-bar`, `--ev-btn`, `--ev-head`, `--ev-reveal`, `--ev-a1…a5` and `--ev-s1…s4`
   for the decorations on the action buttons and stat cards); the `.ev-s3 …` rules in `style.css` use them everywhere.
@@ -157,7 +170,9 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
   one Lucky can shoot only so fast. The loop pauses while the page is hidden or the phone is turned sideways.
 
 - Nothing in the rules changes. Holiday lines live in `LUCKY.holiday` and `DOG.holiday` (greetings in the last week, on
-  the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`.
+  the eve and on the day, chatter), the holiday things' words in `LUCKY.antics`. `LUCKY.holiday[id].hello` are lines in
+  the family's other languages that follow the greeting on the day itself; a `DOG.holiday` entry can be `{ before, day }`
+  (Tali's birthday wishes wait for the day).
 - Holiday stickers (Decorate gets a holiday category from stage 2) show only while their holiday is on and come back
   next year; parents can switch the decorations off. In Turbo the 🎃 tool previews each holiday in turn.
 - New JS modules must also go into `ASSETS` in `sw.js`, or the game breaks offline.
@@ -165,7 +180,7 @@ are the quieter looks of earlier versions, still reachable in Turbo previews). `
 ## Voices
 
 Lines are pre-recorded with Google Cloud Text-to-Speech, Chirp 3 HD voices: Lucky is **Fenrir**,
-Tali is **Orus**, the frog is **Charon**. 2,881 MP3 files, ~29 MB. If a line has no clip
+Tali is **Orus**, the frog is **Charon**. 3,009 MP3 files, ~32 MB. If a line has no clip
 (a new line, or a changed name), the game automatically uses the device's built-in voice.
 
 - **After editing texts** in `js/i18n.js`, `js/dialogs.js`, `js/jokes.js`, `js/english.js` or `js/missions.js`, run `node tools/gen-voices.mjs`.
@@ -174,7 +189,9 @@ Tali is **Orus**, the frog is **Charon**. 2,881 MP3 files, ~29 MB. If a line has
   Never commit or share it.
 - **Google returned 429** (per-minute quota): wait a minute and run the script again.
 - A word in the other language ("Привет!" on the English side) is read by that language's voice (`voiceLang` in
-  `tools/tts.mjs`).
+  `tools/tts.mjs`). A line in Thai, or in Ukrainian (it has і, ї, є or ґ), is read by the Thai or Ukrainian voice of the
+  same character, on either side; whatever it has in brackets (how it sounds, what it means) is only shown, not spoken
+  (`speechText` in `js/voicekey.js`). A line whose two sides sound the same shows no second line in the bubble.
 - **Change a voice or pitch:** `js/voicekey.js` → `VOICES`. `rate` is the playback speed-up; higher means a higher voice.
   If you change `voice`, delete `audio/` and record everything again.
 - **Compare voices:** `node tools/voice-trial.mjs`, then open `/voice-trial/`.
@@ -208,4 +225,7 @@ When changing speech or audio code, check on a real iPhone: first-tap audio unlo
 switching to another app and back (the sound must come back on the next tap), returning after a call, and offline mode.
 In Turbo mode the waits inside missions are 2 seconds, which is handy for checking them by hand.
 Lucky sleeps from 22:00 to 07:00 in the browser's time zone, so run such scripts in daytime or set `timezoneId` (or
-Playwright's fake clock) to a daytime hour; at night most checks only see the sleep screen.
+Playwright's fake clock) to a daytime hour; at night most checks only see the sleep screen. For a holiday's own day,
+`context.clock.install({ time })` and then `clock.resume()` start the browser on that date with time running.
+With `?debug`, `window.game` has hooks for tests (`startHoliday(game)` starts any game, `now()` tells what is on
+the screen).

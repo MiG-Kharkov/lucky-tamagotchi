@@ -1,8 +1,12 @@
 # 🎨 Game design
 
-A Tamagotchi for a girl who goes to an English-speaking school. The pet is **Lucky**, a ginger lop-eared bunny.
-Sometimes **Tali** (a tiny white chihuahua with black spots) and the **riddle frog** come to visit.
-Lucky and Tali are boys.
+A Tamagotchi for a girl in the top classes of primary school, at a school in Ireland. Her family is from Ukraine
+and lived in Thailand before Ireland. The pet is **Lucky**, a ginger lop-eared bunny: he is
+drawn after her own bunny, Lucky. Sometimes **Tali**, the family's real chihuahua (tiny, white with black spots), and
+the **riddle frog** come to visit. Lucky and Tali are boys.
+
+She is not little any more, so the game is pitched a little older: harder games with records to beat, a cheekier
+Lucky, the English she hears in the schoolyard, and the holidays of her own family.
 
 ## Principles
 
@@ -11,7 +15,7 @@ Lucky and Tali are boys.
 | Nothing irreversible | Lucky never gets ill or dies; stats never drop below 15% |
 | No guilt | After a break he says "I missed you!"; no streaks to lose |
 | Watching is free, binging isn't | Just looking at Lucky costs nothing; only active play counts |
-| Breaks | 15 minutes of active play, then an hour of rest (Lucky naps in his garden). After 60 minutes a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before). At night (22:00–07:00) he sleeps |
+| Breaks | 15 minutes of active play, then an hour of rest (Lucky naps in his garden). After 60 minutes a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before): it waits until Lucky can really say it (not over a question or a joke), and he lies down at least 45 s after it, even when a game ran past the limit. At night (22:00–07:00) he sleeps |
 | Life off the screen | Ninja missions and caring for a real bunny happen in the real world |
 | A clear finish line | "Today's plan": four small jobs, then a celebration and "go and play outside" |
 | No manipulation | No ads, purchases, push notifications, online features or data collection |
@@ -21,6 +25,16 @@ Lucky and Tali are boys.
 The UI and Lucky's speech are **always English**. A small Russian translation is shown under every line
 and is spoken when the bubble is tapped. British/Irish English (colour, favourite, "Grand!"),
 with occasional Irish (Gaeilge) bonus words.
+
+She has been at English-speaking schools for years, so the phrases of the day and Chat with Lucky are not beginner
+English: they are how people talk in Ireland ("Fair play to you!", "I'm only messing!", "It's lashing!", answering
+with the verb: "Will you have a cup of tea?" "I will!"), sayings ("Don't spill the beans!", "A storm in a teacup"),
+and the questions she really gets asked: where she's from, what languages she speaks, when her birthday is, her pets.
+The riddle frog has harder riddles too.
+
+The family's other languages come with their holidays: on her birthday, at Songkran and on Ukrainian Independence Day
+Lucky also says the greeting in Ukrainian or Thai, in those languages' voices (how it sounds and what it means are
+shown in brackets).
 
 ## Mood
 
@@ -143,15 +157,16 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | Action | Mechanics |
 |---|---|
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
-| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. 3 games a day, 15 minutes between games, Back before starting doesn't use a game. You can't lose |
+| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). All but Chat with Lucky have three difficulties, stars and records, like the holiday games: Carrot Rain lasts 30, 45 or 60 seconds and falls faster, Memory has 6, 8 or 10 pairs, Copy Lucky's tunes grow to 10, 16 or 24 notes. A game starts on Normal; with three stars the next difficulty is suggested. While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. 3 games a day, 15 minutes between games, Back before starting doesn't use a game. Each game gives up to 8 hearts (24 a day), so all three count. You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
 | ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky. The tray has categories (⭐ super, 🏡 home, 🌍 this world, 🗺️ other worlds, 📒 sticker albums) and a grid; a decoration already on the scene is marked ✓ and selected when tapped again |
-| 💬 Phrase of the day | A conversational phrase (all of them in turn, each once in 46 days) and a 3-question quiz: today's phrase and the ones from 3 and 10 days ago come back |
+| 💬 Phrase of the day | A conversational phrase (all of them in turn, each once in 51 days) and a 3-question quiz: today's phrase and the ones from 3 and 10 days ago come back |
 | 🌙 Put to bed | Voluntary end of the session, with a bonus |
 
-Once a day Lucky asks how the child feels; if sad or cross, he offers ninja breathing.
+Every third day or so Lucky asks how the child feels (every day was too much); if sad or cross, he offers ninja
+breathing. His questions lean to "would you rather", quizzes and little stories; "tap my nose" is gone.
 
 **Holiday games** (`js/arcade.js`, `js/holigames.js`): three for each holiday. Two or three minutes long, they speed up
 smoothly and in waves every 30 seconds, and count points: a combo of good catches or hits raises a multiplier (×2 from
@@ -162,13 +177,13 @@ celebrated. Hearts come from the points against the target, as before.
 
 | Kind | How it plays | Games |
 |---|---|---|
-| Shooter | Lucky follows the finger and fires on his own; targets come down alone or three in a row, a friend crosses (don't hit it), hazards drop (dodge or shoot them), treats and power-ups fall (rapid fire, three shots, a shield, a magnet), a boss with a health bar every few waves | Ghost Zapper, Snow Storm, Balloon Pop, Cupid's Arrows, Leprechaun's Gold |
-| Catcher | Something sails along the top dropping things; catch the good ones in the basket, not the bad; rushes of many; power-ups (magnet, double points, slow motion, a big basket) | Santa's Presents, Love Letters, Egg Catch |
-| Whack | Things peek out of pumpkins, shamrocks or grass for a moment; tap the right ones, a golden one is worth more, leave the decoy | Pumpkin Peekaboo, Leprechaun Hide-and-Seek, Egg Hunt |
+| Shooter | Lucky follows the finger and fires on his own; targets come down alone or three in a row, a friend crosses (don't hit it), hazards drop (dodge or shoot them), treats and power-ups fall (rapid fire, three shots, a shield, a magnet), a boss with a health bar every few waves | Ghost Zapper, Snow Storm, Balloon Pop, Cupid's Arrows, Leprechaun's Gold, Water Fight |
+| Catcher | Something sails along the top dropping things; catch the good ones in the basket, not the bad; rushes of many; power-ups (magnet, double points, slow motion, a big basket) | Santa's Presents, Birthday Presents (not the socks!), Love Letters, Egg Catch, The Elephant's Bucket, Sunflower Field |
+| Whack | Things peek out of pumpkins, cakes, shamrocks or grass for a moment; tap the right ones, a golden one is worth more, leave the decoy | Pumpkin Peekaboo, Blow Out the Candles, Leprechaun Hide-and-Seek, Egg Hunt |
 | Fireworks | Rockets rise from the town; a tap near the top of the flight is a perfect burst, and a burst sets off the rockets next to it | Fireworks |
-| Runner | The world runs by; tap to hop, again in the air to hop higher; collect coins or eggs (in arcs), power-ups (balloons to fly, a magnet, a rainbow star) | Rainbow Run, Bunny Hop |
-| Memory | Pairs (6, 8 or 10 by difficulty); pairs in a row score more, fewer moves and less time add a bonus | Spooky, Party and Heart Memory |
-| Copy me | The bells play "Jingle Bells" a note more each round | Jingle Bells |
+| Runner | The world runs by; tap to hop, again in the air to hop higher; collect coins or eggs (in arcs), power-ups (balloons to fly, a magnet, a rainbow star) | Rainbow Run, Bunny Hop, Splash Dash, Wheat Field Run |
+| Memory | Pairs (6, 8 or 10 by difficulty); pairs in a row score more, fewer moves and less time add a bonus | Spooky, Party, Heart and Ukrainian Memory |
+| Copy me | The pads play a tune a note more each round | Jingle Bells; Birthday Song on eight pads ("Happy Birthday to You": two lines on Easy, three on Normal, the whole song on Hard) |
 
 ## Ninja missions
 
@@ -204,13 +219,19 @@ and a step towards the next belt (3 stamps per belt).
 
 ## Holidays
 
-Halloween, Christmas, New Year, Valentine's Day, St Patrick's Day and Easter. For three weeks before (one week for New
-Year and Valentine's Day) the whole game is dressed up for it from the first day; the last week and the day itself add
-their own things. Parents can switch it off; Turbo previews each holiday.
+The family's year: Halloween, Christmas, New Year, **her birthday** (7 January, from `config.js`), Valentine's Day,
+St Patrick's Day, Easter, **Songkran** (the Thai New Year, 13–15 April) and **Ukrainian Independence Day** (24
+August), with **St Nicholas Day** (6 December, as in Ukraine) inside the Christmas weeks. Three weeks before Halloween
+and Christmas, two before St Patrick's Day and Easter, a week before New Year, Valentine's Day and Independence Day and
+four days before her birthday and Songkran, the whole game is dressed up for it from the first day; the last week and
+the day itself add their own things. Parents can switch it off; Turbo previews each holiday.
 
 - **On every screen:** the worlds (pumpkins, a cauldron, ghosts and bats; a tree, presents and a snowman; fireworks and
-  a clock; heart balloons, roses and a mailbox; shamrocks, a rainbow and the leprechaun's coins; eggs, chicks and
-  tulips), the top of the scene (a cobweb with a spider, fairy lights, tinsel, bunting), and the interface: the
+  a clock; a birthday cake with candles, presents, balloons and cupcakes; heart balloons, roses and a mailbox; shamrocks,
+  a rainbow and the leprechaun's coins; eggs, chicks and tulips; an elephant, water pistols, buckets and a silver bowl
+  for the blessing; sunflowers, wheat, the flag, kalyna and varenyky), the top of the scene (a cobweb with a spider,
+  fairy lights, tinsel, a HAPPY BIRTHDAY banner, bunting, a garland of jasmine and marigolds, an embroidered towel), and
+  the interface: the
   holiday's colours and a pattern on the level bar and the stat bars, little decorations on the level card, stat cards
   and action buttons (snow on every card at Christmas), the scene's frame, the main buttons, sheets, windows, the
   level-up present, hints, questions and games. Lucky wears his holiday hat everywhere, the Play button shows the
@@ -218,13 +239,18 @@ their own things. Parents can switch it off; Turbo previews each holiday.
 - **Everything holiday answers taps** (a tap, a double tap, a long press), and Lucky joins in: a pumpkin lights up, gets a
   new face or is full of sweets; the potion turns Lucky another colour; the tree takes its star from him; a present
   opens with a toy; the clock counts down to midnight with fireworks; the mailbox sends him a love letter; the pot of
-  gold makes him dance a jig. Easter eggs and the leprechaun's coins are hidden in every world to be found.
+  gold makes him dance a jig; a tap blows out the birthday candles (and "Happy Birthday" plays); the elephant soaks him
+  and he shakes himself dry; sunflowers turn to the sun. Easter eggs and the leprechaun's coins are hidden in every
+  world to be found.
 - **The holiday calendar:** a button on the scene shows the days to go. A window opens each day (a treat and two
   hearts), the holiday's own window holds a present. Windows she missed wait for her (the hearts keep their daily
   cap); a present left in the holiday's window is kept for a week after the day, and Lucky hands it over on the next
   visit.
 - **Moments:** Tali comes trick-or-treating at Halloween, a ghost going past dims the scene, Cupid flies by, New Year's
-  Day starts with a countdown and fireworks. Holiday greetings and chatter, holiday visitors and stickers.
+  Day starts with a countdown and fireworks. On her birthday Lucky greets her (in Ukrainian and Thai too) and gives her
+  a card from him and Tali with what they have done together: days, jokes, missions, stickers, her belt (never her
+  age). On St Nicholas Day there is a present under the pillow (kept for her until Christmas Eve if she comes later).
+  Holiday greetings and chatter, holiday visitors and stickers.
 - **Holiday games** take the usual games' place (see Actions and games).
 
 Nothing in the rules or the care changes. The calendar and the holiday games add about 5–10% hearts in the season.

@@ -3,6 +3,58 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.10.0] – 2026-10-12
+
+The family's own holidays, and a game pitched a little older: the girl Lucky was made for is growing up.
+
+### Added
+- **Her birthday** (7 January; the day and month are set in `config.js`, the year never is). Four days before, the
+  game dresses up: a cake whose candles blow out with a tap ("Happy Birthday" plays, a double tap lights them again),
+  presents, balloons, cupcakes, a HAPPY BIRTHDAY banner, confetti, a party hat for Lucky and a balloon for Tali. On the
+  day Lucky wishes her a happy birthday in English, Ukrainian and Thai, and gives her a card from him and Tali with what
+  they have done together (days, jokes, missions, stickers, her belt). Three games: Birthday Presents (not the socks!),
+  Blow Out the Candles, and Birthday Song, the whole "Happy Birthday to You" on eight keys (on Hard).
+- **Songkran**, the Thai New Year (13–15 April): an elephant that soaks Lucky, water pistols, buckets, a silver bowl
+  for the blessing, frangipani and a jasmine garland, Lucky in swimming goggles, Tali arriving by tuk-tuk; "Sawasdee pee
+  mai!" in a real Thai voice. Games: Water Fight, The Elephant's Bucket, Splash Dash.
+- **Ukrainian Independence Day** (24 August, with Flag Day the day before): sunflowers that turn to the sun, wheat,
+  the flag, kalyna and varenyky, an embroidered towel along the top, a vinok with ribbons for Lucky and a blue and yellow
+  bow for Tali; "З Днем Незалежності!" in a real Ukrainian voice. Games: Sunflower Field, Wheat Field Run, Ukrainian
+  Memory.
+- **St Nicholas Day** (6 December, as in Ukraine) inside the Christmas weeks: a greeting on the eve and the day, and a
+  present under the pillow (kept until Christmas Eve if she comes later). Lucky tells her "Carol of the Bells" is the
+  Ukrainian "Shchedryk".
+- **Levels and records for the usual games.** Carrot Rain (30, 45 or 60 seconds, falling faster), Ninja Memory (6, 8
+  or 10 pairs) and Copy Lucky (tunes of 10, 16 or 24 notes) have easy, normal and hard, stars and best scores, like the
+  holiday games. With three stars the next difficulty is suggested.
+- Ten harder riddles for the riddle frog.
+
+### Changed
+- **English for an older child.** The phrases of the day and Chat with Lucky are now the English of an Irish
+  schoolyard ("Fair play to you!", "I'm only messing!", "It's lashing!", "I will, thanks!"), sayings ("Don't spill
+  the beans!", "A storm in a teacup") and the questions she gets asked about herself: where she's from, her languages,
+  her birthday, her bunny and her chihuahua. Her own phrases use the feminine in Russian.
+- **A cheekier Lucky:** fewer "I love you" and "the best in the whole world", more jokes and bunny facts. His questions
+  lean to "would you rather", quizzes and stories ("tap my nose" is gone), the mood check-in comes every third day or
+  so, and the ladybird's spots are counted at a glance.
+- Games start on Normal (Easy gave three stars at once), and each game gives up to 8 hearts with 24 a day, so all three
+  of the day's games count.
+- When two holidays meet, a holiday's own day comes first, and a late Easter keeps its days next to Songkran. New Year
+  ends on 2 January.
+- Lines in Thai and Ukrainian are spoken by those languages' voices; a line that sounds the same in both languages
+  shows once.
+
+### Fixed
+- "Soon I'll need a rest" could be swallowed by a question on the screen, and it muted her answer for four seconds;
+  the nap could follow a few seconds after the last warning, and the day's limit put Lucky to bed right after a game
+  without any warning. The warning now waits until it can be said, and the rest comes at least 45 s after it.
+- The riddle frog and Tali could still arrive one right after the other.
+- The same sentence could come back within a minute when it was asked for by name in one place and as a list in
+  another; a two-line reaction ("Pat, pat") repeated every minute; a short list could repeat the line just said.
+- Setting the phone's date back started a new day (with new presents and limits) every time.
+- A riddle whose English and Russian were two different riddles; the Irish "thank you" spoken by the English voice.
+- 3,009 voice clips in all (212 new).
+
 ## [1.9.1] – 2026-10-12
 
 A review release: everything a full review of 1.9.0 found in the interface (on ordinary days and in every holiday,
