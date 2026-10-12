@@ -405,6 +405,9 @@ body.covered #app { visibility: hidden; }
   box-shadow: 0 6px 0 #0000001f, var(--shadow); opacity: .6; transition: opacity .12s, transform .12s;
 }
 .pad.lit { opacity: 1; transform: scale(1.06); box-shadow: 0 0 0 6px #fff, 0 0 30px var(--c); }
+/* eight pads, for a whole song: two rows of four, from the lowest note to the highest */
+.simon-grid.many { grid-template-columns: repeat(4, 1fr); gap: 10px; width: min(94%, 380px); }
+.simon-grid.many .pad { border-radius: 20px; font-size: min(9vw, 36px); }
 
 .talk { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 76px 18px 30px; }
 .talk-lucky { width: min(34%, 140px); }
@@ -1622,6 +1625,9 @@ body.ev-easter.ev-s3 {
 .g-level.on { background: #fff; color: var(--ev-ink, var(--pink-d)); box-shadow: inset 0 0 0 3px var(--ev-1, var(--pink)), var(--shadow); }
 .g-best { min-height: 18px; margin: 2px 0 6px !important; font-weight: 800; color: var(--muted); }
 .g-record { margin: 4px 0 8px !important; font-size: 18px; font-weight: 900; color: #A06A00 !important; animation: pulse 1s ease-in-out infinite; }
+/* three stars on this difficulty: the next one is suggested */
+.g-next { display: inline-block; margin-top: 3px; font-size: 13px; color: var(--ev-ink, var(--pink-d)); }
+.g-level.suggest:not(.on) { animation: pulse 1.4s ease-in-out infinite; box-shadow: inset 0 0 0 2px var(--ev-1, var(--pink)); }
 .g-stars { display: flex; justify-content: center; gap: 6px; font-size: 44px; }
 .g-stars i { font-style: normal; filter: grayscale(1) opacity(.35); }
 .g-stars i.on { filter: none; animation: starPop .5s cubic-bezier(.3, 1.6, .5, 1) backwards; }

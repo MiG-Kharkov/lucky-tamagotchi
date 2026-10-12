@@ -199,7 +199,10 @@ const blankDay = (k) => ({ date: k, treats: 0, games: 0, hearts: {}, missionSwap
   surprise: false, mood: null, phraseSeen: false, planDone: false, maxSaid: false, asks: 0, frog: false });
 
 export function today(S, now = Date.now()) {
-  const k = dayKey(now);
+  let k = dayKey(now);
+  // the phone's date set back (every change of date used to be a new day, with new presents and limits): the day
+  // goes on as it was. A date put back by more than a month was a mistake being put right, and is believed
+  if (S.today && k < S.today.date && dayNumber(S.today.date) - dayNumber(k) <= 30) k = S.today.date;
   if (S.today && S.today.date === k && !S.today.filled) S.today = { ...blankDay(k), ...S.today, filled: true }; // old saves
   if (!S.today || S.today.date !== k) {
     S.today = { ...blankDay(k), filled: true };

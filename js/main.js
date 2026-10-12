@@ -1989,8 +1989,8 @@ function startGame(game) {
     svgOk: luckyPic({ face: 'ok', wear: S.wear }),
     svgHappy: luckyPic({ face: 'laugh', wear: S.wear }),
     svgSad: luckyPic({ face: 'sad', wear: S.wear }),
-    // the holiday games: the difficulty she chose last time (easy at first), and the best points at each
-    level: S.games.level[game.id] || 'easy',
+    // the difficulty she chose last time (Normal at first: Easy gave three stars straight away), and the best points
+    level: S.games.level[game.id] || 'normal',
     bestOf: (lv) => S.games.best[game.id + ':' + lv] || 0,
     onLevel: (lv) => { S.games.level[game.id] = lv; st.save(S); },
     onRecord: (lv, pts) => { const k = game.id + ':' + lv; if (pts <= (S.games.best[k] || 0)) return false; S.games.best[k] = pts; st.save(S); return true; },
@@ -2003,7 +2003,9 @@ function startGame(game) {
       if (game.id === 'talk') stat('talkRight', Math.floor(score / 3));
       st.boost(S, 'fun', 20);
       st.boost(S, 'energy', -game.energy);
-      award(addH(Math.min(10, Math.ceil(score / 3)), 'game', 20)); // a new level's window waits for the game to close
+      // up to 8 hearts a game and 24 a day: each of the day's three games counts (a new level's window waits for the
+      // game to close)
+      award(addH(Math.min(8, Math.ceil((score / 30) * 8)), 'game', 24));
       st.save(S);
     },
     onEnd: (score) => {
