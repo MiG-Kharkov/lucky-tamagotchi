@@ -32,6 +32,9 @@ const idx = () => (S.lang === 'en' ? 1 : 0);
 const turbo = () => !!S.turbo;
 // Daily cap on active play: after it Lucky rests until the morning
 const dayDone = (T0 = S.today) => !turbo() && S.settings.dailyMax > 0 && (S.playedMs[T0?.date] || 0) >= S.settings.dailyMax * 60e3;
+// the day's limit puts Lucky to bed like the nap: 45 s after its warning was seen (a game can run past the limit: the
+// warning then comes when it is over); two minutes past the limit he goes anyway
+const dayOver = (T0, now) => dayDone(T0) && (T0.dayWarned ? now - (T0.dayWarnedAt || 0) >= 45e3 : (S.playedMs[T0.date] || 0) >= (S.settings.dailyMax + 2) * 60e3);
 const addH = (n, cat, cap) => st.addHearts(S, turbo() ? n * 5 : n, cat, turbo() ? Infinity : cap);
 // Lucky with a headband in the current belt colour
 const luckyArt = (o) => art.lucky({ ...o, belt: BELTS[S.belt].color });
@@ -62,11 +65,11 @@ const byTier = (low, normal, max) => { const t = tier(); return t === 'low' ? lo
 const kidName = (lang) => T(lang, 'kidDefault');
 const fill = (txt, lang) => txt.replaceAll('{dog}', dogName(lang)).replaceAll('{name}', kidName(lang));
 
-// Don't repeat recent lines
+// Don't repeat recent lines; when all of a short list are recent, the one said longest ago (never the same twice)
 const recent = [];
 function fresh(list) {
   const pool = list.filter((x) => !recent.includes(x));
-  const x = pick(pool.length ? pool : list);
+  const x = pool.length ? pick(pool) : list.reduce((a, b) => (recent.lastIndexOf(b) < recent.lastIndexOf(a) ? b : a), list[0]);
   recent.push(x);
   if (recent.length > 60) recent.shift(); // about six minutes of an active child's lines
   return x;
@@ -92,12 +95,13 @@ const userActive = () => windowActive() && Date.now() - lastInput < ACTIVE_MS;
 
 // A line: main-language text, small translation, spoken out loud.
 // Speak only in an active window, one line at a time: automatic lines wait for the current one.
-function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false, speed = 1 } = {}) {
+// urgent: "soon I'll rest" when the limit has come: it doesn't wait for a second tap or for its own quiet moment
+function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false, hold = false, forAsk = false, speed = 1, urgent = false } = {}) {
   if (document.hidden) return 0;
-  if (!auto && !chain && Date.now() < quietUntil) return 0; // "soon I'll rest" stays a moment (he still moves)
+  if (!auto && !chain && !urgent && Date.now() < quietUntil) return 0; // "soon I'll rest" stays a moment (he still moves)
   // a tap's word waits to see whether a second tap follows: then the double tap answers instead, and the first
   // line doesn't flash up and get cut off
-  if (tapWait && !auto && !chain) {
+  if (tapWait && !auto && !chain && !urgent) {
     clearTimeout(tapWord);
     const opts = { ambient, hold, forAsk, speed };
     tapWord = setTimeout(() => { tapWord = 0; say(pair, who, opts); }, DOUBLE_MS);
@@ -1838,10 +1842,12 @@ function showFrog(force = false) {
   f.timer = setTimeout(() => { if (!ask?.frog) frogLeave(); }, force ? 120e3 : 60e3);
 }
 
+let frogGoneAt = 0;
 function frogLeave() {
   antics.thinking(false);
   const f = ui.scene.querySelector('.frog');
   if (!f) return;
+  frogGoneAt = Date.now();
   clearTimeout(f.timer);
   f.classList.add('away');
   setTimeout(() => f.remove(), 900);
@@ -2530,6 +2536,7 @@ function idiomSteps(it, intro = false, counts = true) {
 }
 
 function maybeIdiom(when, chance = 0.5) {
+  if (when !== 'sleepSoon' && Date.now() < quietUntil) return false; // a saying would cut "soon I'll rest" short
   const it = pickIdiom(when, chance);
   if (!it) return false;
   talk(idiomSteps(it, ['any', 'idle', 'rare'].includes(when)), true);
@@ -2629,7 +2636,9 @@ function updateDog(now, asleep) {
     if (asleep || (now >= d.stayUntil && !chainQ.length)) { d.lastAt = now; dogLeave(asleep); st.save(S); }
     return;
   }
-  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy()) return;
+  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy() || Date.now() < quietUntil) return;
+  // one visitor at a time: not while the frog is here, nor right after her
+  if (!forced && (ui.scene.querySelector('.frog') || now - frogGoneAt < 30e3)) return;
   const due = forced || (dogDueAt !== null && S.session.activeMs >= dogDueAt && d.n < DOG_PER_DAY
     && now - (d.lastAt || 0) > DOG_GAP && !st.isNight(now, S.settings) && windowActive() && now - lastInput < 30e3);
   if (!due) return;
@@ -2728,11 +2737,17 @@ function exitSleep() {
 let wokeAt = 0; // he has just said good morning (coming back to the app wakes him up first)
 
 // "Soon I'll need a rest": it stays on the screen a few seconds (a tap doesn't sweep it away; he still moves) and
-// comes once more 20 s before the rest
-function sleepSoon() {
-  if (!maybeIdiom('sleepSoon', 0.5)) sayAuto(fresh(LUCKY.sleepSoon));
+// comes once more 20 s before the rest. It waits until Lucky can say it (not over a question, a joke or a line that is
+// playing), and the rest is counted from the moment it was seen: false means not yet, the loop tries again a second
+// later. late: the limit passed a while ago, so it cuts in (still not over a question or Tali's joke)
+function sleepSoon(late = false) {
+  const free = Date.now() >= busyUntil && !ask && !chainQ.length;
+  if (!free && !late) return false;
+  const shown = free ? maybeIdiom('sleepSoon', 0.5) || sayAuto(fresh(LUCKY.sleepSoon)) > 0 : say(fresh(LUCKY.sleepSoon), 'lucky', { urgent: true }) > 0;
+  if (!shown) return false;
   quietUntil = Date.now() + 4000;
-  setTimeout(() => { if (mode === 'main' && !document.hidden) { sayAuto(fresh(LUCKY.sleepSoon)); quietUntil = Date.now() + 4000; } }, 40e3);
+  setTimeout(() => { if (mode === 'main' && !document.hidden && sayAuto(fresh(LUCKY.sleepSoon))) quietUntil = Date.now() + 4000; }, 40e3);
+  return true;
 }
 
 function startNap() {
@@ -3013,7 +3028,7 @@ function loop() {
   const now = Date.now();
   st.applyDecay(S, now);
   const T0 = st.today(S, now);
-  let asleep = turbo() ? now < S.session.napUntil : (st.isAsleep(S, now) || dayDone(T0));
+  let asleep = turbo() ? now < S.session.napUntil : (st.isAsleep(S, now) || dayOver(T0, now));
 
   const dt = Math.max(0, Math.min(now - (S.session.lastAt || now), 5000));
   if (!document.hidden) S.viewMs[T0.date] = (S.viewMs[T0.date] || 0) + dt;
@@ -3025,12 +3040,13 @@ function loop() {
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
     if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'edit')) {
-      if (!S.session.warned && S.session.activeMs >= limit - 60e3) { S.session.warned = true; S.session.warnedAt = now; sleepSoon(); }
-      const dayLimit = S.settings.dailyMax * 60e3; // the day's limit: the same minute's notice
-      if (dayLimit && !T0.dayWarned && (S.playedMs[T0.date] || 0) >= dayLimit - 60e3) { T0.dayWarned = true; sleepSoon(); }
-      // the nap comes at least 45 s after "soon I'll need a nap" (a game can run past the limit: the warning then
-      // comes when it is over, and the nap a little later, not in the same second)
-      if (S.session.activeMs >= limit && now - (S.session.warnedAt || 0) >= 45e3) {
+      if (!S.session.warned && S.session.activeMs >= limit - 60e3 && sleepSoon(S.session.activeMs >= limit + 30e3)) { S.session.warned = true; S.session.warnedAt = now; }
+      const dayLimit = S.settings.dailyMax * 60e3, played = S.playedMs[T0.date] || 0; // the day's limit: the same minute's notice
+      if (dayLimit && !T0.dayWarned && played >= dayLimit - 60e3 && sleepSoon(played >= dayLimit + 30e3)) { T0.dayWarned = true; T0.dayWarnedAt = now; }
+      // the nap comes at least 45 s after "soon I'll need a nap" was seen (a game can run past the limit: the warning
+      // then comes when it is over, and the nap a little later, not in the same second); two minutes past the limit
+      // without a warning (a question left open) he goes anyway
+      if (S.session.activeMs >= limit && (S.session.warned ? now - (S.session.warnedAt || 0) >= 45e3 : S.session.activeMs >= limit + 120e3)) {
         S.session.napUntil = now + S.settings.napMin * 60e3;
         S.session.activeMs = 0;
         S.session.warned = false;
@@ -3044,7 +3060,7 @@ function loop() {
     S.session.napUntil = 0;
     S.session.activeMs = 0;
     S.session.warned = false;
-    asleep = turbo() ? now < S.session.napUntil : (st.isAsleep(S, now) || dayDone(T0));
+    asleep = turbo() ? now < S.session.napUntil : (st.isAsleep(S, now) || dayOver(T0, now));
   }
 
   if (asleep && mode !== 'game' && mode !== 'mission') {

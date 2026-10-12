@@ -92,8 +92,8 @@ export function createAntics(api) {
   function line(key, chance = 0.85, gap = 12000, who = 'lucky') {
     const now = Date.now();
     const list = Array.isArray(key) ? key : who === 'dog' ? DOG[key] : LUCKY.antics[key];
-    const k = who + ':' + (Array.isArray(key) ? key[0]?.[1] : key);
-    const wait = gap > 0 && list?.length === 1 ? Math.max(gap, 120e3) : gap; // one line: not again within 2 min
+    const k = who + ':' + (list?.[0]?.[1] ?? key); // the same lines by name or as a list: one cooldown
+    const wait = gap > 0 && list?.length <= 2 ? Math.max(gap, 120e3) : gap; // one or two lines: not again within 2 min
     if (!list?.length || now - (saidAt[k] || 0) < wait || Math.random() > chance) return 0;
     saidAt[k] = now;
     return api.say(list, who);
@@ -1858,12 +1858,11 @@ export function createAntics(api) {
         at(a, 700, () => { pose('happy', 2000, 'clap'); api.hearts(hx, hy, 5); line('family', 1, 0); });
         at(a, 2700, () => [[-110, -20], [0, -80], [110, -20]].forEach(([dx, dy]) => away('🦋', [hx + dx, hy + dy])));
       },
+      // the ladybird lands on his paw: he counts her spots at a glance
       spots: () => {
-        fly('🐞', [x, y], paw(), 700, { size: 24, stay: 5600 });
-        at(a, 700, () => pose('happy', 4800, 'listen', 4600));
-        for (let i = 1; i <= 7; i++) at(a, 500 + i * 560, () => api.say([count(i)])); // each number is heard whole
-        at(a, 5300, () => { line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
-        at(a, 6300, () => away('🐞', paw()));
+        fly('🐞', [x, y], paw(), 700, { size: 24, stay: 2800 });
+        at(a, 700, () => { pose('happy', 2600, 'listen', 2400); line('ladybird', 1, 0); api.fxAt(...paw(), ['🍀', '✨'], 4, 'spark'); });
+        at(a, 3500, () => away('🐞', paw()));
       },
       bee: () => {
         const [hx, hy] = head();
