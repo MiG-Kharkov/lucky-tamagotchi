@@ -12,13 +12,13 @@ export function apiKey() {
   return m[1];
 }
 
-export const LANG = { ru: 'ru-RU', en: 'en-GB', uk: 'uk-UA', th: 'th-TH' };
+export const LANG = { ru: 'ru-RU', en: 'en-GB', uk: 'uk-UA' };
 
 // A word in the other language is read by that language's voice: "Привет!" on the English side
 // (Tali teaching Lucky Russian) by the Russian voice, "Hello!" on the Russian side by the English one.
-// The family's other languages go by their letters: Thai, and Ukrainian (і, ї, є, ґ) on either side.
-const CYR = /[А-Яа-яЁё]/, LAT = /[A-Za-z]/, THAI = /[\u0E00-\u0E7F]/, UKR = /[ІіЇїЄєҐґ]/;
-export const voiceLang = (text, lang) => (THAI.test(text) ? 'th' : UKR.test(text) ? 'uk'
+// The family's other language goes by its letters: Ukrainian (і, ї, є, ґ), on either side.
+const CYR = /[А-Яа-яЁё]/, LAT = /[A-Za-z]/, UKR = /[ІіЇїЄєҐґ]/;
+export const voiceLang = (text, lang) => (UKR.test(text) ? 'uk'
   : lang === 'en' && CYR.test(text) ? 'ru' : lang === 'ru' && !CYR.test(text) && LAT.test(text) ? 'en' : lang);
 
 export async function synth(text, lang, voice, { rate = 1 } = {}, key = apiKey()) {

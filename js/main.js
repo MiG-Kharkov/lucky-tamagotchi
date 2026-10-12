@@ -117,7 +117,7 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   if (!chain) stopChain();
   const main = fill(typeof pair === 'string' ? pair : L(pair), S.lang);
   let sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
-  if (sub && speechText(sub) === speechText(main)) sub = ''; // the same words in both (Ukrainian, Thai): one line
+  if (sub && speechText(sub) === speechText(main)) sub = ''; // the same words in both (a Ukrainian line): one line
   ui.bubble.className = 'bubble show b-' + who + (ui.bubble.classList.contains('aloft') ? ' aloft' : '');
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
   if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
@@ -3220,7 +3220,7 @@ function holidayHi() {
   setTemp('happy', 1500);
   // on New Year's Day the countdown is the greeting (it ends with "Happy New Year!" and fireworks)
   if (EV.id === 'newyear' && EV.days === 0) { setTimeout(() => { if (mode === 'main' && !antics.busy() && !ask) antics.countdown(); else sayAuto(fresh(hol)); }, 1200); return true; }
-  // on the day itself the greeting goes on in the family's other languages (her birthday, Songkran, Independence Day)
+  // on the day itself the greeting goes on in Ukrainian (her birthday, Independence Day)
   const more = EV.days === 0 && hol === LUCKY.holiday[EV.id]?.greet ? LUCKY.holiday[EV.id].hello || [] : [];
   let ms = 4000;
   if (more.length) {

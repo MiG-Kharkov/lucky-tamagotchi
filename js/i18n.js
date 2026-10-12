@@ -1119,13 +1119,13 @@ export const LUCKY = {
       eve: [['Сегодня ночью Новый год! Ура!', 'The New Year is tonight! Hooray!']],
       idle: [['Давай загадаем желание на Новый год!', "Let's make a wish for the new year!"]],
     },
-    // her birthday (config.js). Never her age. hello: in her other languages, after the day's greeting
+    // her birthday (config.js). Never her age. hello: in Ukrainian, after the day's greeting
     birthday: {
       greet: [['С днём рождения, {name}! Загадай желание и задуй свечи на торте!', 'Happy birthday, {name}! Make a wish and blow out the candles on the cake!']],
       eve: [['Завтра твой день рождения! Я уже упаковал подарок… почти.', "It's your birthday tomorrow! I've already wrapped your present… nearly."]],
       idle: [['Шарики, торт, подарки… Обожаю праздники!', 'Balloons, cake, presents… I love a party!'], ['Тсс! Я прячу для тебя подарок. Не подглядывай!', "Shh! I'm hiding a present for you. No peeking!"],
         ['Знаешь, как ещё поздравляют по-английски? «Мэни хэппи ритёрнз!» — пусть этот день возвращается много раз.', 'You can also say "Many happy returns!" It means: may this day come back many times.']],
-      hello: [['Вітаю з днем народження! (это по-украински)', "Вітаю з днем народження! (that's Ukrainian)"], ['สุขสันต์วันเกิด! (сук сан ван кёт — а это по-тайски)', "สุขสันต์วันเกิด! (suk san wan koet: and that's Thai)"]],
+      hello: [['Вітаю з днем народження! (это по-украински)', "Вітаю з днем народження! (that's Ukrainian)"]],
     },
     valentine: {
       greet: [['С Днём святого Валентина! Я тебя люблю!', "Happy Valentine's Day! I love you!"]],
@@ -1145,9 +1145,7 @@ export const LUCKY = {
       eve: [['Завтра Сонгкран — тайский Новый год! Заправляю водяной пистолет.', "Tomorrow is Songkran, the Thai New Year! I'm filling up my water pistol."]],
       idle: [['В Сонгкран все обливают друг друга водой. Только не мои ушки!', 'At Songkran everyone splashes everyone. Just not my ears!'],
         ['Помнишь Таиланд? Там сейчас очень жарко, так что вода как раз кстати!', "Remember Thailand? It's really hot there now, so the water comes in handy!"],
-        ['Тайское «спасибо» — «коп кун». Девочки добавляют «ка», а мальчики — «крап».', '"Thank you" in Thai is "khop khun". Girls add "kha", and boys add "khrap".'],
-        ['ขอบคุณครับ! (коп кун крап — так говорю я, я же мальчик)', "ขอบคุณครับ! (khop khun khrap: that's how I say it, because I'm a boy)"]],
-      hello: [['สวัสดีปีใหม่! (сават-ди пи май — «С Новым годом» по-тайски)', 'สวัสดีปีใหม่! (sawasdee pee mai: "Happy New Year" in Thai)']],
+        ['Тайское «спасибо» — «коп кун». Девочки добавляют «ка», а мальчики — «крап».', '"Thank you" in Thai is "khop khun". Girls add "kha", and boys add "khrap".']],
     },
     // Ukrainian Independence Day (and Flag Day the day before)
     ukraine: {
