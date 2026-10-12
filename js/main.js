@@ -14,6 +14,7 @@ import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './
 import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
 import { createAntics, gestures, DOUBLE_MS } from './antics.js';
 import { createTricks } from './tricks.js';
+import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 const $ = (s, r = document) => r.querySelector(s);
@@ -115,7 +116,8 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   if (auto && (now < busyUntil || chainQ.length)) { pending = { pair, who, at: now }; return 0; }
   if (!chain) stopChain();
   const main = fill(typeof pair === 'string' ? pair : L(pair), S.lang);
-  const sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
+  let sub = typeof pair === 'string' || !S.settings.translate ? '' : fill(say2(pair, other()), other());
+  if (sub && speechText(sub) === speechText(main)) sub = ''; // the same words in both (Ukrainian, Thai): one line
   ui.bubble.className = 'bubble show b-' + who + (ui.bubble.classList.contains('aloft') ? ' aloft' : '');
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
   if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
@@ -937,9 +939,10 @@ function goPlace(id) {
 
 let EV = null; // the holiday that is on (with its stage), or null
 // who drops the daily surprise and what Tali rides in on while a holiday is on
-const HOLIDAY_CARRIER = { halloween: '🦇', christmas: '🎅', newyear: '🎅', valentine: '🕊️', patrick: '🐦', easter: '🐣' };
-const HOLIDAY_RIDE = { halloween: '🧹', christmas: '🛷', newyear: '🛷' };
-const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown' };
+const HOLIDAY_CARRIER = { halloween: '🦇', christmas: '🎅', newyear: '🎅', birthday: '🎈', valentine: '🕊️', patrick: '🐦', easter: '🐣', songkran: '🦜', ukraine: '🕊️' };
+const HOLIDAY_RIDE = { halloween: '🧹', christmas: '🛷', newyear: '🛷', birthday: '🛼', songkran: '🛺' };
+const SEASON_HAT = { halloween: 'witchHat', christmas: 'santaHat', newyear: 'partyHat', birthday: 'bdayHat', valentine: 'heartBand', patrick: 'leprechaunHat', easter: 'flowerCrown',
+  songkran: 'goggles', ukraine: 'vinok' };
 const HOLIDAY_ONLY = holidayOnly([...PLACES.flatMap((pl) => pl.props), ...STICKERS]);
 const holidayLayers = (world) => (EV ? art.eventScene(EV.id, world, EV.stage, EV.days <= 7) + art.eventTop(EV.id, EV.stage) : '');
 
@@ -953,7 +956,7 @@ function currentEvent() {
 function updateEvent(force = false) {
   const keyOf = (e) => (e ? e.id + e.stage + (e.days <= 7 ? 'w' : '') : ''); // the last week brings a few more things
   const ev = currentEvent(), key = keyOf(ev);
-  if (!force && key === keyOf(EV)) { EV = ev; renderEventBtn(); antics.refreshEggs(); keptPresent(); return; } // a new day: the days to go and the hunt
+  if (!force && key === keyOf(EV)) { EV = ev; renderEventBtn(); antics.refreshEggs(); keptPresent(); nicholasPresent(); return; } // a new day: the days to go and the hunt
   EV = ev;
   const b = document.body;
   [...b.classList].filter((c) => c.startsWith('ev-')).forEach((c) => b.classList.remove(c));
@@ -971,6 +974,7 @@ function updateEvent(force = false) {
   if (mode === 'sleep') renderSleep(true);
   if (mode === 'edit') renderTray();
   keptPresent();
+  nicholasPresent();
 }
 
 // ---------- the holiday calendar: one window a day until the holiday; the holiday's own window holds a present ----------
@@ -978,9 +982,12 @@ const CAL_TREATS = {
   halloween: ['🍬', '🍭', '🍫', '🎃', '👻', '🦇', '🕸️', '🧙', '🌙', '🧹'],
   christmas: ['🎁', '🍪', '⛄', '🔔', '🧦', '⭐', '🦌', '🎄', '❄️', '🕯️'],
   newyear: ['🎉', '✨', '🎈', '🎆', '🍰', '🎊', '🕛', '🪅'],
+  birthday: ['🧁', '🍰', '🎈', '🎁', '🍭', '🎉', '🥳', '🎀'],
   valentine: ['💌', '🍫', '🌹', '💝', '🧸', '💘', '🍓'],
   patrick: ['🍀', '🪙', '🌈', '🎩', '🎻', '☘️', '🥔'],
   easter: ['🥚', '🐣', '🌷', '🐰', '🧺', '🦋', '🐑'],
+  songkran: ['🥭', '🍍', '🍉', '🍌', '🌺', '💦', '🐘', '🌴'],
+  ukraine: ['🌻', '🌾', '🍒', '🥟', '🍯', '🍎', '🐝', '🕊️'],
 };
 // the season's days, from the first day of decorations to the holiday (date arithmetic, so a clock change can't shift it)
 function calendarDays(ev) {
@@ -1013,7 +1020,7 @@ function renderEventBtn() {
 function openCalendar() {
   if (!EV || mode !== 'main') return;
   const cal = calendarDays(EV), opened = (S.calendar[cal.id] ||= []), today = st.today(S).date;
-  const head = EV.days > 0 ? tr('calDays', { n: EV.days }) : EV.days === 0 ? tr('calToday', { x: L(EV.name) }) : tr('calAfter');
+  const head = EV.days > 0 ? tr('calDays', { n: EV.days }) : EV.days > -(EV.span || 1) ? tr('calToday', { x: L(EV.today || EV.name) }) : tr('calAfter');
   const html = `<p class="muted center cal-head">${head}<br><small>${tr('calHint')}</small></p>
     <div class="cal-grid">${cal.days.map((d) => {
       const open = opened.includes(d.key), now = d.key === today, can = calOpenable(d, opened);
@@ -1052,6 +1059,7 @@ function openWindow(btn, cal) {
 // A holiday present left in its window waits a week after the holiday: on the next visit Lucky hands it over
 function keptPresent() {
   if (!S.settings.holidays || !S.onboarded || mode !== 'main') return;
+  if (EV?.id === 'birthday' && EV.days === 0 && S.bdCard !== new Date().getFullYear()) return; // her birthday comes first
   for (const { ev, date } of justPassed()) {
     if (EV && EV.id === ev.id) continue; // still on: its window is in the calendar
     const id = ev.id + '-' + date.getFullYear(), key = st.dayKey(date.getTime()), opened = (S.calendar[id] ||= []);
@@ -1511,9 +1519,13 @@ const HOLIDAY_VISITORS = {
   halloween: [{ e: '🦇', w: 3, path: 'zigzag', end: ['batloop'], stage: 2 }, { e: '👻', w: 2, path: 'float', end: ['ghostboo'], stage: 3 }],
   christmas: [{ e: '❄️', w: 2, path: 'fall', end: ['tongue', 'flakes'], stage: 2 }, { e: '🎅', w: 2, path: 'glide', end: ['santa'], stage: 3 }],
   newyear: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '❄️', w: 1, path: 'fall', end: ['tongue', 'flakes'], stage: 3 }],
+  birthday: [{ e: '🎈', w: 3, path: 'rise', end: ['pop', 'ride'], stage: 3 }, { e: '🦄', w: 1, path: 'glide', end: ['unicorn'], stage: 4, flip: true }],
   valentine: [{ e: '💌', w: 3, path: 'float', end: ['love'], stage: 3 }, { e: '👼', w: 2, path: 'glide', end: ['cupid'], stage: 3, flip: true }],
   patrick: [{ e: '🍀', w: 3, path: 'flutter', end: ['luck'], stage: 2 }],
   easter: [{ e: '🐣', w: 3, path: 'jump', end: ['chick'], stage: 2 }, { e: '🦋', w: 2, path: 'flutter', end: ['nose', 'ear', 'circle', 'family'], stage: 2 }],
+  songkran: [{ e: '💧', w: 3, path: 'fall', end: ['soak'], stage: 3 }, { e: '🦋', w: 2, path: 'flutter', end: ['nose', 'ear', 'circle', 'family'], stage: 3 }],
+  ukraine: [{ e: '🕊️', w: 2, path: 'glide', end: ['dove'], stage: 3, flip: true }, { e: '🐝', w: 2, path: 'zigzag', end: ['bee'], stage: 3 },
+    { e: '🦋', w: 2, path: 'flutter', end: ['nose', 'ear', 'circle', 'family'], stage: 3 }],
 };
 
 // A flight path as keyframes in % of the scene, a little different every time
@@ -2993,7 +3005,7 @@ function idleTalk() {
   if (Math.random() < 0.08 && maybeIdiom(Math.random() < 0.3 ? 'idle' : 'any', 1)) return;
   // holidays: a word about it now and then (Tali has his own in the last week)
   if (EV && EV.stage >= 2 && LUCKY.holiday[EV.id] && Math.random() < 0.1) return sayAuto(fresh(LUCKY.holiday[EV.id].idle));
-  if (dogHere && EV && EV.stage >= 3 && EV.days <= 7 && DOG.holiday[EV.id] && Math.random() < 0.15) return sayAuto(fresh(DOG.holiday[EV.id]), 'dog');
+  if (dogHere && EV && EV.stage >= 3 && EV.days <= 7 && dogHoliday()?.length && Math.random() < 0.15) return sayAuto(fresh(dogHoliday()), 'dog');
   if (dogHere && jokesLeft() > 0 && Math.random() < (t === 'low' ? 0.6 : 0.2)) return taliJoke(t === 'low' ? DOG.cheer : DOG.jokeMore);
   if (dogHere && Math.random() < 0.25) return prank(fresh(PRANKS));
   if (dogHere && Math.random() < 0.45) return talk(acted(fresh(CHATS)));
@@ -3159,17 +3171,30 @@ function greetList(gap) {
   return LUCKY.evening;
 }
 
+// Tali's holiday lines: one list, or lines for before the day and for the day itself (his birthday wishes wait for it)
+const dogHoliday = () => { const d = EV && DOG.holiday[EV.id]; return Array.isArray(d) ? d : d && (EV.days > 0 ? d.before : d.day); };
+
+// St Nicholas comes in the night before 6 December (in Ukraine, since 2023) and leaves presents under the pillow:
+// inside the Christmas weeks the eve and the day have their own greeting, and a present waits for her
+const nicholasDay = (d = new Date()) => (d.getMonth() === 11 ? { 5: 'eve', 6: 'greet' }[d.getDate()] : null);
+
 // In a holiday's last week the day's first greeting is about it: on the eve its own line, on the day the greeting
 // (the decorations are out for three weeks, the greeting only in the last one)
 function holidayGreeting() {
-  const H = EV && EV.stage >= 3 && EV.days <= 7 && LUCKY.holiday[EV.id], T0 = st.today(S);
+  const T0 = st.today(S), nick = EV?.id === 'christmas' && EV.stage >= 3 && !EV.preview && nicholasDay();
+  if (nick) {
+    if (T0.holidayHi === 'nicholas') return null;
+    T0.holidayHi = 'nicholas';
+    return LUCKY.holiday.nicholas[nick];
+  }
+  const H = EV && EV.stage >= 3 && EV.days <= 7 && LUCKY.holiday[EV.id];
   if (!H || T0.holidayHi === EV.id) return null;
   T0.holidayHi = EV.id;
   return EV.stage >= 4 ? H.greet : EV.days === 1 && H.eve ? H.eve : H.idle;
 }
 
 // Says the day's holiday greeting if there is one (on arrival, on coming back to the app and on waking up);
-// on New Year's Day itself the countdown follows
+// on New Year's Day itself the countdown follows, on her birthday a card, on St Nicholas Day his present
 function holidayHi() {
   if (document.hidden) return false; // the app is in the background: kept for when she comes back
   const hol = holidayGreeting();
@@ -3177,8 +3202,50 @@ function holidayHi() {
   setTemp('happy', 1500);
   // on New Year's Day the countdown is the greeting (it ends with "Happy New Year!" and fireworks)
   if (EV.id === 'newyear' && EV.days === 0) { setTimeout(() => { if (mode === 'main' && !antics.busy() && !ask) antics.countdown(); else sayAuto(fresh(hol)); }, 1200); return true; }
-  sayAuto(fresh(hol));
+  // on the day itself the greeting goes on in the family's other languages (her birthday, Songkran, Independence Day)
+  const more = EV.days === 0 && hol === LUCKY.holiday[EV.id]?.greet ? LUCKY.holiday[EV.id].hello || [] : [];
+  let ms = 4000;
+  if (more.length) {
+    const lines = [timed('lucky', fresh(hol)), ...more.map((l) => timed('lucky', l))];
+    ms = lines.reduce((sum, l) => sum + l[3], 1500);
+    talk(lines);
+  } else sayAuto(fresh(hol));
+  if (EV.id === 'birthday' && EV.days === 0) setTimeout(birthdayCard, ms);
+  if (st.today(S).holidayHi === 'nicholas') setTimeout(nicholasPresent, ms);
   return true;
+}
+
+// Her birthday: after Lucky's greeting, a card from Lucky and Tali with what they have done together (once a year;
+// her age is never in the game, so it doesn't say how old she is)
+function birthdayCard() {
+  const y = new Date().getFullYear();
+  if (!EV || EV.id !== 'birthday' || EV.days !== 0 || S.bdCard === y || !S.onboarded) return;
+  if (mode !== 'main') { setTimeout(birthdayCard, 5000); return; }
+  if (!EV.preview) S.bdCard = y; // a parent's preview doesn't use up the real one
+  st.save(S);
+  const tiles = [['📅', S.days.length, 'bdDays'], ['😂', S.jokes.heard.length, 'bdJokes'], ['🥷', S.ninja.scroll.length, 'bdMissions'], ['⭐', S.stickers.length, 'bdStickers'],
+    ...(S.stats.best_keepy ? [['⚽', S.stats.best_keepy, 'bdKeepy']] : [])];
+  showModal({ cls: 'bd-host', custom: (host, done) => {
+    host.innerHTML = `<div class="modal-card bd-card"><div class="m-art">${luckyPic({ face: 'happy', wear: S.wear })}</div>
+      <h2>${tr('bdTitle', { name: kidName(S.lang) })}</h2><p class="muted">${tr('bdSub')}</p>
+      <div class="bd-grid">${tiles.map(([e, n, k]) => `<div class="bd-tile"><span>${e}</span><b>${n}</b><small>${tr(k, { n })}</small></div>`).join('')}</div>
+      <p class="bd-belt">🥋 ${tr('bdBelt', { x: L(BELTS[S.belt].name) })}</p>
+      <p class="bd-sign">${tr('bdSign', { dog: dogName(S.lang) })}</p>
+      <div class="m-btns"><button class="btn pink">${tr('bdThanks')}</button></div></div>`;
+    host.querySelector('.btn').onclick = () => { sfx.happy(); confetti(); done(); };
+  } });
+}
+
+// St Nicholas's present: under the pillow on the morning of 6 December (after Lucky's greeting); if she comes later,
+// Lucky has kept it for her until Christmas Eve
+function nicholasPresent() {
+  const n = new Date(), y = n.getFullYear();
+  if (!S.settings.holidays || !S.onboarded || mode !== 'main' || n.getMonth() !== 11 || n.getDate() < 6 || n.getDate() > 24 || S.nicholas === y) return;
+  if (nicholasDay(n) === 'greet' && st.today(S).holidayHi !== 'nicholas') return; // the greeting comes first
+  S.nicholas = y;
+  const g = rollGift(0.4, 0.15);
+  st.save(S);
+  showModal({ custom: (host, done) => revealGift(host, { title: tr('nicholasGift'), rewards: [g], line: LUCKY.holiday.nicholas.gift }, done) });
 }
 
 function greet(gap) {

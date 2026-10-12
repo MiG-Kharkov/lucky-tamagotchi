@@ -636,6 +636,126 @@ function easterScene(world, stage, week) {
   return [back.join('') + front.join(''), hunt.join('')];
 }
 
+// ----- the birthday: a cake with candles (a tap blows them out, a double tap lights them again), presents, balloons,
+// cupcakes, confetti on the grass and a banner along the top -----
+const cake = (x, y, s = 1) => at(x, y, s, tapG('evCake', `<ellipse cy="30" rx="36" ry="5" fill="#000" opacity=".12"/>
+  <ellipse cy="26" rx="34" ry="6.5" fill="#F4F6FB" stroke="#D5DCE8" stroke-width="1.5"/>
+  <rect x="-27" y="2" width="54" height="23" rx="5" fill="#FFF1DC"/>
+  <path d="M-27 4 h54 v6 q-4.5 7 -9 0 q-4.5 8 -9 0 q-4.5 7 -9 0 q-4.5 8 -9 0 q-4.5 7 -9 0 q-4.5 8 -9 0z" fill="#FF8FC0"/>
+  <rect x="-18" y="-14" width="36" height="17" rx="4" fill="#FFB3D6"/>
+  <path d="M-18 -12 h36 v4 q-3 5 -6 0 q-3 6 -6 0 q-3 5 -6 0 q-3 6 -6 0 q-3 5 -6 0 q-3 6 -6 0z" fill="#fff"/>
+  ${[[-19, 16, '#6FB8FF', 30], [-8, 20, '#FFD23F', -25], [5, 15, '#9BE15D', 50], [17, 19, '#B78CFF', 10], [-10, -1, '#FF5FA2', 60], [9, 0, '#6FB8FF', -40]]
+    .map(([sx, sy, c, r]) => `<rect x="${sx - 3}" y="${sy - 1}" width="6" height="2.2" rx="1.1" fill="${c}" transform="rotate(${r} ${sx} ${sy})"/>`).join('')}
+  ${[[-10, '#6FB8FF'], [0, '#FFD23F'], [10, '#9BE15D']].map(([cx, c]) => `<rect x="${cx - 2}" y="-28" width="4" height="14" rx="1.5" fill="${c}"/>
+    <path d="M${cx - 2} -24.5 l4 -2 M${cx - 2} -19.5 l4 -2" stroke="#fff" stroke-width="1.2"/>
+    <g class="ev-flame"><path d="M${cx} -39 q5 6 0 10 q-5 -4 0 -10z" fill="#FF9F1A"/><path d="M${cx} -35 q2.4 3 0 5.4 q-2.4 -2.4 0 -5.4z" fill="#FFF3B0"/></g>`).join('')}`, 'ev-cake'));
+// a cupcake (Lucky eats it; a new one comes a little later)
+const cupcake = (x, y, s = 1, c = '#FFB3D6') => at(x, y, s, tapG('evSweet', `<circle r="15" fill="transparent"/><path d="M-9 0 L-7 12 H7 L9 0Z" fill="#FFD39A"/>
+  <path d="M-5.5 1 v10 M-2 1 v11 M2 1 v11 M5.5 1 v10" stroke="#E9A85E" stroke-width="1.2"/>
+  <path d="M-10 1 q-2 -8 5 -9 q2 -6 5 -6 q3 0 5 6 q7 1 5 9z" fill="${c}"/><circle cy="-13" r="3" fill="#E2313B"/>
+  <path d="M-5 -4 l2 -1 M2 -6 l2 1 M5 -1 l1.6 1.4" stroke="#fff" stroke-width="1.4" stroke-linecap="round"/>`, 'ev-sweet', ' data-e="🧁" data-l="cupcake"'));
+// a party hat for the world's own characters
+const coneHat = (x, y, s, c) => at(x, y, s, `<path d="M-11 0 L0 -26 L11 0Z" fill="${c}"/><circle cx="-3" cy="-10" r="2" fill="#fff"/><circle cx="3" cy="-17" r="1.6" fill="#fff"/><circle cx="4" cy="-5" r="1.8" fill="#fff"/>
+  <path d="M-11 0 Q0 4 11 0" stroke="#FFD23F" stroke-width="2.6" fill="none" stroke-linecap="round"/><circle cy="-27" r="3.6" fill="#FFD23F"/>`);
+// confetti on the grass
+const groundConfetti = () => Array.from({ length: 22 }, (_, i) => {
+  const x = 14 + ((i * 71) % 372), y = 600 + ((i * 37) % 92), c = ['#FF5FA2', '#36C5F0', '#FFD23F', '#9BE15D', '#B78CFF'][i % 5];
+  return i % 3 ? `<rect x="${x}" y="${y}" width="6" height="3" rx="1" fill="${c}" transform="rotate(${(i * 47) % 180} ${x + 3} ${y + 1.5})"/>` : `<circle cx="${x}" cy="${y}" r="2.4" fill="${c}"/>`;
+}).join('');
+function birthdayScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, back = [groundConfetti()], front = [];
+  front.push(cake(p.L[0] + 8, p.L[1] - 4, 1), present(p.L[0] + 36, p.L[1] + 30, 0.6, '#36C5F0', '#FFD23F'));
+  front.push(partyBalloon(p.R[0] - 18, p.R[1] + 8, 0.95, '#FF5FA2'), partyBalloon(p.R[0] + 2, p.R[1] + 14, 0.85, '#36C5F0'), partyBalloon(p.R[0] + 18, p.R[1] + 6, 0.9, '#FFD23F'));
+  front.push(present(p.R[0] - 4, p.R[1] + 40, 0.75, '#B78CFF', '#fff'), cupcake(p.l[0] + 14, p.l[1] - 2, 0.9), cupcake(p.r[0] - 14, p.r[1] - 2, 0.85, '#B5E8FF'));
+  if (world === 'irish') front.push(coneHat(52, 458, 0.55, '#FF5FA2'), coneHat(271, 519, 0.5, '#36C5F0'));
+  if (world === 'beach') front.push(coneHat(338, 589, 0.42, '#FFD23F'));
+  if (stage >= 4) {
+    front.push(partyBalloon(p.l[0] + 34, p.l[1] + 4, 0.7, '#9BE15D'), partyBalloon(p.r[0] - 34, p.r[1] + 2, 0.7, '#B78CFF'), present(p.r[0] - 4, p.r[1] + 14, 0.5, '#FF5FA2', '#fff'));
+    [[90, '#FF5FA2', -1.4], [200, '#36C5F0', -4.6], [310, '#FFD23F', -2.8]].forEach(([bx, c, d]) => back.push(`<g class="ev-rise" style="--delay:${d}s">${partyBalloon(bx, 700, 0.7, c)}</g>`));
+  }
+  return back.join('') + front.join('');
+}
+
+// ----- Songkran, the Thai New Year: the water festival. An elephant with a trunk full of water, a silver bowl with
+// flowers for the blessing, water pistols and buckets, frangipani flowers -----
+const elephant = (x, y, s = 1, flip = 1) => at(x, y, s, tapG('evElephant', `<g transform="scale(${flip} 1)"><ellipse cx="2" cy="34" rx="34" ry="5" fill="#000" opacity=".12"/>
+  <rect x="-12" y="14" width="10" height="20" rx="4" fill="#9AA6B5"/><rect x="18" y="14" width="10" height="20" rx="4" fill="#9AA6B5"/>
+  <ellipse cx="8" cy="6" rx="27" ry="20" fill="#AEB9C7"/><rect x="-4" y="16" width="10" height="18" rx="4" fill="#AEB9C7"/><rect x="24" y="14" width="10" height="20" rx="4" fill="#AEB9C7"/>
+  <path d="M33 0 q8 2 8 9" stroke="#9AA6B5" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <path d="M-2 -12 h24 q3 0 3 3 v14 h-30 v-14 q0 -3 3 -3z" fill="#E2313B"/><path d="M-5 3 h30" stroke="#FFD23F" stroke-width="2.6"/>
+  <g fill="#FFD23F"><circle cx="2" cy="-5" r="1.6"/><circle cx="10" cy="-5" r="1.6"/><circle cx="18" cy="-5" r="1.6"/></g>
+  <circle cx="-20" cy="-6" r="15" fill="#B9C3D0"/>
+  <path d="M-14 -18 q15 -5 16 10 q-1 13 -13 12 q-7 -9 -3 -22z" fill="#9AA6B5"/><path d="M-11 -13 q9 -2 10 7 q-1 8 -8 7" fill="#F2B8C6" opacity=".55"/>
+  <path class="ev-trunk" d="M-31 0 q-8 -1 -9 -12 q-1 -9 5 -16" stroke="#B9C3D0" stroke-width="7.5" fill="none" stroke-linecap="round"/>
+  <circle cx="-25" cy="-9" r="1.9" fill="#2E2A33"/><path d="M-29 5 q-4 4 -8 2" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+  <g class="ev-spray" fill="#5FC3EE">${[[-36, -36, 2.6], [-31, -44, 2], [-40, -46, 2.2], [-27, -38, 1.6], [-44, -40, 1.8]].map(([dx, dy, r]) => `<circle cx="${dx}" cy="${dy}" r="${r}"/>`).join('')}</g></g>`, 'ev-elephant'));
+// the silver bowl of scented water with flowers in it (for pouring over the hands of older people for luck)
+const waterBowl = (x, y, s = 1) => at(x, y, s, tapG('evBowl', `<ellipse cy="17" rx="26" ry="4" fill="#000" opacity=".12"/>
+  <path d="M-24 -2 q2 18 24 18 q22 0 24 -18z" fill="#C9D3DE" stroke="#A9B4C2" stroke-width="1.5"/><path d="M-17 5 q9 7 21 4" stroke="#fff" stroke-width="2" fill="none" opacity=".75"/>
+  <path d="M-6 16 h12 l3 4 h-18z" fill="#A9B4C2"/><ellipse cy="-2" rx="24" ry="5" fill="#7FD0F2"/>
+  <g class="ev-petals">${[[-11, -3, '#FF8FC0'], [2, -1, '#FFD23F'], [12, -3, '#fff']].map(([fx, fy, c]) => `<g transform="translate(${fx} ${fy})">${[0, 72, 144, 216, 288].map((a) => `<ellipse cy="-2.4" rx="1.8" ry="2.6" fill="${c}" transform="rotate(${a})"/>`).join('')}<circle r="1.2" fill="#FF9F1A"/></g>`).join('')}</g>`, 'ev-bowl'));
+// a toy water pistol: a tap squirts it
+const waterGun = (x, y, s = 1, c = '#FF8A1F', flip = 1) => at(x, y, s, tapG('evWaterGun', `<rect x="-22" y="-22" width="46" height="42" fill="transparent"/><g transform="scale(${flip} 1)">
+  <ellipse cy="18" rx="16" ry="3" fill="#000" opacity=".12"/><path d="M-10 2 l-5 14 h8 l4 -11z" fill="${c}"/><path d="M-2 4 q2 6 7 4" stroke="#2E2A33" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <rect x="-15" y="-7" width="32" height="11" rx="5.5" fill="${c}"/><rect x="15" y="-5" width="8" height="6" rx="2" fill="#2E2A33"/>
+  <circle cx="-2" cy="-13" r="7.5" fill="#6FD0F5" stroke="#fff" stroke-width="1.6"/><path d="M-5 -15 q2 -3 5 -2" stroke="#fff" stroke-width="1.5" fill="none" stroke-linecap="round"/></g>`, 'ev-gun'));
+const bucket = (x, y, s = 1, c = '#36C5F0') => at(x, y, s, tapG('evBucket', `<ellipse cy="14" rx="16" ry="3" fill="#000" opacity=".12"/><path d="M-12 -10 q12 -16 24 0" stroke="#5A6472" stroke-width="2" fill="none"/>
+  <path d="M-13 -8 L-10 13 H10 L13 -8Z" fill="${c}"/><ellipse cy="-8" rx="13" ry="3.4" fill="#7FD0F2" stroke="${c}" stroke-width="1.5"/><path d="M-11 0 h22" stroke="#fff" stroke-width="1.6" opacity=".5"/>`, 'ev-bucket'));
+// frangipani (plumeria): white with a yellow heart, everywhere in Thailand
+const plumeria = (x, y, s = 1) => at(x, y, s, tapG('evTulip', `<rect x="-14" y="-16" width="28" height="22" fill="transparent"/><path d="M-12 4 q4 -9 12 -6 q-6 4 -12 6z M12 4 q-4 -9 -12 -6 q6 4 12 6z" fill="#3DBA63"/>
+  ${[[0, -6], [-9, -2], [8, -1]].map(([fx, fy], k) => `<g transform="translate(${fx} ${fy}) scale(${k ? 0.8 : 1})">${[0, 72, 144, 216, 288].map((a) => `<ellipse cy="-4" rx="2.8" ry="4.4" fill="#fff" stroke="#F2E6C8" stroke-width=".6" transform="rotate(${a})"/>`).join('')}<circle r="2.2" fill="#FFD23F"/></g>`).join('')}`, 'ev-tulip'));
+// a sand pagoda on the beach, with paper flags (built for Songkran)
+const chedi = (x, y, s = 1) => at(x, y, s, `<ellipse cy="2" rx="16" ry="3.5" fill="#000" opacity=".1"/><path d="M-15 0 L-10 -10 H10 L15 0Z" fill="#EBCB8B"/><path d="M-9 -10 L-6 -20 H6 L9 -10Z" fill="#F2D7A0"/><path d="M-5 -20 L0 -34 L5 -20Z" fill="#EBCB8B"/>
+  <path d="M0 -34 v-12" stroke="#8C5A3C" stroke-width="1.2"/><path d="M0 -46 l9 2.5 -9 2.5z" fill="#FF5FA2"/><path d="M-13 -2 v-12 M13 -2 v-12" stroke="#8C5A3C" stroke-width="1"/><path d="M-13 -14 l-7 2 7 2z" fill="#36C5F0"/><path d="M13 -14 l7 2 -7 2z" fill="#FFD23F"/>`);
+function songkranScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, front = [];
+  front.push(elephant(p.L[0] + 18, p.L[1] - 8, 0.95));
+  front.push(waterGun(p.R[0] + 2, p.R[1] - 10, 0.9, '#FF8A1F', -1), waterBowl(p.R[0] - 6, p.R[1] + 24, 0.85));
+  front.push(plumeria(p.l[0] + 10, p.l[1] - 2), plumeria(p.r[0] - 12, p.r[1] - 4, 0.9), bucket(p.l[0] + 42, p.l[1] + 8, 0.75));
+  if (world === 'beach') front.push(chedi(300, 640, 0.9), chedi(330, 652, 0.65));
+  if (stage >= 4) front.push(waterGun(p.r[0] - 36, p.r[1] + 4, 0.75, '#9BE15D', -1), bucket(p.R[0] + 22, p.R[1] + 44, 0.6, '#FF5FA2'));
+  return front.join('');
+}
+
+// ----- Ukrainian Independence Day: sunflowers under a blue sky, wheat, the blue and yellow flag, a branch of kalyna
+// (guelder rose), a plate of varenyky, and an embroidered towel along the top -----
+const sunflower = (x, y, s = 1, h = 44) => at(x, y, s, tapG('evSunflower', `<rect x="-17" y="${-h - 19}" width="34" height="${h + 23}" fill="transparent"/>
+  <ellipse cy="2" rx="10" ry="2.5" fill="#000" opacity=".1"/><path d="M0 2 V${-h}" stroke="#3E9B3E" stroke-width="3.2"/>
+  <path d="M0 ${-h * 0.35} q-12 -2 -15 -11 q10 0 15 8 M0 ${-h * 0.6} q12 -2 15 -10 q-10 0 -15 7" fill="#4CAF50"/>
+  <g transform="translate(0 ${-h})"><g class="ev-sfhead">${Array.from({ length: 12 }, (_, i) => `<ellipse cy="-10.5" rx="3.6" ry="6.6" fill="${i % 2 ? '#FFC21A' : '#FFD23F'}" transform="rotate(${i * 30})"/>`).join('')}
+  <circle r="7.5" fill="#6B3E1E"/><g fill="#8C5A2B"><circle cx="-2.5" cy="-2" r="1.3"/><circle cx="2.5" cy="-2" r="1.3"/><circle cy="2.5" r="1.3"/><circle cx="-3.5" cy="3" r="1"/><circle cx="3.5" cy="3" r="1"/></g></g></g>`, 'ev-sunflower'));
+// a sheaf of wheat tied with a blue and yellow ribbon: ears with whiskers on a fan of stalks
+const wheatEar = (x, y, r) => `<g transform="translate(${x} ${y}) rotate(${r})">${[0, 1, 2, 3, 4].map((k) => `<ellipse cx="-1.9" cy="${-k * 3.6}" rx="1.9" ry="3" fill="#E8B83A" transform="rotate(-28 -1.9 ${-k * 3.6})"/><ellipse cx="1.9" cy="${-k * 3.6}" rx="1.9" ry="3" fill="#F2C94C" transform="rotate(28 1.9 ${-k * 3.6})"/>`).join('')}
+  <path d="M-3 -14 l-4 -7 M3 -14 l4 -7 M-2.6 -8 l-5 -5 M2.6 -8 l5 -5 M0 -16 v-8" stroke="#D9A72B" stroke-width=".8"/></g>`;
+const wheat = (x, y, s = 1) => at(x, y, s, tapG('evWheat', `<rect x="-22" y="-58" width="44" height="62" fill="transparent"/><ellipse cy="2" rx="13" ry="2.5" fill="#000" opacity=".1"/>
+  <g class="ev-stalks">${[[-18, -42, -24], [-9, -48, -11], [0, -51, 0], [9, -48, 11], [18, -42, 24]].map(([dx, top, r]) => `<path d="M${dx * 0.25} 2 L0 -12 Q${dx * 0.4} -${-top * 0.6} ${dx} ${top}" stroke="#D9A72B" stroke-width="1.6" fill="none"/>${wheatEar(dx, top, r)}`).join('')}</g>
+  <path d="M-6 -13 h12" stroke="#0057B7" stroke-width="3.4"/><path d="M-6 -10 h12" stroke="#FFD700" stroke-width="3"/>`, 'ev-wheat'));
+// the flag of Ukraine: blue for the sky, yellow for the fields of wheat
+const uaFlag = (x, y, s = 1) => at(x, y, s, tapG('evFlag', `<rect x="-6" y="-62" width="44" height="66" fill="transparent"/><ellipse cy="2" rx="8" ry="2.5" fill="#000" opacity=".12"/>
+  <rect x="-1.5" y="-58" width="3" height="60" rx="1.5" fill="#8C5A3C"/><circle cy="-59" r="3" fill="#FFD23F"/>
+  <g class="ev-wave"><path d="M1.5 -56 q8 -4 16 0 t16 0 v11 q-8 -4 -16 0 t-16 0z" fill="#0057B7"/><path d="M1.5 -45 q8 -4 16 0 t16 0 v11 q-8 -4 -16 0 t-16 0z" fill="#FFD700"/></g>`, 'ev-flag'));
+// a branch of kalyna with its red berries
+const kalyna = (x, y, s = 1) => at(x, y, s, tapG('evKalyna', `<circle cy="-4" r="17" fill="transparent"/><path d="M-13 9 q9 -11 24 -15" stroke="#6B4A2B" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  <path d="M3 -5 q6 -10 14 -8 q-2 8 -14 8z M-5 2 q-8 -9 -15 -5 q4 9 15 5z" fill="#4CAF50"/>
+  <g fill="#E2313B">${[[-2, -8], [2, -11], [5, -7], [1, -4], [-4, -3], [6, -12], [-1, -13]].map(([bx, by]) => `<circle cx="${bx}" cy="${by}" r="2.6"/>`).join('')}</g><g fill="#fff" opacity=".6"><circle cx="1.2" cy="-11.8" r=".8"/><circle cx="-2.8" cy="-8.8" r=".8"/></g>`, 'ev-kalyna'));
+// a plate of varenyky with cherries (Lucky's are with carrot, he says)
+const varenyky = (x, y, s = 1) => at(x, y, s, tapG('evSweet', `<circle r="17" fill="transparent"/><ellipse cy="5" rx="17" ry="5.5" fill="#fff" stroke="#2E77D0" stroke-width="2"/>
+  ${[[-7, 2], [3, 0], [9, 5]].map(([dx, dy]) => `<path d="M${dx - 6.5} ${dy + 2} q6.5 -10 13 0z" fill="#FFF3D6" stroke="#E8C88E" stroke-width="1"/>`).join('')}
+  <circle cx="-2" cy="-4" r="2" fill="#B0123B"/><circle cx="1.5" cy="-5" r="2" fill="#C2185B"/>`, 'ev-sweet', ' data-e="🥟" data-l="varenyky"'));
+// a flower wreath for the world's own characters
+const smallVinok = (x, y, s) => at(x, y, s, `<path d="M-13 0 Q0 -10 13 0" stroke="#3E9B3E" stroke-width="2.4" fill="none"/>${[[-11, -1, '#E2313B'], [-5, -5, '#2E77D0'], [0, -6, '#FFD23F'], [5, -5, '#2E77D0'], [11, -1, '#E2313B']]
+  .map(([fx, fy, c]) => `<circle cx="${fx}" cy="${fy}" r="3.2" fill="${c}"/>`).join('')}<path d="M12 1 q3 8 0 14 M14 0 q6 7 5 13" stroke="#0057B7" stroke-width="1.6" fill="none"/><path d="M13 1 q5 8 2 14" stroke="#FFD700" stroke-width="1.6" fill="none"/>`);
+function ukraineScene(world, stage) {
+  const p = SPOTS[world] || SPOTS.garden, front = [];
+  front.push(sunflower(p.L[0] - 6, p.L[1] + 10, 1, 50), sunflower(p.L[0] + 16, p.L[1] + 18, 0.85, 40), wheat(p.L[0] + 40, p.L[1] + 26, 0.8));
+  front.push(uaFlag(p.R[0] - 18, p.R[1] + 20, 0.95), sunflower(p.R[0] + 14, p.R[1] + 24, 0.8, 42));
+  front.push(kalyna(p.l[0] + 14, p.l[1] - 2), varenyky(p.r[0] - 18, p.r[1] + 2, 0.9));
+  if (world === 'irish') front.push(smallVinok(52, 455, 0.95), smallVinok(271, 516, 0.85));
+  if (world === 'beach') front.push(smallVinok(338, 587, 0.7));
+  if (stage >= 4) front.push(wheat(p.r[0] - 46, p.r[1] + 8, 0.65), sunflower(p.l[0] + 40, p.l[1] + 10, 0.7, 34));
+  return front.join('');
+}
+
 // things along the top edge of the scene (HTML, so they stay at the top on every phone); the spider and the lights
 // answer taps
 const heartString = () => {
@@ -652,15 +772,37 @@ const bunting = (colors) => {
   return `<div class="ev-bunting" style="background-image:url('data:image/svg+xml,${encodeURIComponent(svg)}');background-size:${w}px 30px"></div>`;
 };
 const cobweb = '<svg class="ev-web" viewBox="0 0 100 100" aria-hidden="true"><g stroke="#fff" stroke-width="1.4" fill="none" opacity=".9"><path d="M0 0 L100 32 M0 0 L80 80 M0 0 L32 100 M0 0 L100 0 M0 0 L0 100"/><path d="M22 0 Q19 13 18 18 Q12 19 0 22 M46 0 Q40 26 37 37 Q26 40 0 46 M72 0 Q64 40 57 57 Q40 64 0 72"/></g></svg>';
+// a banner of letters on pennants ("HAPPY BIRTHDAY"), once across the top
+const BANNER_COLORS = ['#FF5FA2', '#36C5F0', '#FFD23F', '#9BE15D', '#B78CFF'];
+const banner = (text) => {
+  const ch = [...text], w = 400 / ch.length;
+  return `<svg class="ev-banner" viewBox="0 0 400 46" preserveAspectRatio="xMidYMin meet" aria-hidden="true"><path d="M0 6 Q200 22 400 6" stroke="#8C5A3C" stroke-width="1.5" fill="none"/>${ch.map((c, i) => {
+    const t = (i + 0.5) / ch.length, x = 400 * t, y = 6 + 32 * t * (1 - t);
+    return c === ' ' ? '' : `<g transform="translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${((t - 0.5) * -16).toFixed(1)})"><path d="M${(-w / 2 + 1.5).toFixed(1)} 0 H${(w / 2 - 1.5).toFixed(1)} V19 L0 28 L${(-w / 2 + 1.5).toFixed(1)} 19Z" fill="${BANNER_COLORS[i % BANNER_COLORS.length]}"/><text y="14.5" text-anchor="middle" font-size="${Math.min(15, w * 0.62).toFixed(1)}" font-weight="900" fill="#fff">${c}</text></g>`;
+  }).join('')}</svg>`;
+};
+// a garland of jasmine and marigolds with hanging tassels (phuang malai), as in Thailand
+const garland = () => `<svg class="ev-garland" viewBox="0 0 400 40" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><path d="M0 4 Q50 16 100 4 T200 4 T300 4 T400 4" stroke="#3DBA63" stroke-width="2" fill="none"/>${
+  Array.from({ length: 33 }, (_, i) => { const x = i * 12.5, y = 4 + Math.abs(Math.sin(((x % 100) / 100) * Math.PI)) * 9; return `<circle cx="${x}" cy="${y.toFixed(1)}" r="${i % 3 ? 3.2 : 4.4}" fill="${i % 3 ? '#FFFDF2' : '#FFA41B'}" stroke="${i % 3 ? '#E6E0C8' : '#E08A00'}" stroke-width=".8"/>`; }).join('')}${
+  [50, 150, 250, 350].map((x) => `<g class="ev-tassel" transform="translate(${x} 13)"><path d="M0 0 v12" stroke="#FFFDF2" stroke-width="2.4"/><circle cy="14" r="4" fill="#E2313B"/><path d="M-3 17 l-2 9 M0 18 v9 M3 17 l2 9" stroke="#FFD23F" stroke-width="1.4"/></g>`).join('')}</svg>`;
+// a rushnyk: a towel with a red and black cross-stitch band, as on a vyshyvanka
+const rushnyk = () => {
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 18"><rect width="24" height="18" fill="#FFFDF7"/><path d="M0 1.5 h24 M0 16.5 h24" stroke="#C62828" stroke-width="1.6"/><path d="M12 3 l6 6 -6 6 -6 -6z" fill="#C62828"/><path d="M12 6 l3 3 -3 3 -3 -3z" fill="#2E2A33"/><path d="M0 9 l3 -3 3 3 -3 3z M24 9 l-3 -3 -3 3 3 3z" fill="#C62828"/></svg>';
+  return `<div class="ev-rushnyk" style="background-image:url('data:image/svg+xml,${encodeURIComponent(svg)}');background-size:24px 18px"></div>`;
+};
 const TOPS = {
   halloween: () => cobweb + '<div class="ev-spider" data-tap="evSpider"><span>🕷️</span></div>' + bunting(['#FF8A1F', '#3A2246', '#7B3FB8']),
   christmas: () => lights(['#E2313B', '#FFD23F', '#2E9E4E', '#4D9BFF']),
   newyear: () => tinsel + lights(['#FFD23F', '#FF5FA2', '#6FD3FF', '#9BE15D']),
+  birthday: () => banner('HAPPY BIRTHDAY'),
   valentine: () => heartString(),
   patrick: () => bunting(['#2E9E4E', '#FFFFFF', '#FF8A1F']),
   easter: () => bunting(['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5']),
+  songkran: () => garland(),
+  ukraine: () => rushnyk() + bunting(['#0057B7', '#FFD700']),
 };
-const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene, valentine: valentineScene, patrick: patrickScene, easter: easterScene };
+const SCENES = { halloween: halloweenScene, christmas: christmasScene, newyear: newYearScene, birthday: birthdayScene, valentine: valentineScene, patrick: patrickScene,
+  easter: easterScene, songkran: songkranScene, ukraine: ukraineScene };
 
 // the holiday layer for a world ('night' for the sleep screen); empty when the holiday draws nothing there
 // A scene gives its things, and the things to find (Easter eggs, the leprechaun's coins) apart: those are drawn in a
@@ -744,6 +886,26 @@ export const PROPS = {
   partyHat: { slot: 'season', art: () => `<g transform="rotate(12 100 44)"><path d="M84 46 L104 -14 L124 46Z" fill="#8B6CFF"/><path d="M94 16 L114 16 M89 31 L119 31" stroke="#FFD23F" stroke-width="5"/>
     <path d="M80 44 Q104 52 128 44" stroke="#FF5FA2" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="104" cy="-16" r="6" fill="#FF5FA2"/>
     <path d="M104 -22 l-6 -10 M104 -22 l6 -10 M104 -22 v-12" stroke="#FFD23F" stroke-width="2.4" stroke-linecap="round"/></g>` },
+  // the birthday: a polka-dot party hat with a pom-pom
+  bdayHat: { slot: 'season', art: () => `<g transform="rotate(-14 100 46)"><path d="M80 48 L100 -12 L120 48Z" fill="#FF5FA2"/>
+    <g fill="#fff"><circle cx="99" cy="6" r="3.4"/><circle cx="92" cy="26" r="3.4"/><circle cx="107" cy="20" r="3"/><circle cx="104" cy="38" r="3.4"/><circle cx="89" cy="42" r="2.6"/></g>
+    <path d="M77 46 Q100 55 123 46" stroke="#36C5F0" stroke-width="6" fill="none" stroke-linecap="round"/><circle cx="100" cy="-14" r="7.5" fill="#FFD23F"/>
+    <path d="M94 -18 l-4 -6 M100 -20 v-7 M106 -18 l4 -6" stroke="#36C5F0" stroke-width="2.4" stroke-linecap="round"/></g>` },
+  // Songkran: swimming goggles pushed up for the water fight, and a frangipani behind the ear
+  goggles: { slot: 'season', art: () => `<path d="M52 72 Q100 36 148 72" stroke="#2E77D0" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <g transform="rotate(-3 100 52)"><rect x="71" y="42" width="25" height="17" rx="8.5" fill="#BFE9FF" fill-opacity=".9" stroke="#FF5FA2" stroke-width="4"/>
+    <rect x="104" y="42" width="25" height="17" rx="8.5" fill="#BFE9FF" fill-opacity=".9" stroke="#FF5FA2" stroke-width="4"/><path d="M96 50 h8" stroke="#FF5FA2" stroke-width="4"/>
+    <path d="M77 47 l6 -2 M110 47 l6 -2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></g>
+    <g transform="translate(150 70)">${[0, 72, 144, 216, 288].map((a) => `<ellipse cy="-6" rx="4.4" ry="7" fill="#fff" stroke="#F2E6C8" stroke-width="1" transform="rotate(${a})"/>`).join('')}<circle r="3.6" fill="#FFD23F"/></g>` },
+  // Independence Day: a vinok, a wreath of sunflowers, poppies and cornflowers with long ribbons
+  vinok: { slot: 'season', art: () => `<g class="pp-ribbons">${[['#4CAF50', 'M143 62 q10 24 7 54'], ['#0057B7', 'M147 60 q14 22 12 58'], ['#FFD700', 'M151 58 q20 20 20 54'], ['#E2313B', 'M155 56 q24 16 28 46']]
+    .map(([c, d]) => `<path d="${d}" stroke="${c}" stroke-width="4.5" fill="none" stroke-linecap="round"/>`).join('')}</g>
+    <path d="M56 68 Q100 32 144 68" stroke="#3E9B3E" stroke-width="5" fill="none"/>
+    ${[[60, 64, 'poppy'], [72, 52, 'corn'], [86, 45, 'poppy'], [114, 45, 'poppy'], [128, 52, 'corn'], [140, 64, 'poppy']].map(([x, y, k]) => k === 'poppy'
+    ? `<g transform="translate(${x} ${y})">${[0, 90, 180, 270].map((a) => `<circle cy="-4" r="4.6" fill="#E2313B" transform="rotate(${a})"/>`).join('')}<circle r="2.6" fill="#2E2A33"/></g>`
+    : `<g transform="translate(${x} ${y})">${[0, 45, 90, 135, 180, 225, 270, 315].map((a) => `<ellipse cy="-4.4" rx="1.8" ry="3.6" fill="#2E77D0" transform="rotate(${a})"/>`).join('')}<circle r="1.8" fill="#1B4F9C"/></g>`).join('')}
+    <g transform="translate(100 41)">${Array.from({ length: 12 }, (_, i) => `<ellipse cy="-8" rx="3" ry="5.4" fill="${i % 2 ? '#FFC21A' : '#FFD23F'}" transform="rotate(${i * 30})"/>`).join('')}<circle r="5.6" fill="#6B3E1E"/></g>
+    <path d="M64 58 q-6 -6 -2 -12 q4 5 2 12z M136 58 q6 -6 2 -12 q-4 5 -2 12z" fill="#4CAF50"/>` },
   ball: { slot: 'hand', art: () => `<g transform="translate(100 18)"><circle r="20" fill="#FF5FA2"/><path d="M0 0 L0 -20 A20 20 0 0 1 20 0Z M0 0 L0 20 A20 20 0 0 1 -20 0Z" fill="#fff"/><path d="M0 0 L20 0 A20 20 0 0 1 0 20Z" fill="#FFD23F"/><circle r="3.5" fill="#fff" stroke="#FF5FA2" stroke-width="1.5"/></g>` },
   clover: { slot: 'mouth', art: () => em(100, 124, 24, '☘️') },
   hay: { slot: 'mouth', art: () => em(100, 124, 28, '🌾') },

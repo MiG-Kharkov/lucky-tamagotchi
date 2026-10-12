@@ -969,15 +969,17 @@ export function createAntics(api) {
     tap: who((c) => { forAWhile(c.el.closest('.ev-bat'), 'fast', 3000); pose('ok', 900, 'squash', 700); line(H.bat, 0.8); }),
     double: who((c) => visitor('batloop', c.x, c.y)), // it circles his head
   };
+  // a sweet, a cupcake or a varenyk (data-e: what flies to him, data-l: his line)
   R.evSweet = {
     press: () => sfx.pop(),
     tap: who((c) => {
       if (c.el.classList.contains('eaten')) return;
-      fly(pick(['🍬', '🍭', '🍬']), [c.x, c.y], mouth(), 600, { spin: 300, size: 24 });
+      const e = c.el.dataset.e;
+      fly(e || pick(['🍬', '🍭', '🍬']), [c.x, c.y], mouth(), 600, { spin: e ? 0 : 300, size: 24 });
       forAWhile(c.el, 'eaten', 20000);
       setTimeout(() => { api.setTemp('eat', 1500); sfx.crunch(); }, 600);
       api.boost('hunger', 2);
-      line('lick', 0.8);
+      line(c.el.dataset.l || 'lick', 0.8);
     }),
   };
   R.evCauldron = {
@@ -1139,6 +1141,89 @@ export function createAntics(api) {
   R.evTulip = {
     press: (c) => { sfx.bubble(); api.hop(c.el, 'bloom', 1800); },
     tap: who(() => { pose('ok', 1500, 'sniff', 1500); sfx.sniff(); line(LUCKY.flowers, 0.7); }),
+  };
+  // ----- the birthday cake: a tap blows the candles out (a wish, and "Happy Birthday" plays), a double tap lights them
+  // again, a long press: a slice for Lucky
+  const tune = (notes, gap = 300) => notes.forEach((f, i) => setTimeout(() => sfx.note(f), i * gap));
+  R.evCake = {
+    press: (c) => { if (!c.el.classList.contains('out')) api.fxAt(c.x, c.y - 24, ['✨'], 2, 'spark'); },
+    tap: (c) => {
+      if (c.el.classList.contains('out')) { if (api.free() && !api.talking()) line('cakeOut', 0.8); return; }
+      forAWhile(c.el, 'out', 30000);
+      sfx.puff();
+      const [x, y] = topOf(c.el);
+      popUp('💨', x, y - 6, 1100, 30, 'pop-rise');
+      setTimeout(() => { tune([392, 392, 440, 392, 523, 494]); api.fxAt(x, y, ['🎉', '🎊', '✨'], 10, 'spark'); }, 450);
+      if (!api.free() || api.talking()) return;
+      pose('laugh', 2000, 'clap');
+      line('cakeWish', 1);
+      api.reward();
+    },
+    double: (c) => {
+      c.el.classList.remove('out');
+      clearTimeout(c.el._out);
+      sfx.magic();
+      api.fxAt(...topOf(c.el), ['✨', '🔥'], 5, 'spark');
+      if (api.free() && !api.talking()) line('cakeLight', 0.8);
+    },
+    long: who((c) => { fly('🍰', topOf(c.el), mouth(), 700, { arc: 50, size: 26 }); setTimeout(() => { api.setTemp('eat', 1800); sfx.crunch(); }, 700); api.boost('hunger', 2); line('cakeSlice', 1); }),
+  };
+  // ----- Songkran: the elephant sprays Lucky (he shakes himself dry), makes a rainbow in the spray and trumpets
+  R.evElephant = {
+    press: (c) => { forAWhile(c.el, 'squirt', 1200); sfx.splash(); },
+    tap: who((c) => {
+      const a = begin('elephant'), from = topOf(c.el);
+      for (let i = 0; i < 6; i++) at(a, i * 70, () => fly(pick(['💧', '💦']), from, api.luckyPoint(0.3 + Math.random() * 0.4, 0.15 + Math.random() * 0.3), 600, { arc: 70, size: 20 }));
+      at(a, 600, () => { sfx.splash(); line('elephantSplash', 1, 0); getWet(a, 1800); });
+      at(a, 3300, end);
+    }),
+    double: who((c) => { forAWhile(c.el, 'squirt', 2000); rainbow(); sfx.chime(); pose('happy', 1600, 'hop'); line('elephantRainbow', 1); }),
+    long: who(() => { sfx.trumpet(); pose('ok', 900, 'startle', 1100); setTimeout(() => api.setTemp('laugh', 1500), 900); line('elephantTrumpet', 1); }),
+  };
+  // a water pistol: a squirt across the scene, or right at Lucky
+  const squirt = (from, to, a) => {
+    for (let i = 0; i < 5; i++) { const go = () => fly('💧', from, to(i), 480, { arc: 24, size: 18 }); if (a) at(a, i * 60, go); else setTimeout(go, i * 60); }
+  };
+  R.evWaterGun = {
+    press: (c) => { forAWhile(c.el, 'squirt', 500); sfx.splash(); },
+    tap: who(oneOf('evWaterGun',
+      (c) => { const [x, y] = centerOf(c.el), d = x < sceneRect().width / 2 ? 1 : -1; squirt([x, y], (i) => [x + d * (90 + i * 26), y - 70 + i * 10]); pose('laugh', 1500, 'hop'); line('waterGun', 0.9); },
+      (c) => { const a = begin('squirted'); squirt(centerOf(c.el), () => api.luckyPoint(0.5, 0.3), a); at(a, 480, () => { sfx.splash(); line('waterGunMe', 1, 0); getWet(a, 1600); }); at(a, 2900, end); })),
+  };
+  R.evBucket = {
+    press: () => sfx.bubble(),
+    tap: who((c) => {
+      const a = begin('bucket');
+      for (let i = 0; i < 4; i++) at(a, i * 80, () => fly('💦', topOf(c.el), head(), 520, { arc: 60, size: 22 }));
+      at(a, 520, () => { sfx.splash(); spray(...head()); line('bucketSplash', 1, 0); getWet(a, 2000); });
+      at(a, 3400, end);
+    }),
+  };
+  // the silver bowl: a little water poured over the hands for luck, the gentle side of Songkran
+  R.evBowl = {
+    press: (c) => { sfx.bubble(); api.fxAt(c.x, c.y - 6, ['💧'], 3, 'spark'); },
+    tap: who(() => { pose('happy', 1800, 'bow', 1200); api.fxAt(...paw(), ['💧', '🌸'], 5, 'spark'); sfx.chime(); line('bowlBless', 1); }),
+    double: who(() => { pose('laugh', 1600, 'hop'); line('sanuk', 1); }),
+  };
+  // ----- Independence Day: sunflowers turn to the sun, the wheat rustles, the flag flutters
+  R.evSunflower = {
+    press: (c) => { sfx.pop(); api.fxAt(c.x, c.y, ['🌼'], 2, 'spark'); },
+    tap: who(oneOf('evSunflower',
+      (c) => { forAWhile(c.el, 'turn', 1300); pose('happy', 1500, 'stretchUp', 1500); line('sunflowerSun', 1); },
+      () => { pose('ok', 1500, 'think', 1500); line('sunflowerWord', 1); })),
+    double: (c) => visitor('bee', c.x, c.y),
+  };
+  R.evWheat = {
+    press: () => sfx.whoosh(),
+    tap: who((c) => { forAWhile(c.el, 'rustle', 1000); pose('ok', 1400, 'listen', 1400); line('wheat', 1); }),
+  };
+  R.evFlag = {
+    press: (c) => forAWhile(c.el, 'flutter', 2500),
+    tap: who(() => { pose('happy', 1600, 'proud', 1200); line('flagColours', 1); }),
+  };
+  R.evKalyna = {
+    press: () => sfx.pop(),
+    tap: who(() => { pose('ok', 1500, 'sniff', 1500); sfx.sniff(); line('kalyna', 1); }),
   };
   const kitUnprop = (slot) => unprop(slot);
   const EVENT_ID = () => api.event()?.id;
@@ -1951,6 +2036,18 @@ export function createAntics(api) {
       luck: () => {
         fly('🍀', [x, y], api.luckyPoint(0.75, 0.28), 800, { arc: 40, spin: 180, size: 26 });
         at(a, 800, () => { prop('cloverEar', 9000); sfx.chime(); api.fxAt(...head(), ['✨', '🍀'], 5, 'spark'); pose('laugh', 1500, 'binky'); line('fourLeaf', 1, 0); api.reward(); });
+      },
+      // Songkran: a water bomb lands right on him
+      soak: () => {
+        fly('💧', [x, y], head(), 500, { size: 28 });
+        at(a, 500, () => { sfx.splash(); spray(...head()); line('waterBomb', 1, 0); getWet(a, 1800); });
+      },
+      // Independence Day: a dove lands on his head and coos
+      dove: () => {
+        const top = api.luckyPoint(0.5, 0.02);
+        fly('🕊️', [x, y], top, 800, { arc: 40, size: 32, stay: 2400 });
+        at(a, 800, () => { tune([523, 494, 523], 320); pose('happy', 2200, 'listen', 2200); line('dove', 1, 0); });
+        at(a, 3200, () => away('🕊️', top));
       },
       // Easter: a chick hops over and stays by his feet for a moment
       chick: () => {

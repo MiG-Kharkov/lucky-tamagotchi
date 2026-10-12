@@ -1,6 +1,11 @@
 // Shared clip key for the game and the generator script: who + language + text without emoji.
 
+// The family's other languages: a line in Thai or Ukrainian is read by that language's voice (tools/tts.mjs), and
+// what it has in brackets (how it sounds, what it means) is only for the eye
+export const OTHER_SCRIPT = /[\u0E00-\u0E7FІіЇїЄєҐґ]/;
+
 export function speechText(s) {
+  if (OTHER_SCRIPT.test(s)) s = s.replace(/\s*\([^)]*\)/g, '');
   return s.replace(/\p{Extended_Pictographic}|️|‍/gu, '').replace(/^[\s…]+/, '').replace(/\s+/g, ' ').trim();
 }
 

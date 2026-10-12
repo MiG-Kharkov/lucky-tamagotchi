@@ -1,8 +1,12 @@
 // Holidays. For a few weeks before each one the game is dressed up for it: the worlds, the interface on every screen,
 // Lucky's hat, visitors, stickers, games and little holiday moments. In the last week a few more things come out, and
 // the day itself has its own. The rules, the timings and the care stay the same.
+// They are the family's holidays: the Irish year, the child's birthday (config.js), and a day each from the two
+// countries the family comes from and lived in, Ukraine and Thailand.
 // Stages: 3 from the first day (everything; `days <= 7` adds the last week's extras), 4 the day itself (and the days
 // after it). Stages 1 and 2 are the quieter looks of earlier versions; Turbo can still show them.
+
+import { CONFIG } from './config.js';
 
 const DAY = 864e5;
 
@@ -18,19 +22,30 @@ export function easter(y) {
 // lead: how many days before the day the decorations start; after: how many days after it they stay.
 // stickers: holiday stickers for Decorate (they show only while their holiday is on, and come back next year).
 // gift: the daily surprise and the present boxes while the holiday is on.
+// today: how the calendar says "it's … today" when the name alone doesn't fit there; span: a holiday of several days.
+// prio: when two holidays are on at once (see eventOn); the family's own two from far away give way to the Irish ones.
+const [BD_MONTH, BD_DAY] = CONFIG.child.birthday;
 export const EVENTS = [
   { id: 'halloween', icon: '🎃', name: ['Хэллоуин', 'Halloween'], date: (y) => new Date(y, 9, 31), lead: 21, after: 1,
     stickers: ['🎃', '👻', '🦇', '🕸️', '🧹', '🍬'], gift: ['🎃', '🍬', '🧺'], confetti: ['#FF8A1F', '#7B3FB8', '#2E2A33', '#FFD23F', '#9BE15D'] },
   { id: 'christmas', icon: '🎄', name: ['Рождество', 'Christmas'], date: (y) => new Date(y, 11, 25), lead: 21, after: 1,
     stickers: ['🎄', '🎁', '⛄', '🔔', '🧦', '🎅', '🦌', '🍪'], gift: ['🎁', '🎁', '🧦'], confetti: ['#E2313B', '#2E9E4E', '#FFD23F', '#FFFFFF', '#6FD3FF'] },
-  { id: 'newyear', icon: '🎆', name: ['Новый год', 'New Year'], date: (y) => new Date(y, 0, 1), lead: 5, after: 6,
+  { id: 'newyear', icon: '🎆', name: ['Новый год', 'New Year'], date: (y) => new Date(y, 0, 1), lead: 5, after: 1,
     stickers: ['🎆', '🎉', '🎊', '🎈', '🕛', '🎄', '✨'], gift: ['🎁', '🎉'], confetti: ['#FFD23F', '#C0C8D6', '#FF5FA2', '#8B6CFF', '#6FD3FF'] },
+  { id: 'birthday', icon: '🎂', name: ['День рождения', 'Birthday'], today: ['твой день рождения', 'your birthday'],
+    date: (y) => new Date(y, BD_MONTH - 1, BD_DAY), lead: 4, after: 1,
+    stickers: ['🎂', '🧁', '🎁', '🥳', '👑', '🪅', '🎀'], gift: ['🎁', '🎂'], confetti: ['#FF5FA2', '#36C5F0', '#FFD23F', '#9BE15D', '#B78CFF'] },
   { id: 'valentine', icon: '💝', name: ['День святого Валентина', "Valentine's Day"], date: (y) => new Date(y, 1, 14), lead: 7, after: 0,
     stickers: ['💌', '💝', '💘', '🌹', '🧸', '💐'], gift: ['💝', '💌'], confetti: ['#FF5FA2', '#E2313B', '#FFB3D6', '#FFFFFF', '#B78CFF'] },
   { id: 'patrick', icon: '☘️', name: ['День святого Патрика', "St Patrick's Day"], date: (y) => new Date(y, 2, 17), lead: 14, after: 0,
     stickers: ['☘️', '🍀', '🌈', '🪙', '🎩', '🎻'], gift: ['🪙', '🍀'], confetti: ['#2E9E4E', '#FFFFFF', '#FF8A1F', '#FFD23F', '#9BE15D'] },
   { id: 'easter', icon: '🐣', name: ['Пасха', 'Easter'], date: easter, lead: 14, after: 1,
     stickers: ['🥚', '🐣', '🧺', '🌷', '🐰', '🦋'], gift: ['🧺', '🥚'], confetti: ['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5', '#D9C7FF'] },
+  // the Thai New Year, a water festival: three days, 13 to 15 April
+  { id: 'songkran', icon: '💦', name: ['Сонгкран', 'Songkran'], date: (y) => new Date(y, 3, 13), lead: 4, after: 2, span: 3, prio: 1,
+    stickers: ['💦', '🐘', '🌺', '🛺', '🥭', '🌴'], gift: ['💦', '🌺'], confetti: ['#36C5F0', '#FF5FA2', '#FFD23F', '#9BE15D', '#FFFFFF'] },
+  { id: 'ukraine', icon: '🌻', name: ['День Независимости Украины', 'Ukrainian Independence Day'], date: (y) => new Date(y, 7, 24), lead: 7, after: 0, prio: 1,
+    stickers: ['🌻', '🌾', '🍒', '🥟', '🐓', '🕊️'], gift: ['🌻', '🍒'], confetti: ['#0057B7', '#FFD700', '#FFFFFF', '#5BB8F5', '#FFE066'] },
 ];
 export const EVENT_BY_ID = Object.fromEntries(EVENTS.map((e) => [e.id, e]));
 
@@ -44,8 +59,12 @@ export function holidayOnly(regular) {
 const dayNo = (d) => Math.floor(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) / DAY);
 const stageFor = (days) => (days <= 0 ? 4 : 3);
 
-// The holiday that is on today with its stage and how many days are left (0 on the day), or null.
-// If two overlap (an early Easter and St Patrick's Day) the one further along wins.
+// When two holidays are on at once (an early Easter and St Patrick's Day, a late Easter and Songkran), a holiday's
+// day comes first, then the days after one, then the days before; then the bigger holiday (prio), then the nearer one
+const rank = (it) => (it.days === 0 ? 2 : it.days < 0 ? 1 : 0);
+const better = (a, b) => rank(a) - rank(b) || (a.prio ?? 2) - (b.prio ?? 2) || Math.abs(b.days) - Math.abs(a.days);
+
+// The holiday that is on today with its stage and how many days are left (0 on the day), or null
 export function eventOn(now = new Date()) {
   const today = dayNo(now);
   let best = null;
@@ -54,7 +73,7 @@ export function eventOn(now = new Date()) {
       const days = dayNo(ev.date(y)) - today;
       if (days > ev.lead || days < -ev.after) continue;
       const it = { ...ev, days, stage: stageFor(days) };
-      if (!best || it.stage > best.stage || (it.stage === best.stage && it.days < best.days)) best = it;
+      if (!best || better(it, best) > 0) best = it;
     }
   }
   return best;
