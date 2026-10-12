@@ -1672,7 +1672,9 @@ function openPlan() {
 // Lucky's lines are voiced; the child's answers are text only (English with a small translation).
 
 const ASK_EVERY = 4 * 60e3;
-const ASK_WEIGHTS = { guess: 3, pref: 2, wyr: 2, quiz: 2, mood: 1.5, touch: 1.5, story: 1 };
+// what kind of question comes how often: for an older child more "would you rather", quizzes and little stories,
+// fewer easy guesses, and no "tap my nose"
+const ASK_WEIGHTS = { guess: 1.5, pref: 2, wyr: 3, quiz: 3, mood: 0.5, touch: 0, story: 2 };
 let ask = null, lastAskAt = Date.now(), askTimer = 0;
 const recentAsks = [];
 
@@ -1682,8 +1684,9 @@ const canAsk = () => mode === 'main' && !sheetOpen && !modalOpen && userActive()
 function pickAsk() {
   const T0 = st.today(S);
   const pool = ASKS.filter((a) => !recentAsks.includes(a.id) && !(a.kind === 'story' && T0.story && !turbo()));
-  let x = Math.random() * pool.reduce((sum, a) => sum + ASK_WEIGHTS[a.kind], 0);
-  return pool.find((a) => (x -= ASK_WEIGHTS[a.kind]) < 0) || pool[0];
+  const w = (a) => ASK_WEIGHTS[a.kind] ?? 1;
+  let x = Math.random() * pool.reduce((sum, a) => sum + w(a), 0);
+  return pool.find((a) => w(a) > 0 && (x -= w(a)) < 0) || pool.find((a) => w(a) > 0) || pool[0];
 }
 
 function choicesHtml(opts) {
@@ -1905,8 +1908,11 @@ function maybeFrog(now, T0) {
 
 const MOODS = [['happy', '😊'], ['calm', '😌'], ['tired', '😴'], ['sad', '😢'], ['angry', '😠']];
 
+// The mood check-in: every third day or so (every day felt like too much), after her first things, not on top of them
+// (and not on her birthday: the day has its own card)
 function maybeMood(T0) {
-  if (T0.mood || !S.onboarded || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 30e3 || Date.now() < busyUntil) return; // after her first things, not on top of them
+  if (T0.mood || st.hash(T0.date + 'mood') % 3 || (EV?.id === 'birthday' && EV.days === 0)) return;
+  if (!S.onboarded || mode !== 'main' || sheetOpen || modalOpen || antics.busy() || !userActive() || S.session.activeMs < 30e3 || Date.now() < busyUntil) return;
   T0.mood = 'asked';
   sayAuto(LUCKY.moodAsk[0]);
   showModal({
