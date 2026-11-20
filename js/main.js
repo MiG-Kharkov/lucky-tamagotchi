@@ -1979,16 +1979,20 @@ function breathe() {
 
 // ---------- mini-games ----------
 
-const GAME_COOLDOWN = 15 * 60e3;
+// Games come in rounds: a few in a row (gamesPerRound), then a new round roundGapMin after the round's first game.
+// left: games left in this round; nextAt: when the next round starts (0 while there are games left)
+function gameRound(now = Date.now()) {
+  const R = S.round, gap = S.settings.roundGapMin * 60e3;
+  if (R.n > 0 && now - R.at >= gap) { R.n = 0; R.at = 0; }
+  const left = turbo() ? 99 : Math.max(0, S.settings.gamesPerRound - R.n);
+  return { left, nextAt: left ? 0 : R.at + gap };
+}
+const roundNote = () => { const { left, nextAt } = gameRound(); return left ? tr('gamesLeft', { n: left }) : `⏳ ${tr('roundNext', { time: fmtTime(nextAt) })}`; };
 
 function openPlay() {
-  const T0 = st.today(S);
-  const left = turbo() ? 99 : S.settings.gamesPerDay - T0.games;
-  const wait = turbo() ? 0 : Math.ceil((S.lastGameAt + GAME_COOLDOWN - Date.now()) / 60e3);
-  const can = left > 0 && wait <= 0;
-  if (left > 0 && wait > 0) say(fresh(LUCKY.cooldown));
-  if (left <= 0) say(P('noGames'));
-  const note = left <= 0 ? tr('noGames') : wait > 0 ? `⏳ ${tr('gameCooldown', { n: wait })}` : tr('gamesLeft', { n: left });
+  const { left } = gameRound(), can = left > 0;
+  if (!can) say(P('noGames'));
+  const note = roundNote();
   // while a holiday is on, its own three games take the usual ones' place, and Chat with Lucky (the English
   // questions and answers) stays as the fourth
   const holiday = !!(EV && EV.stage >= 3 && HOLIDAY_GAMES[EV.id]);
@@ -2033,15 +2037,14 @@ function startGame(game) {
     onCancel: closeGame,
     // a game counts from its start (a reload can't get round the day's games), and what it earned is kept the
     // moment it ends, before the end card is closed (iOS may close the app in the background meanwhile)
-    onStart: () => { st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S); },
+    onStart: () => { const R = S.round; if (!R.n) R.at = Date.now(); R.n++; st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S); },
     onScore: (score) => {
       if (score >= game.great) stat('gamesGreat');
       if (game.id === 'talk') stat('talkRight', Math.floor(score / 3));
       st.boost(S, 'fun', 20);
       st.boost(S, 'energy', -game.energy);
-      // up to 8 hearts a game and 24 a day: each of the day's three games counts (a new level's window waits for the
-      // game to close)
-      award(addH(Math.min(8, Math.ceil((score / 30) * 8)), 'game', 24));
+      // up to 8 hearts a game and 40 a day: five good games count (a new level's window waits for the game to close)
+      award(addH(Math.min(8, Math.ceil((score / 30) * 8)), 'game', 40));
       st.save(S);
     },
     onEnd: (score) => {
@@ -2049,7 +2052,7 @@ function startGame(game) {
       renderStats();
       setTemp('happy', 1500);
       if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
-      toast('🎈 ' + tr('gamesLeft', { n: Math.max(0, S.settings.gamesPerDay - st.today(S).games) }));
+      toast('🎈 ' + roundNote());
       st.save(S);
     },
   });
@@ -2579,9 +2582,10 @@ function replayIdiom(it) {
   setTimeout(() => { if (mode === 'main' && !ask && !modalOpen) talk(idiomSteps(it, false, false), true); }, 450);
 }
 
-// ---------- tongue twisters: Tali asks, Lucky says it slowly, faster and super fast ----------
+// ---------- tongue twisters: Tali asks for one a visit, Lucky says it once (all of them, at three speeds, are in the
+// collection's English tab) ----------
 
-const TWISTERS_PER_VISIT = 2;
+const TWISTERS_PER_VISIT = 1;
 const twistersLeft = () => (turbo() ? 99 : TWISTERS_PER_VISIT - (S.dog.twisters || 0));
 const SPEEDS = [[0.85, '🐢'], [1.25, '🐇'], [1.7, '🚀']];
 
@@ -2600,28 +2604,27 @@ function taliTwister() {
   S.dog.twisters = (S.dog.twisters || 0) + 1;
   const tw = nextTwister();
   const frog = pickIdiom('twister', 0.35, true); // sometimes: "Ahem! I've got a frog in my throat!"
-  const at = ([speed, icon]) => () => {
-    const ms = say([tw.t[0], `${icon} ${tw.t[1]}`], 'lucky', { chain: true, speed });
-    if (!ms) return -1;
-    antics.twistPose(speed);
-    return Math.round((400 + tw.t[1].length * 70) / speed) + 350;
-  };
   talk([
     timed('dog', fresh(DOG.twisterAsk)),
     ...(frog ? idiomSteps(frog) : []),
-    ...SPEEDS.map(at),
+    () => {
+      const ms = say(tw.t, 'lucky', { chain: true });
+      if (!ms) return -1;
+      antics.twistPose(1);
+      return ms + 600;
+    },
     () => {
       if (!S.twisters.heard.includes(tw.id)) { S.twisters.heard.push(tw.id); stat('twistersSaid'); }
       st.boost(S, 'fun', 4);
       renderStats();
       award(addH(1, 'twister', 3));
       st.save(S);
-      return antics.laughAt('dizzy') || 800;
+      const b = ui.dog.querySelector('.dog-body');
+      if (b) hop(b, 'dogspin', 1400);
+      sfx.bark();
+      return 300;
     },
-    timed('lucky', fresh(LUCKY.twisterTangled)),
-    () => { const b = ui.dog.querySelector('.dog-body'); if (b) hop(b, 'dogspin', 1400); sfx.bark(); return 300; },
-    timed('dog', fresh(DOG.twisterLaugh)),
-    ['lucky', ...fresh(LUCKY.twisterYourTurn)],
+    timed('dog', fresh(DOG.twisterDone)),
   ], true);
   if (twistersLeft() <= 0) ui.dog.querySelector('.twist-btn')?.remove();
   st.save(S);
@@ -2927,10 +2930,11 @@ function openParent() {
   const viewed = Math.round((S.viewMs[st.today(S).date] || 0) / 60e3);
   const html = `<div class="card"><b>${tr('playedToday', { n: played })}</b><br>${tr('viewedToday', { n: viewed })}${mood ? `<br>${tr('moodToday')}: ${mood[1]} ${tr('mood_' + mood[0])}` : ''}</div>
     <div class="form">
-      <label>${tr('sessionLen')}${sel('sessionMin', [5, 10, 15, 20, 30], (v) => `${v} ${tr('min')}`)}</label>
-      <label>${tr('napLen')}${sel('napMin', [30, 60, 90, 120, 180], (v) => `${v} ${tr('min')}`)}</label>
-      <label>${tr('gamesPerDay')}${sel('gamesPerDay', [2, 3, 4, 5, 6])}</label>
-      <label>${tr('dailyMax')}${sel('dailyMax', [30, 45, 60, 90, 120, 0], (v) => (v ? `${v} ${tr('min')}` : tr('noLimit')))}</label>
+      <label>${tr('sessionLen')}${sel('sessionMin', [5, 10, 15, 20, 25, 30, 45], (v) => `${v} ${tr('min')}`)}</label>
+      <label>${tr('napLen')}${sel('napMin', [15, 30, 60, 90, 120], (v) => `${v} ${tr('min')}`)}</label>
+      <label>${tr('gamesPerRound')}${sel('gamesPerRound', [2, 3, 4, 5, 6])}</label>
+      <label>${tr('roundGap')}${sel('roundGapMin', [60, 90, 120, 180, 240], (v) => `${String(v / 60).replace('.', S.lang === 'ru' ? ',' : '.')} ${tr('hours')}`)}</label>
+      <label>${tr('dailyMax')}${sel('dailyMax', [30, 45, 60, 90, 120, 180, 0], (v) => (v ? `${v} ${tr('min')}` : tr('noLimit')))}</label>
       <label>${tr('bedtime')}${sel('bedtime', times(19 * 60, 23 * 60))}</label>
       <label>${tr('wake')}${sel('wake', times(6 * 60, 9 * 60))}</label>
       <label>${tr('sound')}${tog('sound')}</label>
@@ -2960,7 +2964,7 @@ function openParent() {
     <p class="muted center app-version">Lucky v${VERSION} · build ${BUILD}</p>`;
   openSheet('⚙️ ' + tr('parent'), html, (root) => {
     root.querySelectorAll('select').forEach((x) => {
-      x.onchange = () => { s[x.dataset.k] = /Min$|PerDay$|Max$/.test(x.dataset.k) ? Number(x.value) : x.value; st.save(S); loop(); };
+      x.onchange = () => { s[x.dataset.k] = /Min$|PerRound$|Max$/.test(x.dataset.k) ? Number(x.value) : x.value; st.save(S); loop(); };
     });
     root.querySelectorAll('input[type=checkbox]').forEach((x) => {
       x.onchange = () => { s[x.dataset.k] = x.checked; setSound(s.sound); setVoice(s.voice); st.save(S); updateEvent(); };

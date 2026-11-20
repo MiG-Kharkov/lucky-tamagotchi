@@ -80,7 +80,7 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 📒 **Collections** | 60 stickers in 6 albums (a full album gives a special item), 37 badges, and an English tab with jokes, tongue twisters and sayings |
 | 🎩 **Tricks** | Every touch has several answers: a pat, a clap, a wave, a wink, a blush, a backflip, a high five with his paws, a wag of his pom-pom tail, a bunny loaf, static fluff from stroking, a pancake when you swipe down. Rare big tricks: Super Bunny flies in a cape, the Cheshire bunny leaves only his grin, ninja clones (find the real one), a bunny out of a hat, a giant, Robo-Bunny, a statue that mustn't laugh, a disco… |
 | 😂 **Silly stuff** | Sneezes, hiccups, helicopter ears, tickle rolls, tail chasing, Tali's pranks, and Lucky and Tali acting out their chats (a "WOOF!" in the middle of ninja training, a race, being scared of the dark) |
-| 🎭 **Fun English** | Lucky acts out English sayings literally ("it's raining cats and dogs": cats and dogs fall from the sky), then explains what they mean, with the Russian saying for the same thing. Tali asks for tongue twisters, and Lucky says them slowly, faster and super fast. Everything goes into the English tab of the collection |
+| 🎭 **Fun English** | Lucky acts out English sayings literally ("it's raining cats and dogs": cats and dogs fall from the sky), then explains what they mean, with the Russian saying for the same thing. Tali asks for a tongue twister, and Lucky says it (one a visit). Everything goes into the English tab of the collection |
 | 🐶 **Tali's jokes** | Over 100 kids' jokes, knock-knock jokes included. Lucky laughs, does something that fits and comments. Puns are explained in the translation, and heard jokes go into a joke book to retell at school |
 | 🌬️ **Feelings** | A daily *"How are you feeling?"* check-in and a guided ninja-breathing exercise |
 
@@ -91,9 +91,9 @@ Lucky is designed to be a **friend you visit, not a screen you can't put down.**
 | Healthy by design | How |
 |---|---|
 | 👀 Watching is free | Just looking at Lucky costs nothing. Only active play counts |
-| ⏸️ Natural breaks | After 15 minutes of play Lucky naps for an hour, **right there in his garden** |
+| ⏸️ Natural breaks | After 25 minutes of play Lucky naps for half an hour, **right there in his garden** |
 | 🌙 Bedtime | From 22:00 to 07:00 Lucky sleeps, and so should you |
-| ⏱️ Daily limit | Up to 60 minutes of active play a day (adjustable) |
+| ⏱️ Daily limit | Up to 2 hours of active play a day (adjustable; the phone's own screen-time limit comes first) |
 | 📋 A clear finish line | *"Today's plan"*: four small jobs, then a celebration and *"go and play outside!"* |
 | 🎁 Rewards by days, not minutes | Stickers, outfits and worlds arrive over weeks. Nothing rewards staying longer |
 | 🚫 No dark patterns | No streaks to lose, no push notifications, no ads, no purchases |
@@ -141,7 +141,7 @@ Then set a new password inside.
 > too, so set your own password right after installing. If you publish your own copy, change them in
 > [`js/config.js`](js/config.js).
 
-**Inside the parents' area:** session length, rest time, bedtime, games per day, daily limit, sound, translation.
+**Inside the parents' area:** session length, rest time, bedtime, games in a row and the break before new ones, daily limit, sound, translation.
 **Turbo** mode unlocks everything for testing and showing; your real progress comes back when you switch it off.
 
 </details>

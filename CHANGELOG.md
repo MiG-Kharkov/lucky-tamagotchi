@@ -3,6 +3,20 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.11.0] – 2026-11-20
+
+Softer limits: the phone has its own screen-time limit, so the game no longer needs to be the strict one.
+
+### Changed
+- **Games come in rounds.** Three games in a row, then new ones two hours after the round's first game (it was three
+  a day, fifteen minutes apart). The Play sheet says how many are left, or when the next round starts. Each game still
+  gives up to 8 hearts, now up to 40 a day.
+- **Longer play, shorter rest:** 25 minutes of play, then a 30-minute nap (was 15 and 60); up to 2 hours a day (was 1).
+  A save with the old defaults moves to the new ones; numbers a parent chose stay as they were.
+- **One tongue twister a visit, said once.** Tali asks, Lucky says it, Tali cheers or tries and fails. No more three
+  speeds and "now you try"; the collection's English tab still plays every twister at any speed.
+- Parents' area: "Games in a row" (2–6) and "New games after" (1–4 hours) replace "Games a day".
+
 ## [1.10.1] – 2026-10-12
 
 ### Added

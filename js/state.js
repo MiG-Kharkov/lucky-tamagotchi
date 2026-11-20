@@ -34,7 +34,7 @@ export function lowestNeed(p) {
 function fresh() {
   const now = Date.now();
   return {
-    v: 2,
+    v: 3,
     createdAt: now,
     onboarded: false,
     lang: 'ru',
@@ -67,10 +67,13 @@ function fresh() {
     // ninja missions: stars per skill, the scroll of stamps, today's mask and animal cloud
     ninja: { skills: {}, scroll: [], mask: null, cloud: null },
     session: { activeMs: 0, lastAt: 0, activeAt: 0, napUntil: 0, warned: false },
-    settings: { sessionMin: 15, napMin: 60, bedtime: '22:00', wake: '07:00', sound: true, realPet: true, translate: true, gamesPerDay: 3, dailyMax: 60, voice: true, holidays: true, voiceUri: { ru: '', en: '' } },
+    // games come in rounds: gamesPerRound in a row, then a new round roundGapMin after the round's first game
+    settings: { sessionMin: 25, napMin: 30, bedtime: '22:00', wake: '07:00', sound: true, realPet: true, translate: true, gamesPerRound: 3, roundGapMin: 120, dailyMax: 120, voice: true, holidays: true, voiceUri: { ru: '', en: '' } },
     playedMs: {},
     viewMs: {},
     lastGameAt: 0,
+    // the round of games going on: when its first game started and how many have been played
+    round: { at: 0, n: 0 },
     // the holiday calendars: the days whose window was opened, per holiday and year ('halloween-2026')
     calendar: {},
     // the holiday games: the difficulty chosen last for each, and the best points per game and difficulty ('hw_zapper:easy')
@@ -98,6 +101,17 @@ export function load() {
       if (!saved.layoutV) S.layoutV = 1;
       // v2: default bedtime moved from 21:00 to 22:00
       if (S.v < 2) { if (S.settings.bedtime === '21:00') S.settings.bedtime = '22:00'; S.v = 2; }
+      // v3: softer limits (the phone has its own) and games in rounds. Limits still at the old defaults take the new
+      // ones; anything a parent chose stays
+      if (S.v < 3) {
+        const st = S.settings, was = saved.settings || {};
+        if (was.sessionMin === 15) st.sessionMin = 25;
+        if (was.napMin === 60) st.napMin = 30;
+        if (was.dailyMax === 60) st.dailyMax = 120;
+        if (was.gamesPerDay) st.gamesPerRound = Math.max(3, was.gamesPerDay);
+        delete st.gamesPerDay;
+        S.v = 3;
+      }
       return S;
     }
   } catch { /* corrupted data: start over */ }

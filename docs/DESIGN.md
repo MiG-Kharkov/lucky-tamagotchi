@@ -15,7 +15,7 @@ Lucky, the English she hears in the schoolyard, and the holidays of her own fami
 | Nothing irreversible | Lucky never gets ill or dies; stats never drop below 15% |
 | No guilt | After a break he says "I missed you!"; no streaks to lose |
 | Watching is free, binging isn't | Just looking at Lucky costs nothing; only active play counts |
-| Breaks | 15 minutes of active play, then an hour of rest (Lucky naps in his garden). After 60 minutes a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before): it waits until Lucky can really say it (not over a question or a joke), and he lies down at least 45 s after it, even when a game ran past the limit. At night (22:00–07:00) he sleeps |
+| Breaks | 25 minutes of active play, then half an hour of rest (Lucky naps in his garden). After 2 hours a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before): it waits until Lucky can really say it (not over a question or a joke), and he lies down at least 45 s after it, even when a game ran past the limit. At night (22:00–07:00) he sleeps |
 | Life off the screen | Ninja missions and caring for a real bunny happen in the real world |
 | A clear finish line | "Today's plan": four small jobs, then a celebration and "go and play outside" |
 | No manipulation | No ads, purchases, push notifications, online features or data collection |
@@ -85,9 +85,9 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   after a great game, *I'm all ears* before Tali's joke (his ears grow), *slept like a log* in the morning,
   *a fish out of water* in a new world, *cool as a cucumber* after ninja breathing, *couch potatoes* after a long
   day of play. At most 3 a day, each one not again for 3 days, new ones first.
-- **Tongue twisters** (22): Tali's 👅 button (2 a visit). Lucky says the twister slowly 🐢, faster 🐇 and super fast 🚀
-  (the same clip played faster, so his voice goes squeaky), gets his tongue in a knot, Tali laughs, and Lucky invites
-  the child to try it out loud.
+- **Tongue twisters** (22): Tali's 👅 button (one a visit). Tali asks, Lucky says one twister once (new ones first),
+  and Tali cheers or tries and fails. Saying them three times at three speeds was too much; the whole list stays in
+  the collection.
 - The collection's **English** tab keeps jokes, tongue twisters (play at any of the three speeds) and sayings
   (tap one and Lucky acts it out again).
 - **Super things** (9, they glow): the ball (keepy-uppy: Lucky counts out loud, best score kept), the house
@@ -157,7 +157,7 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 | Action | Mechanics |
 |---|---|
 | 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
-| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). All but Chat with Lucky have three difficulties, stars and records, like the holiday games: Carrot Rain lasts 30, 45 or 60 seconds and falls faster, Memory has 6, 8 or 10 pairs, Copy Lucky's tunes grow to 10, 16 or 24 notes. A game starts on Normal; with three stars the next difficulty is suggested. While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. 3 games a day, 15 minutes between games, Back before starting doesn't use a game. Each game gives up to 8 hearts (24 a day), so all three count. You can't lose |
+| 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). All but Chat with Lucky have three difficulties, stars and records, like the holiday games: Carrot Rain lasts 30, 45 or 60 seconds and falls faster, Memory has 6, 8 or 10 pairs, Copy Lucky's tunes grow to 10, 16 or 24 notes. A game starts on Normal; with three stars the next difficulty is suggested. While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. Games come in rounds: 3 in a row, then new ones 2 hours after the round's first game (the Play sheet says when; both numbers are in the parents' area). Back before starting doesn't use a game. Each game gives up to 8 hearts (40 a day). You can't lose |
 | 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
@@ -261,6 +261,6 @@ week and the day itself, so they don't repeat for three weeks.
 ## Parents' area
 
 ⚙️ → password (a default one until the parent sets their own inside; the recovery password from the README always works). Inside: session length,
-rest time, games per day, daily limit, bedtime, wake-up time, sound, voice, translation, "we have a real bunny",
+rest time, games in a row, the break before new games, daily limit, bedtime, wake-up time, sound, voice, translation, "we have a real bunny",
 holiday decorations, today's stats and mood, change the parent password, Wake Lucky (also cancels the rest of the night), invite Tali, sound test,
 **Standard / Turbo**, and Start over (double confirmation).
