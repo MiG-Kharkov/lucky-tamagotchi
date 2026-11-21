@@ -18,6 +18,10 @@
 //                               instead of the emoji)
 //   endings: (k) => ({ name: (a, x, y) => {} })   new endings for its guests (a: the scene from k.begin)
 //   wear: '<prop id>'           optional: a prop (slot 'zone') Lucky wears all the time in this world
+//
+// A location (js/zones/loc-<id>.js) is a second place of a world, reached with the arrows at the scene's sides. It is
+// the same kind of module, with world: '<the world's id>' instead of level and emoji (it opens with its world). Its id
+// is used as its picture's key, its decorations' layout key and its line prefix.
 import farm from './farm.js';
 import reef from './reef.js';
 import jungle from './jungle.js';
@@ -26,6 +30,19 @@ import sky from './sky.js';
 import aurora from './aurora.js';
 import fairy from './fairy.js';
 import village from './village.js';
+import gardenPond from './loc-gardenPond.js';
+import dojoHall from './loc-dojoHall.js';
+import candyFactory from './loc-candyFactory.js';
+import beachPier from './loc-beachPier.js';
+import winterRink from './loc-winterRink.js';
+import spaceMoon from './loc-spaceMoon.js';
+import irishCliffs from './loc-irishCliffs.js';
+import castleGarden from './loc-castleGarden.js';
 
 export const ZONES = [farm, reef, jungle, dino, sky, aurora, fairy, village];
 export const ZONE_IDS = new Set(ZONES.map((z) => z.id));
+export const LOCATIONS = [gardenPond, dojoHall, candyFactory, beachPier, winterRink, spaceMoon, irishCliffs, castleGarden];
+export const LOCATION_IDS = new Set(LOCATIONS.map((l) => l.id));
+export const locationsOf = (world) => LOCATIONS.filter((l) => l.world === world);
+// everything that brings its own picture, lines, things and animations
+export const MODULES = [...ZONES, ...LOCATIONS];

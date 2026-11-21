@@ -1,5 +1,5 @@
 import { CONFIG } from './config.js';
-import { ZONES } from './zones/index.js';
+import { MODULES as ZONES } from './zones/index.js';
 import { LINES as TG_LINES, TALI_LINES } from './together.js';
 
 // All game texts. Lists are [ru, en] pairs (sometimes with an emoji as the third element).
@@ -1337,6 +1337,7 @@ export const LUCKY = {
     bubble: [['Мне снилось, что я улетел из ванны в огромном мыльном пузыре.', 'I dreamt I floated out of my bath in a giant soap bubble.']],
     you: [['Мне снилась ты. Мы играли весь день, и никто не сказал, что пора спать.', 'I dreamt about you. We played all day, and nobody said it was bedtime.']],
   },
+  locHint: [['Смотри, здесь есть ещё одно место! Нажми на стрелку сбоку.', "Look, there's another place here! Tap the arrow at the side."]],
   collectionFull: [['Вот это да! Ты собрала всё-всё! Настоящий ниндзя-коллекционер!', "Wow! You've collected absolutely everything! A true ninja collector!"]],
   finale: [['Шестьдесят уровней! Ты теперь Великий мастер, а я самый счастливый кролик на свете!', "Sixty levels! You're a Grand Master now, and I'm the happiest bunny in the world!"]],
   planDone: [['Все дела на сегодня сделаны! Ты молодец. Теперь можно поиграть на улице.', "Everything's done for today! Well done. Now you can go and play outside."]],
@@ -1357,7 +1358,7 @@ export const RIDDLES = [
 
 // the worlds after level 30 bring their own lines (js/zones)
 for (const z of ZONES) {
-  LUCKY.arrive[z.id] = z.arrive;
+  if (z.arrive) LUCKY.arrive[z.id] = z.arrive;
   for (const [k, v] of Object.entries(z.lines)) {
     if (LUCKY.antics[k]) throw new Error(`zone ${z.id}: the line key ${k} is taken`);
     LUCKY.antics[k] = v;

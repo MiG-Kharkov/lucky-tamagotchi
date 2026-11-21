@@ -5,7 +5,7 @@
 import { LUCKY, DOG, CHATS } from './i18n.js';
 import { sfx } from './sound.js';
 import { PROPS, decor as decorArt, PUMPKIN_FACES } from './art.js';
-import { ZONES } from './zones/index.js';
+import { MODULES as ZONES } from './zones/index.js';
 
 const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90, SWIPE_MS = 280, SWIPE_PX = 55;
 export { DOUBLE_MS }; // main.js: a tap's word waits this long for a second tap
@@ -877,7 +877,7 @@ export function createAntics(api) {
   // Easter: painted eggs hidden in the world. Each one is found once (a chick hatches);
   // Lucky praises every find with the sensei's words, and when all are found: "All found! Ninja detective!"
   const foundToday = (kind) => { const T = api.day(); T.found ||= {}; return (T.found[kind] ||= []); };
-  const eggKey = (el) => api.world() + ':' + el.dataset.egg;
+  const eggKey = (el) => (api.place?.() || api.world()) + ':' + el.dataset.egg;
   R.egg = {
     press: () => sfx.pop(),
     tap: (c) => {
@@ -897,7 +897,7 @@ export function createAntics(api) {
     },
   };
   // the leprechaun's gold coins: found the same way, one coin flies to Lucky
-  const coinKey = (el) => api.world() + ':' + el.dataset.coin;
+  const coinKey = (el) => (api.place?.() || api.world()) + ':' + el.dataset.coin;
   R.coin = {
     press: () => sfx.catch(),
     tap: (c) => {

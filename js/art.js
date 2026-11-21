@@ -1,5 +1,5 @@
 import { wearLayers, WEAR_BY_ID } from './wardrobe.js';
-import { ZONES } from './zones/index.js';
+import { MODULES as ZONES } from './zones/index.js';
 
 // SVG art: Lucky (ginger lop-eared bunny), Tali (chihuahua), scenes, belts.
 

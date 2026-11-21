@@ -3,6 +3,35 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.20.0] – 2026-11-21
+
+The first eight worlds are bigger: each has a second place. An arrow at the side of the scene leads there, and Lucky
+walks over. The screen is no more crowded than before, and every place has its own things.
+
+### Added
+- **Places:** a ‹ › arrow on each side of the scene in a world with a second place. The first time in such a world the
+  arrows glow and Lucky points them out. Each place keeps its own decorations, eggs and coins; a new place starts
+  bare. Coming back to a world always starts at its first place.
+  - 🌷 Garden → **the pond**: ducks, a paper boat, Poohsticks from the bridge, a water lily, a willow.
+  - 🥋 Sakura dojo → **the dojo hall**: a training dummy, a taiko drum, a scroll, a bonsai, a sliding door.
+  - 🍭 Candy land → **the sweet factory**: a conveyor belt, a cupcake house, gummy bears, an ice-cream fridge, a
+    chocolate river.
+  - 🏖️ Seaside → **the pier**: a lighthouse, a beach hut, a sandcastle, a message in a bottle, the pier itself.
+  - ❄️ Winter wonderland → **the ice rink**: the ice, a cocoa stall, a snow fort, a sledging hill, an ice bunny.
+  - 🚀 Outer space → **the moon**: a rover, a greenhouse dome, a flag, a crater, the Earth in the sky.
+  - ☘️ Irish hills → **the cliffs**: puffins, a thatched cottage, a harp, standing stones, the rain.
+  - 🏯 Ninja castle → **the stone garden**: koi, a stone lantern, a sakura tree, a bamboo fountain, raked gravel.
+- Each place has its own guests instead of the world's: ducks at the pond, a seagull at the pier, puffins on the
+  cliffs, cherry petals in the dojo hall and the stone garden, a UFO and falling stars on the moon.
+- **🧭 Pathfinder** badge for visiting three new places (62 badges in all).
+
+### Changed
+- The "World traveller" badge has its own icon now (🌐), as 🧭 went to Pathfinder.
+
+### Fixed
+- In Winter wonderland, Lucky skating on the ice no longer drops down and slides to the side: Tali's skateboard
+  style was catching him too.
+
 ## [1.19.0] – 2026-11-21
 
 Each bar now has its own care: food for fullness, a bath and brushing for cleanliness, the nest for energy, tricks and

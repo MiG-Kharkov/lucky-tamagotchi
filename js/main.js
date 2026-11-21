@@ -5,7 +5,7 @@ import { JOKES, JOKE_BY_ID } from './jokes.js';
 import { IDIOMS, TWISTERS, IDIOM_BY_ID, TWISTER_BY_ID } from './english.js';
 import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES, SUPER } from './content.js';
-import { ZONES, ZONE_IDS } from './zones/index.js';
+import { ZONES, ZONE_IDS, LOCATIONS, LOCATION_IDS, locationsOf, MODULES } from './zones/index.js';
 import { TOGETHER, playTogether, offerGames, CSS as TG_CSS, ARRIVALS, MOMENTS, DEPARTURES, TALI_CSS } from './together.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
@@ -21,7 +21,7 @@ import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 // the worlds after level 30 bring their own animations
-document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}\n${BRAIN_CSS}</style>`);
+document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${MODULES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}\n${BRAIN_CSS}</style>`);
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -327,6 +327,7 @@ const antics = createAntics({
   free: () => mode === 'main' && !sheetOpen && !modalOpen && !ask,
   talking: () => storyOn(),
   world: () => S.bg,
+  place: () => sceneKey(),
   day: () => st.today(S),
   say: (list, who = 'lucky') => say(fresh(list), who),
   hop, setTemp, floatFx, fxAt, luckyPoint, sceneXY,
@@ -580,12 +581,13 @@ let editSel = -1;
 
 function layout() {
   S.layout ||= {};
-  if (!S.layout[S.bg]) {
-    // the worlds after level 30 start bare: a dozen decorations would hide their own things
-    S.layout[S.bg] = ZONE_IDS.has(S.bg) ? [] : DECOR.filter((d) => S.level >= d.level && !S.decorOff.includes(d.id))
+  const key = sceneKey();
+  if (!S.layout[key]) {
+    // the worlds after level 30 and the second places start bare: a dozen decorations would hide their own things
+    S.layout[key] = ZONE_IDS.has(S.bg) || key !== S.bg ? [] : DECOR.filter((d) => S.level >= d.level && !S.decorOff.includes(d.id))
       .map((d) => ({ k: 'decor', id: d.id, x: DECOR_POS[d.id][0], y: DECOR_POS[d.id][1], s: 1, f: 0 }));
   }
-  return S.layout[S.bg];
+  return S.layout[key];
 }
 
 // A new decoration is placed in the current world right away
@@ -827,6 +829,7 @@ function statValue(key) {
     case 'twisters': return S.twisters.heard.length;
     case 'idioms': return S.idioms.heard.length;
     case 'tricks': return learnedTricks().length;
+    case 'places': return (S.placesSeen || []).length;
     case 'dreams': return (S.dreams || []).length;
     case 'checkups': return S.stats.checkups || 0;
     case 'worlds': return S.worldsSeen.length;
@@ -966,17 +969,71 @@ function buildActions() {
 }
 
 function renderBg() {
-  ui.bg.innerHTML = art.scene(S.bg) + holidayLayers(S.bg);
-  ui.hunt.innerHTML = EV ? art.huntScene(EV.id, S.bg, EV.stage, EV.days <= 7) : '';
+  const key = sceneKey();
+  ui.bg.innerHTML = art.scene(key) + holidayLayers(key);
+  ui.hunt.innerHTML = EV ? art.huntScene(EV.id, key, EV.stage, EV.days <= 7) : '';
   antics.refreshEggs();
   shownSky = null;
   applyNinjaLook();
   // a world after level 30 may dress Lucky for itself while he is there (a bubble helmet under the sea)
   if (ui.props) antics.setSticky('zone', ZONES.find((z) => z.id === S.bg)?.wear || null);
+  renderLocArrows();
+}
+
+// ---------- the places of a world ----------
+// A world can have more than one place: arrows at the scene's sides lead from one to the next (the world's own picture
+// is the first). The place she was in is kept per world; a new place starts without decorations.
+const sceneKey = () => { const l = (S.loc || {})[S.bg]; return l && LOCATION_IDS.has(l) ? l : S.bg; };
+const placesOf = () => [S.bg, ...locationsOf(S.bg).map((l) => l.id)];
+
+function renderLocArrows() {
+  ui.scene.querySelectorAll('.loc-arrow').forEach((b) => b.remove());
+  const list = placesOf();
+  if (list.length < 2) return;
+  const fresh2 = !(S.locSeen || []).includes(S.bg);
+  for (const dir of [-1, 1]) {
+    const b = document.createElement('button');
+    b.className = `loc-arrow ${dir < 0 ? 'left' : 'right'}${fresh2 ? ' hint' : ''}`;
+    b.textContent = dir < 0 ? '‹' : '›';
+    b.setAttribute('aria-label', dir < 0 ? 'previous place' : 'next place');
+    b.onclick = (e) => { e.stopPropagation(); finishWash(); goLoc(dir); };
+    ui.scene.appendChild(b);
+  }
+  // the first time in a world with another place: Lucky points it out
+  if (fresh2 && renderLocArrows.toldFor !== S.bg) {
+    renderLocArrows.toldFor = S.bg;
+    setTimeout(() => { if (mode === 'main' && !chainQ.length) say(fresh(LUCKY.locHint)); }, 3500);
+  }
+}
+
+function goLoc(dir) {
+  if (mode !== 'main' || goLoc.busy) return;
+  const list = placesOf(), next = list[(list.indexOf(sceneKey()) + dir + list.length) % list.length];
+  goLoc.busy = true;
+  sfx.whoosh();
+  stopChain();
+  antics.end();
+  const layers = [ui.bg, ui.decor, ui.decorFront, ui.hunt];
+  layers.forEach((el) => el.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 35}%)`, opacity: 0 }], { duration: 260, easing: 'ease-in', fill: 'forwards' }));
+  hop(ui.lucky, 'walk', 700);
+  setTimeout(() => {
+    S.loc ||= {};
+    if (next === S.bg) delete S.loc[S.bg]; else S.loc[S.bg] = next;
+    S.locSeen ||= [];
+    if (!S.locSeen.includes(S.bg)) S.locSeen.push(S.bg);
+    if (next !== S.bg) { S.placesSeen ||= []; if (!S.placesSeen.includes(next)) { S.placesSeen.push(next); checkBadges(); } }
+    renderBg();
+    renderDecor();
+    layers.forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); el.animate([{ transform: `translateX(${dir * 35}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'ease-out' }); });
+    st.save(S);
+    goLoc.busy = false;
+    setTimeout(() => { if (mode === 'main' && !chainQ.length) say(fresh(next === S.bg ? (ARRIVE[S.bg] || LUCKY.place) : (LUCKY.arrive[next] || LUCKY.place))); }, 350);
+  }, 270);
 }
 
 function goPlace(id) {
   S.bg = id;
+  if (S.loc) delete S.loc[id];
   if (!S.worldsSeen.includes(id)) { S.worldsSeen.push(id); checkBadges(); }
   renderBg();
   renderDecor();
@@ -2155,6 +2212,8 @@ const VISITORS = [
   { e: '🐉', w: 0.15, in: 'dojo castle space winter', path: 'glide', end: ['dragon'], flip: true },
   // the guests of the worlds after level 30 (js/zones)
   ...ZONES.flatMap((z) => (z.visitors || []).map((v) => ({ ...v, in: z.id }))),
+  // a world's second place has its own guests instead of the world's (no kites in the dojo hall)
+  ...LOCATIONS.flatMap((l) => (l.visitors || []).map((v) => ({ ...v, in: l.id }))),
 ];
 const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 2600, fall: 9000, float: 13000, rise: 10000 };
 // holiday visitors come in every world from their stage on
@@ -2195,7 +2254,7 @@ function maybeVisitor(now) {
   nextVisitorAt = now + 100e3 + Math.random() * 80e3;
   const evening = st.minutesToBed(now, S.settings) <= 120;
   const holiday = (EV && HOLIDAY_VISITORS[EV.id] || []).filter((v) => EV.stage >= v.stage).map((v) => ({ ...v, in: 'all' }));
-  const pool = [...VISITORS, ...holiday].filter((v) => (v.in === 'all' || v.in.split(' ').includes(S.bg)) && (!v.evening || evening) && v.e !== lastVisitor);
+  const pool = [...VISITORS, ...holiday].filter((v) => (v.in === 'all' || v.in.split(' ').includes(sceneKey())) && (!v.evening || evening) && v.e !== lastVisitor);
   let r = Math.random() * pool.reduce((sum, v) => sum + v.w, 0);
   const v = pool.find((x) => (r -= x.w) < 0) || pool[0];
   if (!v) return;
@@ -3448,7 +3507,7 @@ function renderSleep(force = false) {
   const time = fmtTime(until);
   ui.overlay.className = 'overlay show sleep-ov' + (night ? '' : ' rest');
   cover(true);
-  const bgHtml = night ? art.scene('night') + holidayLayers('night') : `${art.scene(S.bg)}${holidayLayers(S.bg)}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
+  const bgHtml = night ? art.scene('night') + holidayLayers('night') : `${art.scene(sceneKey())}${holidayLayers(sceneKey())}<div class="rest-decor">${ui.decor.innerHTML}${ui.decorFront.innerHTML}</div><div class="rest-veil"></div>`;
   requestAnimationFrame(() => {
     const rd = ui.overlay.querySelector('.rest-decor'), bg = ui.overlay.querySelector('.sleep-bg');
     if (rd && bg) { const r = bg.getBoundingClientRect(); fitLayer(rd, r.width, r.height); }
@@ -4099,7 +4158,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id) || BRAIN_GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id) || BRAIN_GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), goLoc: (d) => goLoc(d), place: () => sceneKey(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

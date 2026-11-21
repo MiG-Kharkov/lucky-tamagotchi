@@ -8,6 +8,7 @@ const ASSETS = [
   './js/antics.js', './js/tricks.js', './js/arcade.js', './js/holigames.js', './js/missions.js', './js/ninja.js', './js/jokes.js', './js/english.js', './js/events.js', './js/together.js', './js/brain.js',
   './js/zones/index.js', './js/zones/farm.js', './js/zones/reef.js', './js/zones/jungle.js', './js/zones/dino.js',
   './js/zones/sky.js', './js/zones/aurora.js', './js/zones/fairy.js', './js/zones/village.js',
+  './js/zones/loc-gardenPond.js', './js/zones/loc-dojoHall.js', './js/zones/loc-candyFactory.js', './js/zones/loc-beachPier.js', './js/zones/loc-winterRink.js', './js/zones/loc-spaceMoon.js', './js/zones/loc-irishCliffs.js', './js/zones/loc-castleGarden.js',
   './icons/icon-180.png', './icons/icon-192.png', './icons/icon-512.png', './audio/manifest.json',
 ];
 

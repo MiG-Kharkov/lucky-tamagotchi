@@ -230,10 +230,17 @@ and a step towards the next belt (3 stamps per belt).
   their own modules, `js/zones/<id>.js`: picture, holiday spots,
   Lucky's lines, what each thing does on a tap (two ways), a double tap and a long press, guests and animations
   (the contract is in `js/zones/index.js`). They start without decorations, so their own things can be seen.
+- **Places:** a world can have more than one place. The ‹ › arrows at the scene's sides lead to the next (they glow
+  the first time, and Lucky points them out); the picture slides and Lucky walks on. A second place is a module like a
+  zone with `world` instead of `level` (`js/zones/loc-<id>.js`): its picture, things, lines, guests and holiday spots.
+  Each place keeps its own decorations (a new one starts bare); the world's own picture keeps its old layout. A world
+  is entered at its first place; the place she is in is kept over a reload. Eggs and coins are found per place. The
+  first eight worlds have a second place: the garden's pond, the dojo hall, the sweet factory, the pier, the ice
+  rink, the moon, the cliffs, the stone garden.
 - **18 decorations** (the trampoline, the treasure chest, the dinosaur egg, the swing, the hot-air balloon, the
   mushroom house and the telescope are super ones), **120 stickers in 12 albums** (a full album gives a special item;
   the farm album a cowboy hat, the jungle-and-dinos album a dino costume, the sky-and-magic album a wizard's hat; music headphones, sport a baseball cap, brainy a graduation cap),
-  **61 badges**, the English tab (jokes, tongue twisters, sayings).
+  **62 badges**, the English tab (jokes, tongue twisters, sayings).
 - Pacing, measured with a 60-day model of the real tables: all stickers in about 3 weeks; the last world in 4 weeks
   with two sessions a day and 6 weeks with one; the level items in 5–9 weeks. An hour a day earns only about twice
   what 12 minutes do. Two stickers in three come from the album closest to done, so the albums fill one after another
