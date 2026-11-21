@@ -3,6 +3,16 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.17.1] – 2026-11-21
+
+### Changed
+- Lucky's care row is Feed, Wash, Brush, Tricks: Outfit was the collection's wardrobe again, and the favourite-spot
+  game repeated what petting him already does. His wish of the day is a food riddle, a brushing or a bath.
+
+### Fixed
+- Tali's buttons (a joke, a tongue twister, Play together) answer at once: a chat that is on stops for them. They
+  used to be ignored until the chat was over, and "Play together" twitched while it waited.
+
 ## [1.17.0] – 2026-11-21
 
 ### Added

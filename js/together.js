@@ -458,8 +458,6 @@ export const CSS = `
 .tg-layer > * { pointer-events: auto; }
 .tg-layer.tg-out { opacity: 0; transition: opacity .35s; }
 .scene.tg-on .dog > button, .scene.tg-on .dog > .pill { display: none; }
-.dog .pill.together.waiting { animation: tgWait .8s ease-in-out infinite; background: #FFE066; }
-@keyframes tgWait { 50% { transform: scale(1.08); } }
 /* a game is a clean stage: the decorations step away for a moment and come back after it */
 .decor { transition: opacity .4s; }
 .scene.tg-on .decor, .scene.tg-on .hunt { opacity: 0; pointer-events: none !important; }
