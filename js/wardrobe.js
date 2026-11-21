@@ -90,6 +90,16 @@ export const WEAR = [
     art: () => ({ back: `${['#FF5FA2', '#FFD23F', '#4D9BFF', '#4CB84C', '#B78CFF'].map((c, i) => `<path d="M${132 + i * 3} 64 q${10 + i * 2} 40 ${2 + i * 5} ${84 - i * 6}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`).join('')}`,
       head: `<path d="M54 66 Q100 34 146 66" stroke="#4CB84C" stroke-width="6" fill="none" stroke-linecap="round"/>
       ${[[58, 62, '#E2313B'], [70, 52, '#FFD23F'], [84, 45, '#4D9BFF'], [100, 42, '#E2313B'], [116, 45, '#FF7AB8'], [130, 52, '#FFD23F'], [142, 62, '#E2313B']].map(([x, y, c]) => flowerDot(x, y, c)).join('')}` }) },
+  { id: 'headphones', slot: 'head', rarity: 'gold', name: ['Наушники', 'Headphones'],
+    art: () => ({ head: `<path d="M48 92 Q44 30 100 28 Q156 30 152 92" stroke="#3A2A3E" stroke-width="7" fill="none" stroke-linecap="round"/>
+      <rect x="36" y="80" width="22" height="32" rx="10" fill="#FF5FA2" stroke="#3A2A3E" stroke-width="3"/><rect x="142" y="80" width="22" height="32" rx="10" fill="#FF5FA2" stroke="#3A2A3E" stroke-width="3"/>
+      <path d="M44 88 v16 M150 88 v16" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".6"/>` }) },
+  { id: 'cap', slot: 'head', rarity: 'gold', name: ['Кепка', 'Baseball cap'],
+    art: () => ({ head: `<path d="M64 60 Q66 22 100 22 Q134 22 136 60Z" fill="#4D9BFF"/><path d="M100 58 Q140 54 168 66 Q140 70 104 64Z" fill="#3B7BD6"/>
+      <path d="M100 22 V58 M82 26 Q78 42 80 58 M118 26 Q122 42 120 58" stroke="#3B7BD6" stroke-width="2" fill="none"/><circle cx="100" cy="22" r="4" fill="#3B7BD6"/>${star5(100, 42, 6, '#FFD23F')}` }) },
+  { id: 'mortarboard', slot: 'head', rarity: 'gold', name: ['Шапочка выпускника', 'Graduation cap'],
+    art: () => ({ head: `<path d="M74 52 Q100 60 126 52 L126 38 Q100 44 74 38Z" fill="#2A2730"/><path d="M50 34 L100 18 L150 34 L100 50Z" fill="#3A3540"/>
+      <path d="M100 34 L136 42 V66" stroke="#FFD23F" stroke-width="2.5" fill="none"/><circle cx="136" cy="70" r="5" fill="#FFD23F"/><circle cx="100" cy="34" r="3" fill="#FFD23F"/>` }) },
   { id: 'wizardHat', slot: 'head', rarity: 'gold', name: ['Шляпа волшебника', "Wizard's hat"],
     art: () => ({ head: `<ellipse cx="100" cy="58" rx="50" ry="9" fill="#5B3FB8"/><path d="M70 58 Q90 30 96 -8 Q106 6 112 2 Q114 30 130 58Z" fill="#6E4FD8"/>
       ${star5(98, 30, 7, '#FFD23F')}${star5(116, 46, 4.5, '#FFE9A8')}<circle cx="84" cy="44" r="2.5" fill="#FFE9A8"/><path d="M71 54 Q100 60 129 54" stroke="#FFD23F" stroke-width="4" fill="none"/>` }) },

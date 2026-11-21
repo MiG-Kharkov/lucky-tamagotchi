@@ -51,6 +51,9 @@ export const ALBUMS = [
   { id: 'farm', name: ['Ферма', 'Farm'], reward: 'cowboy', stickers: ['🐔', '🐮', '🐷', '🐐', '🥕', '🌽', '🚜', '🌾', '🍎', '🦆'] },
   { id: 'wild', name: ['Джунгли и динозавры', 'Jungle and dinos'], reward: 'dinoSuit', stickers: ['🦕', '🦖', '🌋', '🦴', '🦜', '🐒', '🍌', '🐊', '🦥', '🌺'] },
   { id: 'magic', name: ['Небо и волшебство', 'Sky and magic'], reward: 'wizardHat', stickers: ['☁️', '🕊️', '🌌', '🦉', '🍄', '🔮', '🪄', '🌟', '🦌', '🎐'] },
+  { id: 'music', name: ['Музыка', 'Music'], reward: 'headphones', stickers: ['🎵', '🎸', '🥁', '🎹', '🎺', '🎷', '🪗', '🎤', '🎧', '🪇'] },
+  { id: 'sport', name: ['Спорт', 'Sport'], reward: 'cap', stickers: ['⚽', '🏀', '🏐', '🏓', '🛼', '⛸️', '🏊', '🚴', '🥇', '🏅'] },
+  { id: 'brainy', name: ['Умники', 'Brainy'], reward: 'mortarboard', stickers: ['🧩', '🔢', '➕', '🎲', '♟️', '🔍', '💡', '📐', '🧮', '🔬'] },
 ];
 export const STICKERS = ALBUMS.flatMap((a) => a.stickers);
 
@@ -101,7 +104,16 @@ export const BADGES = [
   ['stickers90', '🎖️', ['Великий коллекционер', 'Grand collector'], 'stickers', 90],
   ['album1', '📚', ['Первый альбом', 'First album'], 'albums', 1],
   ['album4', '🗂️', ['Четыре альбома', 'Four albums'], 'albums', 4],
-  ['album9', '🏛️', ['Все альбомы', 'Every album'], 'albums', 9],
+  ['album9', '🏛️', ['Девять альбомов', 'Nine albums'], 'albums', 9],
+  ['album12', '🎊', ['Все альбомы', 'Every album'], 'albums', 12],
+  ['stickers120', '🗃️', ['Все наклейки', 'Every sticker'], 'stickers', 120],
+  ['dreams10', '💤', ['Сновидица', 'Dreamer'], 'dreams', 10],
+  ['dreams24', '🌙', ['Хранительница снов', 'Dream keeper'], 'dreams', 24],
+  ['nest10', '🪺', ['Мастер гнёздышек', 'Nest builder'], 'naps', 10],
+  ['brush10', '🪮', ['Мастер расчёски', 'Top groomer'], 'brushes', 10],
+  ['wishes7', '✨', ['Исполнительница желаний', 'Wish granter'], 'wishes', 7],
+  ['fluffy3', '☁️', ['Пушистая компания', 'Fluffy gang'], 'fluffies', 3],
+  ['train20', '🎓', ['Отличный тренер', 'Top trainer'], 'trainings', 20],
   ['jokes25', '😂', ['Хохотушка', 'Giggle champion'], 'jokes', 25],
   ['twisters10', '👅', ['Скороговорщица', 'Twister champion'], 'twisters', 10],
   ['tricks1', '🎯', ['Юный тренер', 'Young trainer'], 'tricks', 1],

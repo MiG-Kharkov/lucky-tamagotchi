@@ -1844,4 +1844,34 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 .g-brain-head { margin: 16px 0 8px; color: var(--muted); font-size: 14px; }
 .g-brain-head b { color: var(--purple); }
 .brain-list .game-item { background: linear-gradient(#F3EDFF, #fff); }
+/* the nest and Lucky's dreams */
+.nest { position: absolute; left: 50%; bottom: 3%; width: min(62%, 290px); aspect-ratio: 3.2; transform: translateX(-50%); z-index: 4; pointer-events: none;
+  animation: nestIn .5s cubic-bezier(.3, 1.6, .5, 1); }
+.scene.has-dog .nest { left: 36%; }
+.nest.away { transition: opacity .8s, transform .8s; opacity: 0; transform: translateX(-50%) scale(.8); }
+@keyframes nestIn { from { transform: translateX(-50%) scale(0); } }
+.nest-bowl { position: absolute; inset: 38% 0 0; border-radius: 12px 12px 50% 50% / 12px 12px 90% 90%; background: repeating-linear-gradient(-30deg, #C98E5A 0 6px, #B5733F 6px 12px);
+  box-shadow: inset 0 5px 0 #E2B07A, 0 6px 10px #0002; }
+.nest-in { position: absolute; inset: 0; font-size: 30px; }
+.nest-in i { position: absolute; font-style: normal; animation: nestIn2 .45s cubic-bezier(.3, 1.6, .5, 1); }
+.nest-in .ni0 { left: 4%; right: 4%; top: 18%; text-align: center; letter-spacing: 34px; font-size: 26px; }
+.nest-in .ni1 { left: -4%; top: -6%; font-size: 34px; }
+.nest-in .ni2 { right: -4%; top: -10%; font-size: 38px; }
+@keyframes nestIn2 { from { transform: translateY(-40px) scale(.3); opacity: 0; } }
+.lucky.napping { animation: napBreathe 2.4s ease-in-out infinite; transform-origin: 50% 100%; }
+@keyframes napBreathe { 50% { transform: scale(1.03, .97); } }
+.dream { position: absolute; left: 50%; top: 12%; transform: translateX(-50%); z-index: 7; min-width: 150px; padding: 14px 20px; border-radius: 40px; background: #fffe;
+  box-shadow: 0 6px 20px #8B6CFF33, -26px 30px 0 -16px #fffe, -40px 46px 0 -22px #fffe; display: flex; gap: 10px; justify-content: center; font-size: 40px;
+  animation: dreamIn .6s ease-out, dreamOut .6s ease-in 3.6s forwards; }
+.scene.has-dog .dream { left: 40%; }
+.dream i { font-style: normal; animation: dreamFloat 1.6s ease-in-out infinite; }
+.dream i:nth-child(2) { animation-delay: -.8s; }
+@keyframes dreamIn { from { opacity: 0; transform: translateX(-50%) scale(.5); } }
+@keyframes dreamOut { to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
+@keyframes dreamFloat { 50% { transform: translateY(-8px) rotate(-6deg); } }
+.dream-list { display: grid; gap: 8px; }
+.dream-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: #F7F2FF; }
+.dream-card .dc-e { font-size: 28px; flex: none; }
+.dream-card.locked { opacity: .5; }
+.dream-card .dc-t { font-size: 14px; }
 

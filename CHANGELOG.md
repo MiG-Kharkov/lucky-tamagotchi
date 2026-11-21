@@ -3,6 +3,20 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.19.0] – 2026-11-21
+
+Each bar now has its own care: food for fullness, a bath and brushing for cleanliness, the nest for energy, tricks and
+games for joy. No new bars.
+
+### Added
+- **🪺 Nest:** three quick choices (bedding, a pillow, a toy), then Lucky naps in it and dreams; the dream floats above
+  him, he tells it when he wakes up, and it goes into the collection's new **Dreams** tab (24 to collect, new ones
+  first). It gives energy; three naps a day, and not when he isn't tired. His wish of the day can be a nest too.
+- **Three sticker albums:** Music, Sport and Brainy, with headphones, a baseball cap and a graduation cap as prizes
+  (120 stickers in 12 albums).
+- **Nine badges:** dreams, nests, brushing, wishes granted, fluffy friends, trainings, all the albums, all the
+  stickers (61 in all).
+
 ## [1.18.0] – 2026-11-21
 
 ### Added

@@ -827,6 +827,7 @@ function statValue(key) {
     case 'twisters': return S.twisters.heard.length;
     case 'idioms': return S.idioms.heard.length;
     case 'tricks': return learnedTricks().length;
+    case 'dreams': return (S.dreams || []).length;
     case 'checkups': return S.stats.checkups || 0;
     case 'worlds': return S.worldsSeen.length;
     default: return S.stats[key] || 0;
@@ -1332,7 +1333,7 @@ window.addEventListener('pointercancel', () => { washDown = false; });
 // about food, a brushing, a bath), and doing it gives a bonus. Brushing makes fluff balls; every fifth one becomes a
 // fluffy friend who sits by him.
 
-const WISH_KINDS = ['food', 'brush', 'wash'], WISH_FOODS = ['hay', 'clover', 'carrot', 'apple'];
+const WISH_KINDS = ['food', 'brush', 'wash', 'nest'], WISH_FOODS = ['hay', 'clover', 'carrot', 'apple'];
 const wishOf = () => ({ kind: WISH_KINDS[st.dayPick(S, 'wish', WISH_KINDS.length)], food: WISH_FOODS[st.dayPick(S, 'wishFood', WISH_FOODS.length)] });
 let careRow = null, careIdle = 0;
 
@@ -1340,6 +1341,7 @@ const CARE_ITEMS = [
   ['feed', '🥕', () => showFoodRow()],
   ['wash', '🫧', () => startWash()],
   ['brush', '🪮', () => startBrush()],
+  ['nest', '🪺', () => startNest()],
   ['train', '🎯', () => openTraining()],
 ];
 
@@ -1516,6 +1518,105 @@ function renderFluffies(fresh2 = false) {
     box.addEventListener('click', (e) => { const f = e.target.closest('.fluffy'); if (!f || mode !== 'main') return; hop(f, 'hop'); sfx.squeak(); const r = f.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); heartsBurst(r.left - sc.left + r.width / 2, r.top - sc.top, 2); });
   }
   box.innerHTML = Array.from({ length: n }, (_, i) => `<button class="fluffy f${i} ${fresh2 && i === n - 1 ? 'born' : ''}" aria-label="fluffy">${art.fluffy(i)}</button>`).join('');
+}
+
+// ----- the nest: three choices (bedding, pillow, toy), a nap in it, and a dream -----
+// It gives energy (the only care that does), up to three naps a day, and a dream each time: new ones first, kept in
+// the collection.
+const DREAMS = [
+  ['carrotRain', '🥕🌧️'], ['moon', '🚀🌙'], ['taliWings', '🐶☁️'], ['carrotHouse', '🥕🏠'], ['dragon', '🐉🥷'], ['dolphins', '🐬🌊'],
+  ['candles', '🎂🕯️'], ['snowman', '⛄❄️'], ['rainbowSlide', '🌈🐰'], ['school', '🏫⭐'], ['king', '👑🥕'], ['tiny', '🐜🍄'],
+  ['alien', '👽🛸'], ['rockStar', '🎸🎤'], ['goal', '⚽🏆'], ['balloons', '🎈🎈'], ['pizza', '🍕💨'], ['babyDino', '🦖🥚'],
+  ['stars', '⭐✨'], ['rooster', '🐓🌻'], ['robot', '🤖🥕'], ['circus', '🎪🤸'], ['bubble', '🫧🛁'], ['you', '💗🐰'],
+];
+const NEST_STEPS = [
+  ['nestBedding', [['🌾', 'hay'], ['🍂', 'leaves'], ['🧶', 'wool']]],
+  ['nestPillow', [['🌸', 'flower'], ['⭐', 'star'], ['🌙', 'moon']]],
+  ['nestToy', [['🧸', 'bear'], ['🥕', 'carrot'], ['🐶', 'tali']]],
+];
+let nest = null;
+
+function startNest() {
+  const T0 = st.today(S);
+  if (S.pet.energy >= 90 && !turbo()) return say(fresh(LUCKY.nestNotSleepy));
+  if ((T0.naps || 0) >= 3 && !turbo()) return say(fresh(LUCKY.nestEnough));
+  leaveMain('nest');
+  nest = { step: 0, picks: [], el: document.createElement('div'), timers: [] };
+  nest.el.className = 'nest';
+  nest.el.innerHTML = '<div class="nest-bowl"></div><div class="nest-in"></div>';
+  ui.scene.appendChild(nest.el);
+  say(fresh(LUCKY.nestHint));
+  nestRow();
+}
+
+// the bar shows the step's three choices
+function nestRow() {
+  const [key, opts] = NEST_STEPS[nest.step];
+  ui.actions.classList.add('care-row');
+  ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>`
+    + opts.map(([e, id]) => `<button class="act" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${tr(key)}</span></button>`).join('');
+  ui.actions.querySelectorAll('.act').forEach((b) => {
+    b.onclick = () => {
+      sfx.tap();
+      if (b.dataset.id === 'back') return endNest(false);
+      const [e] = opts.find(([, id]) => id === b.dataset.id);
+      nest.picks.push(e);
+      nest.el.querySelector('.nest-in').insertAdjacentHTML('beforeend', `<i class="ni${nest.step}">${nest.step === 0 ? e.repeat(5) : e}</i>`);
+      sfx.pop();
+      nest.step++;
+      if (nest.step < NEST_STEPS.length) nestRow();
+      else nestNap();
+    };
+  });
+}
+
+function nestNap() {
+  showCareRow();
+  ui.actions.querySelectorAll('.act').forEach((b) => { b.disabled = true; });
+  const at = (ms, fn) => nest.timers.push(setTimeout(fn, ms));
+  say(fresh(LUCKY.nestSleep));
+  at(1200, () => { ui.lucky.classList.add('napping'); setTemp('sleep', 7000); sfx.yawn(); stopSpeech(); hideBubble(); });
+  [2000, 3200, 4400].forEach((d) => at(d, () => floatFx(...luckyPoint(0.7, 0.15), '💤', 'spark')));
+  // the dream: new ones first
+  const seen = (S.dreams ||= []);
+  const fresh2 = DREAMS.filter(([id]) => !seen.includes(id)), [id, e] = pick(fresh2.length ? fresh2 : DREAMS);
+  const isNew = !seen.includes(id);
+  at(2600, () => {
+    const d = document.createElement('div');
+    d.className = 'dream';
+    d.innerHTML = Array.from(new Intl.Segmenter().segment(e), (x) => `<i>${x.segment}</i>`).join('');
+    ui.scene.appendChild(d);
+    nest.timers.push(setTimeout(() => d.remove(), 4200));
+    sfx.magic();
+  });
+  at(7000, () => {
+    ui.lucky.classList.remove('napping');
+    hop(ui.lucky, 'stretchUp', 1600);
+    setTemp('happy', 2500);
+    say(fresh(LUCKY.dreams[id]));
+    if (isNew) { seen.push(id); setTimeout(() => toast(`💭 <b>${tr('newDream')}</b>`, 3500), 600); }
+    const T0 = st.today(S);
+    T0.naps = (T0.naps || 0) + 1;
+    stat('naps');
+    st.boost(S, 'energy', 25);
+    renderStats();
+    award(addH(2, 'nest', 6));
+    st.save(S);
+    endNest(true);
+    careDone('nest', null, 3800);
+  });
+}
+
+function endNest(done) {
+  if (!nest) return;
+  nest.timers.forEach(clearTimeout);
+  const el = nest.el;
+  nest = null;
+  ui.lucky.classList.remove('napping');
+  el.classList.add('away');
+  setTimeout(() => el.remove(), 900);
+  if (mode === 'nest') mode = 'main';
+  showCareRow();
 }
 
 // ----- teaching tricks: clicker training, the way real bunnies learn -----
@@ -2814,6 +2915,12 @@ function collectionBody(tab) {
         <div class="stickers">${a.stickers.map((x) => `<div class="stk ${S.stickers.includes(x) ? 'on' : ''}">${S.stickers.includes(x) ? x : '?'}</div>`).join('')}</div></div>`;
     }).join('')}`;
   }
+  if (tab === 'dreams') {
+    const seen = S.dreams || [];
+    return `<p class="muted center">${tr('dreamsOf', { n: seen.length, m: DREAMS.length })}</p><div class="dream-list">${DREAMS.map(([id, e]) => (seen.includes(id)
+      ? `<div class="dream-card"><span class="dc-e">${e}</span><span class="dc-t">${bi(LUCKY.dreams[id][0])}</span></div>`
+      : '<div class="dream-card locked"><span class="dc-e">💤</span><span class="dc-t">?</span></div>')).join('')}</div>`;
+  }
   if (tab === 'english') {
     const chips = `<div class="slot-chips book-chips">${[['jokes', '😂'], ['twisters', '👅'], ['idioms', '🎭']].map(([k, e]) => `<button class="chip ${bookChip === k ? 'on' : ''}" data-chip="${k}">${e} ${tr(k)}</button>`).join('')}</div>`;
     if (bookChip === 'twisters') {
@@ -2849,7 +2956,7 @@ function collectionBody(tab) {
 }
 
 function openCollection(tab = 'outfits') {
-  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'english'];
+  const tabs = ['outfits', 'places', 'decor', 'stickers', 'badges', 'dreams', 'english'];
   const html = `<p class="muted center">${tr('daysTogether', { n: S.days.length })} · ${tr('lv')} ${S.level}${collectionFull() ? ' · 🏆 100%' : ''}</p>
     <div class="tabs coll-tabs">${tabs.map((t) => `<button class="tab ${t === tab ? 'on' : ''}" data-t="${t}">${tr(t)}</button>`).join('')}</div>${collectionBody(tab)}`;
   openSheet('🎀 ' + tr('collection'), html, (root) => {
@@ -3385,6 +3492,7 @@ function enterSleep() {
   if (mode === 'edit') finishEdit(true);
   if (mode === 'wash') finishWash();
   if (mode === 'brush') finishBrush();
+  if (mode === 'nest') endNest(false);
   if (mode === 'train') endTraining();
   if (mode === 'show') endShow();
   if (mode === 'checkup') endCheckup(false);
@@ -3714,7 +3822,7 @@ function loop() {
     S.session.activeMs += dt;
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
-    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'train' || mode === 'show' || mode === 'checkup' || mode === 'edit')) {
+    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'nest' || mode === 'train' || mode === 'show' || mode === 'checkup' || mode === 'edit')) {
       if (!S.session.warned && S.session.activeMs >= limit - 60e3 && sleepSoon(S.session.activeMs >= limit + 30e3)) { S.session.warned = true; S.session.warnedAt = now; }
       const dayLimit = S.settings.dailyMax * 60e3, played = S.playedMs[T0.date] || 0; // the day's limit: the same minute's notice
       if (dayLimit && !T0.dayWarned && played >= dayLimit - 60e3 && sleepSoon(played >= dayLimit + 30e3)) { T0.dayWarned = true; T0.dayWarnedAt = now; }
