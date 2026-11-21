@@ -249,6 +249,8 @@ export function addHearts(S, n, cat, cap) {
 
 export const missionIndex = (S, len) => (hash(S.today.date + 'm') + S.today.missionSwap) % len;
 export const careIndex = (S, len) => hash(S.today.date + 'c') % len;
+// something picked for the day (Lucky's wish, his favourite spot): the same all day, different the next
+export const dayPick = (S, salt, len) => hash(S.today.date + salt) % len;
 // The phrase of the day: all of them in turn, in a mixed order that stays the same, so each comes once a round and
 // none twice soon. daysAgo: the phrase of an earlier day (the quiz brings phrases back after 3 and 10 days).
 const dayNumber = (key) => Math.round(Date.UTC(+key.slice(0, 4), +key.slice(5, 7) - 1, +key.slice(8, 10)) / 864e5);

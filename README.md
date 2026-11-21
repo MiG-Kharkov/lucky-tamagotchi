@@ -65,7 +65,7 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 
 | | |
 |---|---|
-| 🥕 **Care** | Feed (with real bunny facts), wash with bubbles, cuddle, tuck into bed |
+| 🐰 **Care** | One Lucky button: feed (with real bunny facts), wash (mud spots, a rubber duck, a shake that splashes the screen), brush (fluff balls that become fluffy friends), find his favourite spot of the day, dress him; one wish a day, sometimes a riddle in English |
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
 | 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (how people really talk in Ireland) · and the holiday games. Easy / normal / hard, stars and records to beat |

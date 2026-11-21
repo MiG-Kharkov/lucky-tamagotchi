@@ -160,7 +160,7 @@ input, select { font: inherit; }
 
 /* ---------- action buttons ---------- */
 .actions {
-  display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
   padding: 10px 10px calc(env(safe-area-inset-bottom) + 10px);
 }
 .act {
@@ -1773,3 +1773,48 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 @keyframes balloonBob { 50% { transform: translateY(-4px); } }
 .pl.lift .pl-in { animation: balloonLift 2s ease-in-out; }
 @keyframes balloonLift { 45% { transform: translateY(-34%); } }
+
+/* ---------- caring for Lucky (the 🐰 Lucky button) ---------- */
+.actions.care-row { grid-template-columns: .75fr repeat(5, 1fr); gap: 5px; }
+.actions.care-row .act { position: relative; }
+.actions.care-row .act.back { background: #F4ECF7; box-shadow: none; }
+.actions.care-row .act.back .a-ico { font-size: 22px; color: var(--pink-d); }
+.actions.care-row .a-ico { font-size: 26px; }
+.act.wish { box-shadow: 0 0 0 2px #FFD23F, 0 0 12px 2px #FFD23F99, var(--shadow); }
+.act.wish::after { content: "✨"; position: absolute; top: -8px; right: -4px; font-size: 15px; animation: tw 2.4s ease-in-out infinite; }
+.act .treat { position: absolute; top: -6px; right: -3px; font-size: 10px; font-style: normal; font-weight: 800; color: #fff; background: var(--pink); border-radius: 8px; padding: 1px 4px; }
+.scene.brushing, .scene.brushing .lucky, .scene.scratching .lucky { touch-action: none; }
+.scene.brushing .lucky { filter: drop-shadow(0 0 14px #FFE0A8); }
+.scene.scratching .lucky { filter: drop-shadow(0 0 14px #FFB3D6); cursor: pointer; }
+.fluff-tuft { position: absolute; left: 0; top: 0; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; z-index: 6; pointer-events: none;
+  background: radial-gradient(circle at 40% 40%, #fff, #FFE3C4 60%, #FFE3C400 72%); }
+.fluff-ball { position: absolute; left: 8%; bottom: 6%; width: 64px; height: 64px; z-index: 6; pointer-events: none; --n: 0;
+  border-radius: 50%; background: radial-gradient(circle at 38% 35%, #fff, #FFE9D2 55%, #F7CFA6); box-shadow: 0 4px 10px #0002;
+  transform: scale(calc(.25 + var(--n) * .9)); transition: transform .3s cubic-bezier(.3, 1.6, .5, 1); }
+.fluff-ball::before { content: "🪮"; position: absolute; left: 50%; top: -30px; transform: translateX(-50%); font-size: 22px; opacity: calc(1 - var(--n)); }
+.fluff-ball.done { animation: ballDone 1.2s ease-in-out; }
+@keyframes ballDone { 30% { transform: scale(1.35); } 60% { transform: scale(1.1) rotate(10deg); } }
+.fluff-ball.away { transition: transform .5s ease-in, opacity .5s; transform: translateY(-60px) scale(.3); opacity: 0; }
+.fluffies { position: absolute; left: 50%; bottom: 4%; margin-left: calc(min(64%, 300px) / -2 - 22px); z-index: 4; display: flex; gap: 0; pointer-events: none; }
+.scene.has-dog .fluffies { left: 36%; margin-left: calc(min(56%, 270px) / -2 - 22px); }
+.fluffy { width: 34px; height: 32px; padding: 0; border: 0; background: none; pointer-events: auto; animation: fluffyIdle 3.2s ease-in-out infinite; }
+.fluffy.f1 { animation-delay: -1s; margin-left: -6px; } .fluffy.f2 { animation-delay: -2s; margin-left: -6px; }
+.fluffy svg { width: 100%; height: 100%; display: block; }
+.fluffy.born { animation: fluffyBorn .8s cubic-bezier(.3, 1.6, .5, 1), fluffyIdle 3.2s ease-in-out .8s infinite; }
+@keyframes fluffyIdle { 0%, 70%, 100% { transform: none; } 80% { transform: translateY(-5px) scaleY(1.05); } 90% { transform: scale(1.05, .92); } }
+@keyframes fluffyBorn { from { transform: scale(0); } }
+.lucky.shiny::after { content: "✨"; position: absolute; left: 22%; top: 30%; font-size: 16px; pointer-events: none; animation: shineA 4s ease-in-out infinite; }
+.lucky.shiny::before { content: "✨"; position: absolute; right: 24%; top: 52%; font-size: 13px; pointer-events: none; animation: shineA 4s ease-in-out 2s infinite; }
+@keyframes shineA { 0%, 60%, 100% { opacity: 0; transform: scale(.4); } 75% { opacity: 1; transform: scale(1); } }
+.mud { position: absolute; width: 26px; height: 15px; margin: -8px 0 0 -13px; z-index: 6; pointer-events: none; transition: opacity .2s; opacity: 1;
+  border-radius: 60% 40% 55% 45% / 55% 60% 40% 45%; background: #B48A5ECC; transform: rotate(-12deg);
+  box-shadow: 16px -9px 0 -4px #B48A5ECC, -15px 6px 0 -4px #B48A5EBB, 3px 13px 0 -5px #B48A5EBB, -6px -11px 0 -5px #B48A5EAA; }
+.fly-fx.duck { animation: duckBob 6s ease-in-out forwards; }
+@keyframes duckBob { 0% { opacity: 0; transform: translate(-50%, -50%) scale(.4); } 8%, 90% { opacity: 1; } 10%, 30%, 50%, 70% { transform: translate(-50%, -50%) rotate(-8deg); } 20%, 40%, 60%, 80% { transform: translate(-50%, -54%) rotate(8deg); } 100% { opacity: 0; } }
+.screen-drops { position: absolute; inset: 0; z-index: 9; pointer-events: none; }
+.screen-drops i { position: absolute; width: calc(22px * var(--s)); height: calc(26px * var(--s)); border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: radial-gradient(circle at 35% 30%, #fffd, #BFE9FF88 45%, #6FC6FF44 70%); box-shadow: inset -2px -3px 4px #4DA3D555;
+  animation: dropRun 2.6s ease-in var(--d) both; }
+@keyframes dropRun { 0% { opacity: 0; transform: scale(.3); } 12% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(70px) scaleY(1.3); } }
+@media (prefers-reduced-motion: reduce) { .fluffy, .lucky.shiny::after, .lucky.shiny::before { animation: none !important; } }
+

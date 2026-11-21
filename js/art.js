@@ -971,3 +971,14 @@ for (const z of ZONES) {
     PROPS[id] = p;
   }
 }
+
+// A fluffy friend, made of Lucky's brushed-out fluff (three looks)
+export function fluffy(i = 0) {
+  const [c, d] = [['#FFE9D2', '#F7CFA6'], ['#FFFFFF', '#E9E1EA'], ['#FFD6A8', '#F4B479']][i % 3];
+  return `<svg viewBox="0 0 60 56" xmlns="http://www.w3.org/2000/svg"><ellipse cx="30" cy="53" rx="20" ry="3" fill="#000" opacity=".12"/>
+<g fill="${c}">${[[16, 30, 12], [30, 22, 15], [44, 30, 12], [22, 40, 12], [38, 40, 12], [30, 34, 15]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join('')}</g>
+<path d="M14 26 q-4 -6 1 -9 M46 26 q4 -6 -1 -9 M28 9 q2 -5 6 -3" stroke="${d}" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+<circle cx="24" cy="32" r="3" fill="#3A2216"/><circle cx="36" cy="32" r="3" fill="#3A2216"/><circle cx="25" cy="31" r="1" fill="#fff"/><circle cx="37" cy="31" r="1" fill="#fff"/>
+<ellipse cx="19" cy="38" rx="3.5" ry="2" fill="#FF9DBB" opacity=".7"/><ellipse cx="41" cy="38" rx="3.5" ry="2" fill="#FF9DBB" opacity=".7"/><path d="M28 38 q2 2 4 0" stroke="#3A2216" stroke-width="1.6" fill="none" stroke-linecap="round"/></svg>`;
+}
+

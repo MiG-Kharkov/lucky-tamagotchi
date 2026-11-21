@@ -3,6 +3,27 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.15.0] – 2026-11-21
+
+Caring for Lucky is one button now, and each part of it is a little game instead of a chore.
+
+### Added
+- **🐰 Lucky** in the bottom bar (instead of Feed and Wash): his care in a row of its own, ◀ goes back. The bar is now
+  Lucky · Play · Dojo · Collection.
+- **His wish of the day** (✨ on its button): a food described in an English riddle ("something long, dry and
+  golden"), a brushing, a scratch or a bath. Granted: stars in his eyes and a bonus. Missed: nothing lost.
+- **Brushing:** stroke him and tufts of fluff fly into a ball; every fifth ball becomes a fluffy friend who sits by
+  him (a tap: a hop and a squeak). His fur shines for the rest of the day.
+- **His favourite spot:** every day another one (forehead, behind the ears, the back), found by warmer and colder.
+  The tummy, paws and tail are a "no", as with real bunnies; found, he tooth-purrs and flops.
+- **Baths:** after a muddy world, mud spots to scrub off; sometimes a rubber duck; now and then he shakes himself dry
+  and splashes the screen. More facts about each food, shown in turn.
+- **Today's plan:** care for Lucky in two different ways and grant his wish, instead of feed and wash.
+
+### Fixed
+- "🐾 Play together" tapped while Tali is telling a joke: the button pulses and the game starts right after the
+  joke (it was ignored).
+
 ## [1.14.1] – 2026-11-21
 
 ### Changed

@@ -17,7 +17,7 @@ Lucky, the English she hears in the schoolyard, and the holidays of her own fami
 | Watching is free, binging isn't | Just looking at Lucky costs nothing; only active play counts |
 | Breaks | 25 minutes of active play, then half an hour of rest (Lucky naps in his garden). After 2 hours a day he rests until the morning. Both come with a minute's notice ("Soon I'll need a rest", said again 20 s before): it waits until Lucky can really say it (not over a question or a joke), and he lies down at least 45 s after it, even when a game ran past the limit. At night (22:00–07:00) he sleeps |
 | Life off the screen | Ninja missions and caring for a real bunny happen in the real world |
-| A clear finish line | "Today's plan": four small jobs, then a celebration and "go and play outside" |
+| A clear finish line | "Today's plan": four small jobs (care for Lucky in two different ways, grant his wish, the ninja mission, the phrase), then a celebration and "go and play outside" |
 | No manipulation | No ads, purchases, push notifications, online features or data collection |
 
 ## Language
@@ -168,9 +168,8 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 
 | Action | Mechanics |
 |---|---|
-| 🥕 Feed | 5 foods with real bunny facts; at most 3 treats a day |
+| 🐰 Lucky | His care, in the bottom bar (◀ goes back): **Feed** (5 foods, facts in turn, at most 3 treats a day), **Wash** (rub with a finger; after a muddy world mud spots to scrub off, sometimes a rubber duck, and now and then he shakes himself dry and splashes the screen), **Brush** (stroke him: tufts fly into a fluff ball; every fifth ball becomes a fluffy friend who sits by him; his fur shines for the rest of the day), **Scratch** (his favourite spot of the day: forehead, behind the ears or the back, found by warmer and colder; the tummy, paws and tail are a "no", as with real bunnies; found, he tooth-purrs and flops), **Outfit** (the wardrobe). Each day one **wish** (✨ on its button): a food described in an English riddle, a brushing, a scratch or a bath; granted, a bonus. No new bars, nothing lost for a wish missed |
 | 🎈 Play | Carrot Rain (a caught pizza takes a point away: bunnies can't eat it), Ninja Memory, Copy Lucky, Chat with Lucky (English Q&A). All but Chat with Lucky have three difficulties, stars and records, like the holiday games: Carrot Rain lasts 30, 45 or 60 seconds and falls faster, Memory has 6, 8 or 10 pairs, Copy Lucky's tunes grow to 10, 16 or 24 notes. A game starts on Normal; with three stars the next difficulty is suggested. While a holiday is on, its three games take the first three's place (below); Chat with Lucky stays. Games come in rounds: 3 in a row, then new ones 2 hours after the round's first game (the Play sheet says when; both numbers are in the parents' area). Back before starting doesn't use a game. Each game gives up to 8 hearts (40 a day). You can't lose |
-| 🫧 Wash | Rub Lucky with a finger |
 | 🥷 Dojo | A daily real-world ninja mission (pick one of two), caring for a real bunny, ninja breathing |
 | 🎀 Collection | Outfits, places, home decorations, sticker albums, badges |
 | ✏️ Decorate | Drag items and stickers anywhere, resize, flip, delete. Each world has its own layout; lower items stand in front of Lucky. The tray has categories (⭐ super, 🏡 home, 🌍 this world, 🗺️ other worlds, 📒 sticker albums) and a grid; a decoration already on the scene is marked ✓ and selected when tapped again |
