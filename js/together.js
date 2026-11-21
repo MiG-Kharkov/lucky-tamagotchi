@@ -64,7 +64,7 @@ export const LINES = {
 
 // Fetch: tap the ball, Lucky throws it, Tali runs after it and brings back… something
 const fetch = {
-  id: 'fetch', e: '🎾', name: ['Апорт', 'Fetch'], hint: ['Брось мяч, Тали принесёт', 'Throw the ball, Tali brings it back'],
+  id: 'fetch', pointAt: '🎾', e: '🎾', name: ['Апорт', 'Fetch'], hint: ['Брось мяч, Тали принесёт', 'Throw the ball, Tali brings it back'],
   run(g) {
     let round = 0;
     const finds = shuffle([['🎾', 'tgFetchBack'], ['🧦', 'tgFetchSock'], ['🪵', 'tgFetchStick']]).slice(0, 2);
@@ -176,7 +176,7 @@ const football = {
 
 // Tug of war with a scarf: tap fast to help Lucky; it always ends with somebody (or both) in the grass
 const tug = {
-  id: 'tug', e: '🧣', name: ['Перетягивание', 'Tug of war'], hint: ['Жми быстро, помогай Лаки', 'Tap fast to help Lucky'],
+  id: 'tug', pointAt: '💪', e: '🧣', name: ['Перетягивание', 'Tug of war'], hint: ['Жми быстро, помогай Лаки', 'Tap fast to help Lucky'],
   run(g) {
     let pos = 0, over = false;
     const [lx, ly] = g.luckyAt(0.85, 0.62), [dx] = g.dogAt(0.2, 0.6);
@@ -295,7 +295,7 @@ const dig = {
 
 // Race: 3-2-1 to the flag; tap fast to help Lucky. Sometimes a photo finish
 const race = {
-  id: 'race', e: '🏁', name: ['Гонка', 'Race'], hint: ['Жми быстро, чтобы Лаки бежал', 'Tap fast to make Lucky run'],
+  id: 'race', pointAt: '🏃', e: '🏁', name: ['Гонка', 'Race'], hint: ['Жми быстро, чтобы Лаки бежал', 'Tap fast to make Lucky run'],
   run(g) {
     let me = 16, tali = 16, over = false, started = false;
     const W = g.W(), H = g.H();
@@ -337,7 +337,7 @@ const race = {
 const FACES = [['laugh', 'hop'], ['wink', 'tilt'], ['cheeky', 'shimmy'], ['surprised', 'startle'], ['stars', 'proud'], ['grin', 'bigears'], ['smug', 'peek']];
 const DOG_FACES = ['tgTongue', 'tgTilt', 'sneeze', 'hop', 'perk'];
 const photo = {
-  id: 'photo', e: '📸', name: ['Фото на память', 'Photo time'], hint: ['Поймай смешной момент', 'Catch a funny moment'],
+  id: 'photo', pointAt: '📸', e: '📸', name: ['Фото на память', 'Photo time'], hint: ['Поймай смешной момент', 'Catch a funny moment'],
   run(g) {
     let face = FACES[0], shot = false;
     g.say('lucky', 'tgPhotoGo');
@@ -388,6 +388,15 @@ export function playTogether(game, api) {
   const body = () => D.querySelector('.dog-body');
   const boxAt = (el, fx, fy) => { const r = el.getBoundingClientRect(), s = rect(); return [r.left - s.left + r.width * fx, r.top - s.top + r.height * fy]; };
   const lines = (who, key) => (who === 'dog' ? api.DOG : api.LUCKY.antics)[key];
+  // What to do: the game's name and how to play at the top for a few seconds (English, the Russian small under it), and
+  // in a game with one thing to tap (pointAt) a finger on it until the first tap
+  const main = (pair) => (api.lang === 'ru' ? pair[0] : pair[1]), sub = (pair) => (api.lang === 'ru' ? pair[1] : pair[0]);
+  const how = document.createElement('div');
+  how.className = 'tg-how';
+  how.innerHTML = `<span class="e">${game.e}</span><b>${main(game.name)}:</b> ${main(game.hint)}${api.translate ? `<small>${sub(game.hint)}</small>` : ''}`;
+  layer.appendChild(how);
+  let hand = null, pointed = false;
+  const unpoint = () => { hand?.remove(); hand = null; how.classList.add('gone'); }; // her first tap: she knows what to do
   const g = {
     layer, sfx,
     W: () => rect().width,
@@ -409,8 +418,18 @@ export function playTogether(game, api) {
       b.innerHTML = html;
       b.style.left = x + 'px';
       b.style.top = y + 'px';
-      b.onclick = (e) => { e.stopPropagation(); if (!over) onTap(e); };
+      b.onclick = (e) => { e.stopPropagation(); unpoint(); if (!over) onTap(e); };
       layer.appendChild(b);
+      if (!pointed && game.pointAt && html === game.pointAt) {
+        pointed = true;
+        hand = document.createElement('span');
+        hand.className = 'tg-hand';
+        hand.textContent = '👆';
+        hand.style.left = x + 'px';
+        hand.style.top = y + 'px';
+        layer.appendChild(hand);
+        timers.push(setTimeout(() => { hand?.remove(); hand = null; }, 8000));
+      }
       return b;
     },
     fly: api.fly, popUp: api.popUp, fxAt: api.fxAt, hearts: api.hearts,
@@ -441,6 +460,7 @@ export function playTogether(game, api) {
   x.textContent = '✕';
   x.onclick = (e) => { e.stopPropagation(); sfx.tap(); finish(null); };
   layer.appendChild(x);
+  timers.push(setTimeout(() => how.classList.add('gone'), 5500));
   game.run(g);
   return { cancel: () => finish(null), on: () => !over };
 }
@@ -455,6 +475,15 @@ export function offerGames(played = []) {
 // the games' look (main.js adds it to the page)
 export const CSS = `
 .tg-layer { position: absolute; inset: 0; z-index: 8; pointer-events: none; }
+.tg-how { position: absolute; left: 54px; right: 54px; top: 10px; z-index: 3; background: #fffe; border-radius: 16px; padding: 7px 12px; box-shadow: var(--shadow); text-align: center;
+  font-size: 15px; font-weight: 700; line-height: 1.25; color: var(--ink); pointer-events: none; animation: tgHowIn .4s cubic-bezier(.3, 1.4, .5, 1); transition: opacity .5s, translate .5s; }
+.tg-how .e { font-size: 20px; margin-right: 4px; }
+.tg-how b { color: var(--pink-d); }
+.tg-how small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+.tg-how.gone { opacity: 0; translate: 0 -20px; }
+@keyframes tgHowIn { from { translate: 0 -30px; opacity: 0; } }
+.tg-hand { position: absolute; z-index: 4; font-size: 40px; line-height: 1; pointer-events: none; transform: translate(-40%, 30%); filter: drop-shadow(0 3px 4px #0005); animation: tgPoint 1s ease-in-out infinite; }
+@keyframes tgPoint { 50% { translate: 0 -12px; scale: .88; } }
 .tg-layer > * { pointer-events: auto; }
 .tg-layer.tg-out { opacity: 0; transition: opacity .35s; }
 .scene.tg-on .dog > button, .scene.tg-on .dog > .pill { display: none; }

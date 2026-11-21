@@ -37,15 +37,20 @@ export function openMission(host, m, ctx) {
   const props = (list) => { $('.l-props').innerHTML = list.map(([id, arg]) => `<g class="pp pp-in">${PROPS[id].art(arg)}</g>`).join(''); };
   draw('happy');
 
-  // A line: text with a small translation, spoken; tapping the line plays the translation
+  // A line: text with a small translation, spoken
   let lastLine = null;
   function talk(pair) {
     lastLine = pair;
     $('.m-main').textContent = L(pair);
-    $('.m-sub').textContent = ctx.translate ? O(pair) : '';
+    $('.m-sub').textContent = ctx.translate ? '🔊 ' + O(pair) : '';
     speak(L(pair), ctx.lang, 'lucky');
   }
-  $('.m-say').onclick = () => { if (lastLine && ctx.translate) speak(O(lastLine), ctx.lang === 'en' ? 'ru' : 'en', 'lucky'); };
+  // tapping the line says it again; tapping the small 🔊 line under it says the translation
+  $('.m-say').onclick = (e) => {
+    if (!lastLine) return;
+    if (ctx.translate && e.target.closest('.m-sub')) speak(O(lastLine), ctx.lang === 'en' ? 'ru' : 'en', 'lucky');
+    else speak(L(lastLine), ctx.lang, 'lucky');
+  };
 
   // Lucky's moves: a one-off class (restarted each time) or a pose that stays
   function move(cls) { luckyEl.classList.remove(cls); void luckyEl.getBoundingClientRect(); luckyEl.classList.add(cls); }

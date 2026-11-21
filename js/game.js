@@ -7,7 +7,8 @@
 
 import { PHRASES, DIALOGS, T } from './i18n.js';
 import { speak } from './sound.js';
-import { LEVEL_IDS } from './arcade.js';
+import { LEVEL_IDS, shooter, catcher, whacker, fireworks, runner } from './arcade.js';
+import { cardDemo } from './howto.js';
 import { HOLIDAY_GAMES } from './holigames.js';
 
 const shuffle = (a) => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
@@ -41,15 +42,21 @@ const scoreOf = (points, target) => Math.round(30 * Math.min(1, points / target)
 // onRecord(level, points): true when it's a new best. onStart(): the game has begun (it counts from here);
 // onScore(score): the game is over, keep what it earned (right away, before the end card is closed);
 // onEnd(score): the end card is closed (or the game was left)
-export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onStart, onScore, onCancel, onEnd }) {
+// which little moving picture a game's card shows (js/howto.js); the brain games have a full demo instead
+const demoKind = (g) => (g.kind === shooter ? 'shoot' : g.kind === catcher || g.id === 'catch' ? 'catch' : g.kind === whacker ? 'whack' : g.kind === fireworks ? 'fire'
+  : g.kind === runner ? 'run' : g.kind === 'memory' || g.id === 'memory' ? 'pairs' : g.kind === 'simon' || g.id === 'simon' ? 'copy' : g.id === 'talk' ? 'talk' : null);
+
+// speak(pair): Lucky says a [ru, en] line (in the main language); howSeen(id) / howDone(id): the "How to play" demo was seen
+export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onStart, onScore, onCancel, onEnd, speak: sayLine, howSeen, howDone }) {
   const levels = !!game.target;
   const hint = 'g_' + game.id + '_hint', hintSub = translate ? T(lang === 'ru' ? 'en' : 'ru', hint) : '';
   host.innerHTML = `<div class="game g-${game.id}${game.holiday ? ' g-holiday' : ''}">
     <div class="game-stage"></div>
     <div class="game-hud"><button class="g-exit" aria-label="close">✕</button><span class="g-info" hidden></span></div>
-    <div class="game-card"><div class="game-emoji">${game.emoji}</div><h2>${tr('g_' + game.id)}</h2><p>${tr(hint)}${hintSub ? `<small class="g-sub">${hintSub}</small>` : ''}</p>
+    <div class="game-card"><div class="game-emoji">${game.emoji}</div><h2>${tr('g_' + game.id)}</h2>${cardDemo(demoKind(game), game.theme || (game.id === 'memory' ? MEMORY_THEME : {}))}<button class="g-rules"><span class="spk">🔊</span>${tr(hint)}${hintSub ? `<small class="g-sub">${hintSub}</small>` : ''}</button>
       ${levels ? `<div class="g-levels">${LEVEL_IDS.map((l) => `<button class="g-level${l === level ? ' on' : ''}" data-l="${l}"><b>${LEVEL_ICON[l]}</b>${tr('lvl_' + l)}</button>`).join('')}</div><p class="g-best"></p>` : ''}
       <div class="row"><button class="btn big pink g-start">${tr('start')}</button></div>
+      ${game.how ? `<div class="row"><button class="btn purple g-how">👀 ${tr('howToPlay')}</button></div>` : ''}
       <div class="row"><button class="btn ghost g-cancel">${tr('back')}</button></div>
     </div>
   </div>`;
@@ -72,8 +79,15 @@ export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, s
     b.onclick = () => { sfx.tap(); level = b.dataset.l; card.querySelectorAll('.g-level').forEach((x) => x.classList.toggle('on', x === b)); onLevel?.(level); showBest(); };
   });
 
+  // the rules, read out by Lucky
+  card.querySelector('.g-rules').onclick = () => { sfx.tap(); sayLine?.([T('ru', hint), T('en', hint)]); };
   const ctx = {
     stage, sfx, lang, tr, svgOk, svgHappy, svgSad, translate,
+    // the translation of a UI string, for the small line under it (none when translating is off)
+    trSub: translate ? (key, vars) => T(lang === 'ru' ? 'en' : 'ru', key, vars) : null,
+    speak: sayLine,
+    demo: false,
+    howDone: () => howDone?.(game.id),
     get level() { return level; },
     info: (html) => { info.hidden = false; info.innerHTML = html; },
     // the holiday games end with their points
@@ -106,7 +120,11 @@ export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, s
     },
   };
 
-  card.querySelector('.g-start').onclick = () => { if (inst) return; card.hidden = true; sfx.happy(); onStart?.(); inst = game.run(ctx); };
+  // a game with a demo shows it the first time (and whenever "How to play" is tapped), then the game goes on
+  const start = (how) => { if (inst) return; card.hidden = true; sfx.happy(); ctx.demo = !!game.how && (how || !howSeen?.(game.id)); onStart?.(); inst = game.run(ctx); };
+  card.querySelector('.g-start').onclick = () => start(false);
+  const howBtn = card.querySelector('.g-how');
+  if (howBtn) howBtn.onclick = () => start(true);
   card.querySelector('.g-cancel').onclick = () => { sfx.tap(); onCancel(); };
   host.querySelector('.g-exit').onclick = () => {
     sfx.tap();

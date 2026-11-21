@@ -59,7 +59,7 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 
 > [!NOTE]
 > Lucky speaks **English**. A small **Russian translation** sits under every line —
-> tap the speech bubble to hear it. Great for bilingual families.
+> tap it (🔊) to hear it; a tap on the English says the English again. Great for bilingual families.
 
 ## ✨ What's inside
 
@@ -68,8 +68,8 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🐰 **Care** | One Lucky button: feed (with real bunny facts), wash (mud spots, a rubber duck, a shake that splashes the screen), brush (fluff balls that become fluffy friends), make him a nest to nap and dream in, teach him tricks with a clicker (and watch his show), a weekly check-up with a health card; one wish a day, sometimes a riddle in English |
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
-| 🧠 **Brain training** | Four puzzles for any time, not counted in the rounds: Remember!, Number chain, Squares, Who's who? |
-| 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (how people really talk in Ireland) · and the holiday games. Easy / normal / hard, stars and records to beat |
+| 🧠 **Brain training** | Four puzzles for any time, not counted in the rounds: Remember!, Number chain, Squares, Who's who? The first time, Lucky plays a round himself and a finger shows each step (again any time with 👀 How to play); when she is stuck, the finger shows the next move, and the sums bring out blocks to count |
+| 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (how people really talk in Ireland) · and the holiday games. Easy / normal / hard, stars and records to beat. Every game's card shows how it's played as a little moving picture, and 🔊 reads the rules out loud |
 | 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 45 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings, a dino hood, an embroidered shirt… mix and match |
 | 🌍 **16 worlds** | Garden, sakura dojo, candy land, seaside, winter, outer space, Irish hills, ninja castle, and after level 30: a carrot farm, a coral reef, the jungle, a dino valley, sky islands, the northern lights, a fairy forest and a Ukrainian village. The first eight have a second place to walk to with the ‹ › arrows: the pond, the dojo hall, the sweet factory, the pier, the ice rink, the moon, the cliffs, the stone garden |

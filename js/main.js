@@ -15,13 +15,14 @@ import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, t
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
 import { BRAIN_GAMES, BRAIN_CSS } from './brain.js';
+import { HOWTO_CSS } from './howto.js';
 import { createAntics, gestures, DOUBLE_MS } from './antics.js';
 import { createTricks } from './tricks.js';
 import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 // the worlds after level 30 bring their own animations
-document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${MODULES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}\n${BRAIN_CSS}</style>`);
+document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${MODULES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}\n${BRAIN_CSS}\n${HOWTO_CSS}</style>`);
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -128,13 +129,13 @@ function say(pair, who = 'lucky', { auto = false, chain = false, ambient = false
   ui.bubble.innerHTML = `<div class="b-main">${main}</div>${sub ? `<div class="b-sub">🔊 ${sub}</div>` : ''}`;
   if (!ui.choices.hidden) fitAsk(); // a reply while the choices are up (a wrong guess): Lucky refits under it
   else fitBubble();
-  // The line plays right away; tapping the bubble plays the translation
+  // The line plays right away; tapping it plays it again, tapping the small 🔊 line under it plays the translation
   ui.bubble.onclick = (e) => {
     e.stopPropagation();
-    if (sub) speak(sub, other(), who); else speak(main, S.lang, who);
+    if (sub && e.target.closest('.b-sub')) speak(sub, other(), who); else speak(main, S.lang, who);
     if (hold) return;
     clearTimeout(bubbleTimer);
-    bubbleTimer = setTimeout(() => ui.bubble.classList.remove('show'), speechMs(sub || main) + 1500);
+    bubbleTimer = setTimeout(() => ui.bubble.classList.remove('show'), speechMs(main) + 1500 + (sub ? 1500 : 0));
   };
   if (mode !== 'sleep') speak(main, S.lang, who, speed);
   lastSaid = { main, who, at: Date.now() };
@@ -2731,6 +2732,10 @@ function startGame(game) {
     svgOk: luckyPic({ face: 'ok', wear: S.wear }),
     svgHappy: luckyPic({ face: 'laugh', wear: S.wear }),
     svgSad: luckyPic({ face: 'sad', wear: S.wear }),
+    // Lucky's voice in the game (English), and the "How to play" demo seen once per game
+    speak: (pair) => speak(fill(L(pair), S.lang), S.lang, 'lucky'),
+    howSeen: (id) => (S.howSeen || []).includes(id),
+    howDone: (id) => { S.howSeen ||= []; if (!S.howSeen.includes(id)) { S.howSeen.push(id); st.save(S); } },
     // the difficulty she chose last time (Normal at first: Easy gave three stars straight away), and the best points
     level: S.games.level[game.id] || 'normal',
     bestOf: (lv) => S.games.best[game.id + ':' + lv] || 0,
@@ -3055,15 +3060,16 @@ function openPhrase() {
   const T0 = st.today(S);
   T0.phraseSeen = true;
   const p = PHRASES[st.phraseIndex(S, PHRASES.length)];
-  const line = (lang) => `<button class="say-line" data-lang="${lang}"><span class="flag">${lang === 'ru' ? 'RU' : 'EN'}</span>${say2(p, lang)} <span class="spk">🔊</span></button>`;
+  // the phrase in English (tap: hear it); its Russian small under it (tap: hear the translation)
   const html = `<div class="phrase">
       <div class="big-emoji">${p[2]}</div>
-      ${line(S.lang)}${line(other())}
+      <button class="say-line" data-lang="${S.lang}"><span class="flag">EN</span>${say2(p, S.lang)} <span class="spk">🔊</span></button>
+      ${S.settings.translate ? `<button class="say-sub" data-lang="${other()}">🔊 ${say2(p, other())}</button>` : ''}
       ${p[3] ? `<div class="ga"><span class="flag">☘️</span><div><div class="muted">${tr('gaBonus')}</div><b>${p[3]}</b></div></div>` : ''}
     </div>
     <div class="quiz-box">${T0.quiz < 3 ? `<button class="btn purple quiz-go">🧠 ${tr('quiz')} (${T0.quiz}/3)</button>` : `<p class="done-note">✅ ${tr('quizDone')}</p>`}</div>`;
   openSheet('💬 ' + tr('wordTitle'), html, (root) => {
-    root.querySelectorAll('.say-line').forEach((b) => { b.onclick = () => speak(say2(p, b.dataset.lang), b.dataset.lang); });
+    root.querySelectorAll('[data-lang]').forEach((b) => { b.onclick = () => speak(say2(p, b.dataset.lang), b.dataset.lang); });
     const q = root.querySelector('.quiz-go');
     if (q) q.onclick = () => quizStep(root.querySelector('.quiz-box'));
   });
@@ -3076,17 +3082,20 @@ function quizStep(box) {
   const q = PHRASES[st.phraseIndex(S, PHRASES.length, [0, 3, 10][T0.quiz] ?? 0)];
   const wrong = PHRASES.filter((x) => x !== q).sort(() => Math.random() - 0.5).slice(0, 2);
   const opts = [q, ...wrong].sort(() => Math.random() - 0.5);
-  const ask = say2(q, other());
+  // Lucky asks in English; the clue is the picture and the Russian meaning, small (heard only when tapped); the
+  // answers are English phrases, each said when tapped
+  const clue = say2(q, other());
   box.innerHTML = `<div class="quiz">
-    <div class="muted">${tr('quizQ')} (${T0.quiz + 1}/3)</div>
-    <button class="say-line q"><span class="flag">${other().toUpperCase()}</span>${ask} <span class="spk">🔊</span></button>
-    ${opts.map((o, i) => `<button class="opt" data-i="${i}">${say2(o, S.lang)}</button>`).join('')}
+    <div class="quiz-q"><b>${tr('quizQ')}</b> <span class="muted">${T0.quiz + 1}/3</span></div>
+    <div class="quiz-clue"><span class="big">${q[2]}</span><button class="say-sub q">🔊 ${clue}</button></div>
+    ${opts.map((o, i) => `<button class="opt" data-i="${i}">${say2(o, S.lang)} <span class="spk">🔊</span></button>`).join('')}
     <div class="q-res"></div></div>`;
-  box.querySelector('.q').onclick = () => speak(ask, other());
-  speak(ask, other());
+  box.querySelector('.q').onclick = () => speak(clue, other());
+  speak(tr('quizQ'), S.lang);
   box.querySelectorAll('.opt').forEach((b) => {
     b.onclick = () => {
       if (box.querySelector('.opt.right')) return;
+      speak(say2(opts[b.dataset.i], S.lang), S.lang);
       const ok = opts[b.dataset.i] === q;
       T0.quiz++;
       box.querySelectorAll('.opt').forEach((x) => { if (opts[x.dataset.i] === q) x.classList.add('right'); });
@@ -3233,7 +3242,7 @@ function startTogether(game) {
   if (togetherLeft() <= 0) ui.dog.querySelector('.together')?.remove();
   st.save(S);
   tgRun = playTogether(game, {
-    scene: ui.scene, lucky: ui.lucky, dog: ui.dog, sfx, hop, setTemp, LUCKY, DOG,
+    scene: ui.scene, lucky: ui.lucky, dog: ui.dog, sfx, hop, setTemp, LUCKY, DOG, lang: S.lang, translate: S.settings.translate,
     say: (list, who) => say(fresh(list), who),
     fly: antics.fly, popUp: antics.popUp, fxAt, hearts: heartsBurst, luckyPoint,
     luckyPic: (face) => luckyPic({ face, wear: S.wear }),
@@ -4158,7 +4167,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id) || BRAIN_GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), goLoc: (d) => goLoc(d), place: () => sceneKey(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id) || BRAIN_GAMES.find((g) => g.id === id) || Object.values(HOLIDAY_GAMES).flat().find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), goLoc: (d) => goLoc(d), place: () => sceneKey(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

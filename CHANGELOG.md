@@ -3,6 +3,49 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.21.0] – 2026-11-21
+
+The games explain themselves: Lucky shows how to play and helps when she is stuck. And English comes first
+everywhere: Russian is the small translation under it, heard only when she taps it.
+
+### Added
+- **👀 How to play** in the brain games: the first time she opens one (and any time with the button on its card), Lucky
+  plays a short round himself. A finger shows each step, and he says it out loud in English, with the Russian under
+  it. Skip goes straight to her game.
+  - **Remember!**: he looks at the shapes, taps "Got it!", and finds the pink ones where they were.
+  - **Number chain**: blocks to count for 3 + 2, he taps 5, and 5 starts the next sum.
+  - **Squares**: a frame shows the box with four pink corners; he taps one corner, then the one across.
+  - **Who's who?**: he taps the clues one by one, the bunnies that don't fit step back, one is left.
+- **Help when she is stuck** (a few seconds without a move): the finger points at a shape she is looking for, at a
+  box's corner (with its frame), at a clue to tap. In Number chain, blocks come out to count: rods of ten and single
+  cubes, the taken ones crossed out; they also come out after a wrong answer.
+- **Pictures for the questions**: Remember! shows what to find (a pink star, two pink shapes for "pink ones", a grey
+  bouncing shape for "bouncing ones"); each clue in Who's who? has a little picture (a colour, a bow, a hat, glasses,
+  ears, spots; "no spots" and "nothing on" crossed out).
+- **Clues to check**: in Who's who? a tapped clue sends back the bunnies without it (tap again to bring them back).
+- **A moving picture on every game's card** (Play and the holiday games): a finger plays a few seconds of it with the
+  game's own pictures. The basket goes under a carrot and the pizza falls past; a star zaps a ghost while the cat
+  (crossed out) is left alone; a finger taps what peeks out of a pumpkin; two cards flip and match; buttons light up
+  and the finger taps them in turn; Lucky hops over a rock; a rocket bursts at the top; the right answer is picked.
+- **🔊 on every game's card**: Lucky reads the rules out loud.
+- Lucky's words in the brain games are said out loud too.
+- **Games with Tali** start with what to do at the top (the game's name and how to play, the Russian small under it);
+  in a game with one thing to tap (fetch, tug of war, the race, the photo) a finger points at it until her first tap.
+
+### Changed
+- **English first**:
+  - Tapping Lucky's line, or a dojo mission's instruction, says it again in English. Only the small 🔊 line under it
+    says the Russian. Before, a tap anywhere played the Russian, so an instruction like "Stand on one leg…" was heard
+    in Russian.
+  - The phrase of the day is one English line, with the Russian small under it.
+  - The quiz asks in English ("How do you say it in English?"). The Russian meaning is a small clue, heard only when
+    tapped, and the answers are said in English. Before, the quiz read the Russian phrase out loud by itself.
+  - Tali's "hello" chat has English on top.
+- **Squares**: when a box pops, new tiles come in only where it was; nothing else on the board moves. There is always a
+  box to find: if the new tiles don't make one, only they get the colours that do.
+- Clearer rules on the brain games' cards; their questions have the Russian under them.
+- A game's card fits on a small phone (iPhone SE): the moving picture is smaller there and Start stays in view.
+
 ## [1.20.0] – 2026-11-21
 
 The first eight worlds are bigger: each has a second place. An arrow at the side of the scene leads there, and Lucky

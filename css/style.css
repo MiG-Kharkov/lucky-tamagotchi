@@ -247,6 +247,13 @@ input, select { font: inherit; }
 .ga .flag { background: #3BAA66; font-size: 16px; }
 .quiz-box { margin-top: 14px; text-align: center; }
 .quiz { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+/* the Russian under an English line: small, heard only when tapped */
+.say-sub { display: block; width: 100%; text-align: left; background: none; padding: 0 14px; font-size: 14.5px; font-weight: 600; color: var(--muted); }
+.quiz-q { font-size: 16px; }
+.quiz-clue { display: flex; align-items: center; gap: 10px; background: #fff; border-radius: 18px; padding: 8px 12px; box-shadow: var(--shadow); }
+.quiz-clue .big { font-size: 34px; }
+.quiz-clue .say-sub { padding: 0; }
+.opt .spk { float: right; opacity: .7; }
 .opt { background: #fff; border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); font-weight: 600; text-align: left; font-size: 15.5px; }
 .opt.right { background: #DDF7E6; box-shadow: 0 0 0 2px #3BAA66; }
 .opt.wrong { background: #FFE1E6; }
@@ -313,8 +320,17 @@ body.covered #app { visibility: hidden; }
 }
 .game-hud span { background: #fff; border-radius: 16px; padding: 8px 16px; font-weight: 800; font-size: 20px; box-shadow: var(--shadow); }
 .game-card {
-  position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: min(320px, 88%);
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(320px, 88%); max-height: calc(100% - 20px); overflow-y: auto;
   background: #FFF8FB; border-radius: 30px; padding: 22px; text-align: center; box-shadow: 0 20px 50px #4A2B4F44;
+}
+.game-card:has(.g-demo) .game-emoji { display: none; }
+/* short screens (iPhone SE): the moving picture smaller, the card tighter, so Start stays in view */
+@media (max-height: 620px) {
+  .game-card { padding: 14px 16px; }
+  .game-card h2 { margin: 2px 0; font-size: 21px; }
+  .g-demo { scale: .74; margin: -14px auto -12px; }
+  .g-rules { font-size: 14.5px; margin-bottom: 8px; padding: 4px 6px; }
+  .game-card .g-levels { margin-bottom: 4px; }
 }
 .game-card[hidden] { display: none; }
 .game-card h2 { margin: 6px 0; }
@@ -1725,7 +1741,11 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 /* the mood check-in and other windows: a translation under a button's words */
 .m-btns .btn small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 1px; }
 .m-btns .btn.pink small { color: #ffffffd9; }
-.game-card p small.g-sub { display: block; font-size: 13px; margin-top: 4px; }
+.game-card p small.g-sub, .g-rules small.g-sub { display: block; font-size: 13px; margin-top: 4px; }
+/* the rules on a game's card: tap to hear them */
+.g-rules { display: block; width: 100%; color: var(--muted); font-weight: 600; font-size: 16px; line-height: 1.35; margin: 0 0 16px; padding: 6px 8px; border-radius: 14px; }
+.g-rules .spk { float: right; margin: 0 0 4px 6px; font-size: 18px; }
+.g-rules:active { background: #FFE3F0; }
 /* a long line on a short screen: smaller text instead of covering Lucky's head */
 .bubble.tight { font-size: 15px; padding: 8px 12px; line-height: 1.25; }
 .bubble.tight .b-sub { font-size: 12px; margin-top: 3px; }

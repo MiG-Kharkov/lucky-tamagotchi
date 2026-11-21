@@ -8,6 +8,7 @@ import { REPLY, ASKS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from '../js/dialogs
 import { MISSIONS, PALETTES } from '../js/missions.js';
 import { JOKES } from '../js/jokes.js';
 import { IDIOMS, TWISTERS } from '../js/english.js';
+import { BRAIN_LINES } from '../js/brain.js';
 
 const OUT = new URL('../audio/', import.meta.url).pathname;
 fs.mkdirSync(OUT, { recursive: true });
@@ -46,7 +47,10 @@ for (const j of JOKES) {
 // Fun English: Lucky's sayings (in context and what they mean) and tongue twisters (one clip, played at three speeds)
 for (const it of IDIOMS) { addPair('lucky', it.say); addPair('lucky', it.mean); }
 for (const tw of TWISTERS) addPair('lucky', tw.t);
-for (const k of ['washHint', 'noGames', 'tooTired']) addPair('lucky', [STR.ru[k], STR.en[k]]);
+for (const k of ['washHint', 'noGames', 'tooTired', 'quizQ']) addPair('lucky', [STR.ru[k], STR.en[k]]);
+// The games: Lucky reads a game's rules from its card (🔊), and talks in the brain games (their demos, hints, cheers)
+for (const k of Object.keys(STR.en)) if (/^g_.+_hint$/.test(k)) addPair('lucky', [STR.ru[k], STR.en[k]]);
+walk('lucky', BRAIN_LINES);
 // Lucky's questions: only Lucky's lines are voiced; answer choices are text
 walk('lucky', REPLY);
 walk('lucky', MOOD_REPLY);
