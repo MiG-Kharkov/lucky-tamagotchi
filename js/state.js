@@ -230,7 +230,9 @@ export function today(S, now = Date.now()) {
   return S.today;
 }
 
-export const levelNeed = (l) => 25 + l * 10;
+// Hearts for the next level: 25 + 10 a level up to level 30, then 150 each (the levels after 30 bring a new world
+// every three levels, so they come about every day and a half instead of every three days)
+export const levelNeed = (l) => (l >= 30 ? 150 : 25 + l * 10);
 
 // Grants hearts with a daily cap per category. Returns the new levels.
 export function addHearts(S, n, cat, cap) {

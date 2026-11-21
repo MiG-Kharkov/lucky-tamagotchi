@@ -5,6 +5,7 @@
 import { LUCKY, DOG, CHATS } from './i18n.js';
 import { sfx } from './sound.js';
 import { PROPS, decor as decorArt, PUMPKIN_FACES } from './art.js';
+import { ZONES } from './zones/index.js';
 
 const LONG_MS = 550, DOUBLE_MS = 300, MOVE_PX = 14, STROKE_PX = 90, SWIPE_MS = 280, SWIPE_PX = 55;
 export { DOUBLE_MS }; // main.js: a tap's word waits this long for a second tap
@@ -1490,6 +1491,135 @@ export function createAntics(api) {
     }),
   };
 
+  // ⭐ trampoline: Lucky bounces, does a somersault, or goes as high as he can
+  const bounceOn = (c, n, move, key) => {
+    const a = begin('tramp');
+    go(clamp(pct(centerOf(c.el)[0]), 26, 74), 700);
+    for (let i = 0; i < n; i++) at(a, 750 + i * 650, () => { sfx.boing(); api.hop(c.el, 'tramp', 600); pose('laugh', 900, i === n - 1 ? move : 'hop', i === n - 1 ? 1100 : 600); });
+    at(a, 750 + n * 650, () => { line(key, 1, 0); if (move !== 'hop') api.reward(); });
+    at(a, 1600 + n * 650, end);
+  };
+  D.trampoline = {
+    press: (c) => { sfx.boing(); api.hop(c.el, 'tramp', 600); },
+    tap: who((c) => bounceOn(c, 3, 'hop', 'trampBounce')),
+    double: who((c) => bounceOn(c, 2, 'backflip', 'trampFlip')),
+    long: who((c) => {
+      bounceOn(c, 3, 'starjump', 'trampHigh');
+      setTimeout(() => api.fxAt(...head(), ['⭐', '✨'], 6, 'spark'), 2600);
+    }),
+  };
+
+  // ⭐ treasure chest: it opens with coins and pearls (or an old sock), Lucky hides inside or counts the treasure
+  const chestOpen = (c) => {
+    api.hop(c.el, 'chestopen', 1600);
+    sfx.sparkle();
+    const [x, y] = topOf(c.el), sock = Math.random() < 0.25;
+    (sock ? ['🧦'] : ['🪙', '💎', '🪙', '🥕', '🪙']).forEach((e, i) => setTimeout(() => fly(e, [x, y + 10], [x + (i - 2) * 34, y - 70 - (i % 2) * 24], 700, { arc: 30, spin: 300, size: 24 }), i * 120));
+    if (!api.free()) return;
+    pose(sock ? 'surprised' : 'stars', 1800, sock ? 'startle' : 'proud', 1200);
+    line(sock ? 'chestSock' : 'chestOpen', 1);
+    if (!sock) api.reward();
+  };
+  D.chest = {
+    press: (c) => { sfx.knock(); api.hop(c.el, 'wiggle'); },
+    tap: chestOpen,
+    double: hideIn('chestHide', () => sfx.zip()),
+    long: who(() => { prop('coins', 3200); pose('happy', 3000, 'think', 2000); sfx.tick(); line('chestCount', 1); }),
+  };
+
+  // ⭐ dinosaur egg: it wobbles, a baby dinosaur peeks out or hatches; Lucky sits on it to keep it warm
+  D.dinoEgg = {
+    press: (c) => { sfx.tap(); api.hop(c.el, 'eggwobble', 900); },
+    tap: (c) => {
+      api.hop(c.el, 'eggwobble', 900);
+      const [x, y] = topOf(c.el);
+      if (Math.random() < 0.5) { sfx.crackle(); if (api.free()) { pose('surprised', 1400, 'startle', 1100); line('eggWobble', 1); } return; }
+      setTimeout(() => { popUp('🦕', x, y + 6, 1800, 30, 'pop-rise'); sfx.squeak(); }, 500);
+      setTimeout(() => { if (api.free()) { pose('laugh', 1400, 'clap'); line('eggPeek', 1); } }, 700);
+    },
+    double: (c) => {
+      const [x, y] = topOf(c.el);
+      api.hop(c.el, 'eggwobble', 900);
+      setTimeout(() => { sfx.crackle(); api.fxAt(x, y + 20, ['🥚', '✨'], 5, 'spark'); popUp('🦖', x, y + 4, 2400, 36, 'pop-rise'); sfx.happy(); }, 700);
+      setTimeout(() => { if (!api.free()) return; pose('happy', 1800, 'hug'); api.hearts(...head(), 4); line('eggHatch', 1); api.reward(); }, 1000);
+    },
+    long: who((c) => {
+      const a = begin('eggWarm');
+      go(clamp(pct(centerOf(c.el)[0]), 26, 74), 700);
+      at(a, 750, () => { hold(a, 'loaf', 2600); api.setTemp('happy', 2600); line('eggWarm', 1, 0); });
+      at(a, 2200, () => { api.hop(c.el, 'eggwobble', 900); sfx.crackle(); });
+      at(a, 3500, end);
+    }),
+  };
+
+  // ⭐ swing: Lucky swings, jumps off at the top, or swings so high he sees the whole world
+  const swingOn = (c, ms, after) => {
+    const a = begin('swing');
+    go(clamp(pct(centerOf(c.el)[0]), 26, 74), 700);
+    at(a, 750, () => { api.hop(c.el, 'swinging', ms); hold(a, 'sway', ms); api.setTemp('happy', ms); sfx.whoosh(); line('swingGo', 1, 0); });
+    [1500, 2300].forEach((d) => at(a, d, () => sfx.whoosh()));
+    at(a, 750 + ms, () => after(a));
+  };
+  D.swing = {
+    press: (c) => { sfx.tap(); api.hop(c.el, 'swinging', 1200); },
+    tap: who((c) => swingOn(c, 2400, (a) => { pose('laugh', 1200, 'hop'); api.reward(); at(a, 900, end); })),
+    double: who((c) => swingOn(c, 1500, (a) => { sfx.boing(); pose('laugh', 1500, 'bigjump', 1100); line('swingJump', 1, 0); api.reward(); at(a, 1400, end); })),
+    long: who((c) => swingOn(c, 3000, (a) => { pose('stars', 1800, 'backflip', 950); api.fxAt(...head(), ['⭐', '☁️'], 5, 'spark'); line('swingHigh', 1, 0); api.reward(); at(a, 1600, end); })),
+  };
+
+  // ⭐ hot-air balloon: it tugs at its rope, Lucky goes up in it, or looks down from the sky
+  D.balloon = {
+    press: (c) => { sfx.whoosh(); api.hop(c.el, 'lift', 1400); },
+    tap: (c) => { api.hop(c.el, 'lift', 2000); sfx.whoosh(); if (api.free()) { pose('surprised', 1400, 'stretchUp', 1400); line('balloonUp', 1); } },
+    double: who(() => {
+      const a = begin('balloonRide');
+      prop('balloonUp', 3600);
+      hold(a, 'levitate', 3600);
+      api.setTemp('laugh', 3000);
+      sfx.whoosh();
+      line('balloonRide', 1, 0);
+      at(a, 3700, () => { pose('happy', 1200, 'land', 900); api.reward(); });
+      at(a, 4700, end);
+    }),
+    long: who(() => { prop('specs', 4000); pose('happy', 3000, 'look', 1500); line('balloonView', 1); api.reward(); }),
+  };
+
+  // ⭐ mushroom house: a snail looks out, Lucky hides inside, or shrinks to fit
+  D.mushroom = {
+    press: (c) => { sfx.boing(); api.hop(c.el, 'wiggle'); },
+    tap: (c) => {
+      sfx.knock();
+      const [x, y] = centerOf(c.el);
+      setTimeout(() => { popUp('🐌', x, y + 10, 2200, 30, 'pop-rise'); sfx.squeak(); }, 500);
+      setTimeout(() => { if (api.free()) { pose('laugh', 1400, 'wave', 1200); line('mushroomPeek', 1); } }, 800);
+    },
+    double: hideIn('mushroomHide', () => sfx.boing()),
+    long: who(() => {
+      const a = begin('tiny');
+      sfx.shrink();
+      hold(a, 'tiny', 3200);
+      api.fxAt(...head(), ['✨'], 5, 'spark');
+      line('mushroomTiny', 1, 0);
+      at(a, 3300, () => { sfx.grow(); pose('laugh', 1200, 'hop'); });
+      at(a, 4200, end);
+    }),
+  };
+
+  // ⭐ telescope: a planet, the moon, a shooting star or a waving alien
+  const scopeLook = (key, sky, sound) => who((c) => {
+    const a = begin('scope');
+    go(clamp(pct(centerOf(c.el)[0]), 26, 74), 700);
+    at(a, 750, () => { pose('happy', 2600, 'listen', 2400); sfx.tick(); });
+    at(a, 1400, () => { const r = sceneRect(); popUp(pick(sky), r.width * (0.3 + Math.random() * 0.4), r.height * 0.18, 2400, 46, 'pop-stay'); sound(); line(key, 1, 0); api.reward(); });
+    at(a, 3900, end);
+  });
+  D.telescope = {
+    press: (c) => { sfx.tap(); api.hop(c.el, 'wiggle'); },
+    tap: scopeLook('scopeLook', ['🪐', '🌙'], () => sfx.chime()),
+    double: scopeLook('scopeWish', ['🌠'], () => sfx.sparkle()),
+    long: scopeLook('scopeAlien', ['👽', '🛸'], () => sfx.magic()),
+  };
+
   // emoji stickers placed in Decorate: some behave like the real thing
   const EMOJI = {
     '🌷': 'flower', '🌼': 'flower', '🪷': 'flower', '🌸': 'flower', '🌻': 'flower', '🦀': 'crab', '🐑': 'sheep', '🍭': 'lolly', '🍬': 'lolly', '🧁': 'lolly',
@@ -2123,7 +2253,7 @@ export function createAntics(api) {
         at(a, 600, () => { prop('lolly', 3500); api.setTemp('eat', 1600); sfx.lick(); line('lolly', 1, 0); });
       },
     };
-    (V[kind] || V.nose)();
+    (V[kind] || (ZE[kind] && (() => ZE[kind](a, x, y))) || V.nose)();
     at(a, 5600, end);
     return true;
   }
@@ -2191,6 +2321,17 @@ export function createAntics(api) {
   });
   // the eggs and coins to find, in their layer above the decorations
   gestures(ui.hunt, (t) => t.closest('[data-tap]'), (kind, el, p) => run(R[el.dataset.tap], kind, el, p));
+
+  // The worlds after level 30 (js/zones) add what their things do and new endings for their guests, made of the
+  // same scene tools
+  const ZE = {};
+  const kit = { api, L, sfx, LUCKY, DOG, line, lineWith, who, oneOf, pickWay, begin, end, at, onEnd, hold, go, pose, prop, unprop,
+    fly, popUp, rainbow, spray, getWet, shakeDry, puddle, hideGame, found, visitor, centerOf, topOf, pct, nextTo, awayFrom,
+    sceneRect, head, nose, mouth, feet, paw, earPt, clamp, pick, busy: () => !!act };
+  for (const z of ZONES) {
+    z.reactions(R, kit);
+    Object.assign(ZE, z.endings?.(kit));
+  }
 
   return {
     // a tap on Lucky while he hides: 'You found me!' (true if handled)

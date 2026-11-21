@@ -5,6 +5,7 @@ import { JOKES, JOKE_BY_ID } from './jokes.js';
 import { IDIOMS, TWISTERS, IDIOM_BY_ID, TWISTER_BY_ID } from './english.js';
 import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES, SUPER } from './content.js';
+import { ZONES, ZONE_IDS } from './zones/index.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
 import { CONFIG } from './config.js';
@@ -16,6 +17,9 @@ import { createAntics, gestures, DOUBLE_MS } from './antics.js';
 import { createTricks } from './tricks.js';
 import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
+
+// the worlds after level 30 bring their own animations
+document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}</style>`);
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -300,12 +304,16 @@ function luckyPoint(fx = 0.5, fy = 0.5) {
 // (otherwise nested infinite animations, like the helicopter ears, would run forever).
 function hop(elm, cls = 'hop', maxMs = 4000) {
   elm.classList.remove(cls);
+  const before = new Set(getComputedStyle(elm).animationName.split(', '));
   void elm.getBoundingClientRect(); // restart the animation (works for SVG too)
   elm.classList.add(cls);
+  // the animations this class itself starts on the element: only their end takes the class off (a tap's bounce on the
+  // same thing ending first must not cut short a class that animates its parts; those go by the timer)
+  const mine = getComputedStyle(elm).animationName.split(', ').filter((n) => n !== 'none' && !before.has(n));
   const timers = (elm._fx ||= {});
   clearTimeout(timers[cls]);
   const off = () => { clearTimeout(timers[cls]); elm.classList.remove(cls); elm.removeEventListener('animationend', onEnd); };
-  const onEnd = (e) => { if (e.target === elm) off(); };
+  const onEnd = (e) => { if (e.target === elm && mine.includes(e.animationName)) off(); };
   elm.addEventListener('animationend', onEnd);
   timers[cls] = setTimeout(off, maxMs); // safety net in case the animation never ran
 }
@@ -414,8 +422,22 @@ function nextModal() {
 
 function award(res) {
   if (!res) return;
-  for (const lvl of res.ups) showModal({ custom: (host, done) => revealLevel(host, lvl, done) });
+  for (const lvl of res.ups) {
+    showModal({ custom: (host, done) => revealLevel(host, lvl, done) });
+    if (lvl === FINALE_LEVEL && !turbo()) finale();
+  }
   renderTop();
+}
+
+// Level 60, the end of the road the worlds make: the Grand Master's robe (the level's present) and a window of its own,
+// once (more levels still come, with stickers and hearts)
+const FINALE_LEVEL = 60;
+function finale() {
+  if (S.finaleDone) return;
+  S.finaleDone = true;
+  st.save(S);
+  showModal({ art: luckyPic({ face: 'stars', wear: { ...S.wear, body: 'grandMaster' } }), title: tr('finaleTitle'), text: tr('finaleText', { n: S.days.length }),
+    buttons: [{ label: tr('hooray'), onClick: () => { confetti(); sfx.fanfare(); setTimeout(() => sayAuto(fresh(LUCKY.finale)), 400); } }] });
 }
 
 // What a level brings: an outfit, a place or a decoration; otherwise a sticker or bonus
@@ -509,9 +531,10 @@ function revealGift(host, { title, rewards, next = '', line = LUCKY.levelUp }, d
 // Scene layout: each place has its own item list. Coordinates are in % of the background picture (see artBox),
 // not of the visible scene, so an item stays on the same spot of grass or sky when the scene gets shorter
 // (in Decorate the tray is taller than the action buttons).
-const DECOR_W = { rainbow: 72, lantern: 12, hutch: 31, bowl: 18, ball: 13, tent: 30, snowman: 15, igloo: 30, rocket: 15, castle: 34, pond: 32 };
+const DECOR_W = { rainbow: 72, lantern: 12, hutch: 31, bowl: 18, ball: 13, tent: 30, snowman: 15, igloo: 30, rocket: 15, castle: 34, pond: 32, trampoline: 28, chest: 19, dinoEgg: 13, swing: 24, balloon: 18, mushroom: 24, telescope: 15 };
 const DECOR_POS = { rainbow: [50, 35], lantern: [88, 33], hutch: [17, 70], bowl: [86, 92], ball: [10, 93],
-  tent: [82, 68], snowman: [88, 76], igloo: [18, 71], rocket: [86, 62], castle: [20, 65], pond: [74, 92] };
+  tent: [82, 68], snowman: [88, 76], igloo: [18, 71], rocket: [86, 62], castle: [20, 65], pond: [74, 92], trampoline: [78, 84], chest: [13, 86], dinoEgg: [89, 80],
+  swing: [16, 72], balloon: [88, 58], mushroom: [84, 72], telescope: [12, 80] };
 
 // The background is a 400×700 picture drawn bottom-aligned and scaled to cover the scene (xMidYMax slice).
 // The decoration layers get exactly the same box.
@@ -556,7 +579,8 @@ let editSel = -1;
 function layout() {
   S.layout ||= {};
   if (!S.layout[S.bg]) {
-    S.layout[S.bg] = DECOR.filter((d) => S.level >= d.level && !S.decorOff.includes(d.id))
+    // the worlds after level 30 start bare: a dozen decorations would hide their own things
+    S.layout[S.bg] = ZONE_IDS.has(S.bg) ? [] : DECOR.filter((d) => S.level >= d.level && !S.decorOff.includes(d.id))
       .map((d) => ({ k: 'decor', id: d.id, x: DECOR_POS[d.id][0], y: DECOR_POS[d.id][1], s: 1, f: 0 }));
   }
   return S.layout[S.bg];
@@ -771,12 +795,14 @@ const ownsWear = (w) => (w.level && S.level >= w.level) || S.owned.includes(w.id
 const albumReward = (id) => ALBUMS.find((a) => a.reward === id);
 
 // The whole collection: every outfit, world, decoration and sticker. When it is complete, a window says so, once
-// (nothing more to give: the presents after it are bonus hearts)
+// for each size of the collection (new worlds and albums make it bigger, and the next 100% is celebrated again;
+// nothing more to give: the presents after it are bonus hearts)
+const collectionSize = () => WEAR.length + PLACES.length + DECOR.length + STICKERS.length;
 const collectionFull = () => WEAR.every(ownsWear) && PLACES.every((pl) => S.level >= pl.level) && DECOR.every((d) => S.level >= d.level)
   && STICKERS.every((s) => S.stickers.includes(s));
 function collectionCheck() {
-  if (S.collectionDone || turbo() || !S.onboarded || !collectionFull()) return;
-  S.collectionDone = true;
+  if (S.collectionDone === collectionSize() || turbo() || !S.onboarded || !collectionFull()) return;
+  S.collectionDone = collectionSize();
   st.save(S);
   showModal({ art: luckyPic({ face: 'laugh', wear: S.wear }), title: tr('collFullTitle'), text: tr('collFullText', { n: STICKERS.length }),
     buttons: [{ label: tr('hooray'), onClick: () => { confetti(); sfx.levelup(); setTimeout(() => sayAuto(fresh(LUCKY.collectionFull)), 400); } }] });
@@ -938,6 +964,8 @@ function renderBg() {
   antics.refreshEggs();
   shownSky = null;
   applyNinjaLook();
+  // a world after level 30 may dress Lucky for itself while he is there (a bubble helmet under the sea)
+  if (ui.props) antics.setSticky('zone', ZONES.find((z) => z.id === S.bg)?.wear || null);
 }
 
 function goPlace(id) {
@@ -1524,6 +1552,8 @@ const VISITORS = [
   { e: '🦉', w: 1.5, in: 'garden irish winter castle dojo', path: 'glide', end: ['owl'], evening: true, flip: true },
   { e: '🦄', w: 0.15, in: 'all', path: 'glide', end: ['unicorn'], flip: true },
   { e: '🐉', w: 0.15, in: 'dojo castle space winter', path: 'glide', end: ['dragon'], flip: true },
+  // the guests of the worlds after level 30 (js/zones)
+  ...ZONES.flatMap((z) => (z.visitors || []).map((v) => ({ ...v, in: z.id }))),
 ];
 const FLIGHT = { flutter: 11000, zigzag: 7000, glide: 9000, streak: 3200, jump: 2600, fall: 9000, float: 13000, rise: 10000 };
 // holiday visitors come in every world from their stage on
@@ -1571,7 +1601,8 @@ function maybeVisitor(now) {
   lastVisitor = v.e;
   const b = document.createElement('button');
   b.className = 'visitor';
-  b.textContent = v.e;
+  if (v.html) b.innerHTML = v.html; // a guest drawn by its world (the jungle's toucan: there is no emoji for it)
+  else b.textContent = v.e;
   const { right, frames } = flightPath(v.path);
   if (v.flip && right) b.style.transform = 'scaleX(-1)';
   ui.scene.appendChild(b);
@@ -3330,6 +3361,8 @@ function start() {
   if (!S.onboarded) { S.onboarded = true; st.save(S); }
   if (mode === 'main') greet(gap);
   setTimeout(collectionCheck, 6000); // a collection that was already complete gets its window too
+  // hearts that already reach the next level (a level after 30 needs fewer than before) bring it now, with its window
+  if (S.onboarded && !turbo()) setTimeout(() => award(st.addHearts(S, 0, 'settle', 0)), 2500);
   document.body.classList.add('ready'); // the waking-up screen goes away
 }
 

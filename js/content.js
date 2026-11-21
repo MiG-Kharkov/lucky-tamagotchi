@@ -1,4 +1,5 @@
 // Worlds, decorations, sticker albums and badges. Names are [ru, en] pairs.
+import { ZONES } from './zones/index.js';
 
 // Worlds unlock by level. props are the world's items for Decorate (emoji, available once the world is unlocked)
 export const PLACES = [
@@ -10,6 +11,8 @@ export const PLACES = [
   { id: 'space', level: 16, name: ['Космос', 'Outer space'], props: ['🪐', '🛸', '🌟', '👽'] },
   { id: 'irish', level: 19, name: ['Ирландские холмы', 'Irish hills'], props: ['☘️', '🐑', '🧚', '🪨'] },
   { id: 'castle', level: 22, name: ['Замок ниндзя', 'Ninja castle'], props: ['🏯', '⛩️', '🎐'] },
+  // the worlds after level 30 (js/zones)
+  ...ZONES.map((z) => ({ id: z.id, level: z.level, name: z.name, props: z.emoji })),
 ];
 
 // Picture decorations (SVG in art.decor)
@@ -25,12 +28,19 @@ export const DECOR = [
   { id: 'rocket', level: 23, name: ['Ракета', 'Rocket'] },
   { id: 'castle', level: 25, name: ['Замок', 'Castle'] },
   { id: 'pond', level: 27, name: ['Пруд лягушки', "Frog's pond"] },
+  { id: 'trampoline', level: 34, name: ['Батут', 'Trampoline'] },
+  { id: 'chest', level: 37, name: ['Сундук с сокровищами', 'Treasure chest'] },
+  { id: 'dinoEgg', level: 43, name: ['Яйцо динозавра', 'Dino egg'] },
+  { id: 'swing', level: 46, name: ['Качели', 'Swing'] },
+  { id: 'balloon', level: 49, name: ['Воздушный шар', 'Hot-air balloon'] },
+  { id: 'mushroom', level: 52, name: ['Домик-грибок', 'Mushroom house'] },
+  { id: 'telescope', level: 56, name: ['Телескоп', 'Telescope'] },
 ];
 
 // Super things: few, with their own fun on tap, double tap and long press (antics.js); they glow in Decorate
-export const SUPER = new Set(['rocket', 'hutch', 'ball', 'pond', 'snowman', 'tent', '🎈', '🛸', '🧚']);
+export const SUPER = new Set(['rocket', 'hutch', 'ball', 'pond', 'snowman', 'tent', 'trampoline', 'chest', 'dinoEgg', 'swing', 'balloon', 'mushroom', 'telescope', '🎈', '🛸', '🧚']);
 
-// Stickers: 6 albums of 10. A complete album gives a special item
+// Stickers: albums of 10. A complete album gives a special item
 export const ALBUMS = [
   { id: 'garden', name: ['Сад', 'Garden'], reward: 'lei', stickers: ['🌸', '🌻', '🌷', '🦋', '🐞', '🐝', '🍀', '🐣', '🌈', '🪁'] },
   { id: 'sweets', name: ['Сладости', 'Sweets'], reward: 'chefHat', stickers: ['🍓', '🧁', '🍩', '🍭', '🍬', '🍪', '🎂', '🍦', '🫐', '🎀'] },
@@ -38,6 +48,9 @@ export const ALBUMS = [
   { id: 'sea', name: ['Море', 'Sea'], reward: 'eyepatch', stickers: ['🐚', '🐬', '🐠', '🐙', '🦀', '🐳', '🦭', '🐢', '⚓', '💎'] },
   { id: 'space', name: ['Космос', 'Space'], reward: 'dragon', stickers: ['🌙', '🚀', '🪐', '🌠', '👽', '🛸', '☄️', '🌍', '🔭', '🎈'] },
   { id: 'ireland', name: ['Ирландия', 'Ireland'], reward: 'jersey', stickers: ['☘️', '🐑', '🏰', '🎻', '🧚', '🦊', '🌧️', '🫖', '🐴', '🦄'] },
+  { id: 'farm', name: ['Ферма', 'Farm'], reward: 'cowboy', stickers: ['🐔', '🐮', '🐷', '🐐', '🥕', '🌽', '🚜', '🌾', '🍎', '🦆'] },
+  { id: 'wild', name: ['Джунгли и динозавры', 'Jungle and dinos'], reward: 'dinoSuit', stickers: ['🦕', '🦖', '🌋', '🦴', '🦜', '🐒', '🍌', '🐊', '🦥', '🌺'] },
+  { id: 'magic', name: ['Небо и волшебство', 'Sky and magic'], reward: 'wizardHat', stickers: ['☁️', '🕊️', '🌌', '🦉', '🍄', '🔮', '🪄', '🌟', '🦌', '🎐'] },
 ];
 export const STICKERS = ALBUMS.flatMap((a) => a.stickers);
 
@@ -73,10 +86,20 @@ export const BADGES = [
   ['days30', '🗓️', ['Месяц вместе', 'A month together'], 'days', 30],
   ['level10', '🔟', ['Уровень 10', 'Level 10'], 'level', 10],
   ['level20', '🌟', ['Уровень 20', 'Level 20'], 'level', 20],
+  ['level30', '🏅', ['Уровень 30', 'Level 30'], 'level', 30],
+  ['level40', '💫', ['Уровень 40', 'Level 40'], 'level', 40],
+  ['level50', '👑', ['Уровень 50', 'Level 50'], 'level', 50],
+  ['level60', '🎇', ['Великий мастер', 'Grand Master'], 'level', 60],
+  ['worlds10', '🧭', ['Покорительница миров', 'World traveller'], 'worlds', 10],
+  ['worlds16', '🗺️', ['Все миры', 'Every world'], 'worlds', 16],
   ['belt3', '🟢', ['Зелёный пояс', 'Green belt'], 'belt', 3],
   ['beltPink', '🩷', ['Розовый мастер', 'Pink master'], 'belt', 7],
   ['stickers30', '📒', ['Коллекционер', 'Collector'], 'stickers', 30],
+  ['stickers60', '📔', ['Большая коллекция', 'Big collection'], 'stickers', 60],
+  ['stickers90', '🎖️', ['Великий коллекционер', 'Grand collector'], 'stickers', 90],
   ['album1', '📚', ['Первый альбом', 'First album'], 'albums', 1],
+  ['album4', '🗂️', ['Четыре альбома', 'Four albums'], 'albums', 4],
+  ['album9', '🏛️', ['Все альбомы', 'Every album'], 'albums', 9],
   ['jokes25', '😂', ['Хохотушка', 'Giggle champion'], 'jokes', 25],
   ['twisters10', '👅', ['Скороговорщица', 'Twister champion'], 'twisters', 10],
   ['idioms10', '🎭', ['Знаток выражений', 'Saying explorer'], 'idioms', 10],

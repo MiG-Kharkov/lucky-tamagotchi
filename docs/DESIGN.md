@@ -205,14 +205,23 @@ and a step towards the next belt (3 stamps per belt).
 
 ## Progress
 
-- Hearts from care (daily caps per category) raise the level. Every level up to 27 brings something new. When the whole
-  collection is complete (every outfit, world, decoration and sticker), a window says so, once, and the collection
-  shows 🏆 100%; the presents after it are bonus hearts.
+- Hearts from care (daily caps per category) raise the level: 25 + 10 a level up to level 30, then 150 each. Every
+  level up to 58, and 60, brings something new (an outfit, a world or a decoration; otherwise a sticker). Level 60
+  is the finale: the Grand Master's robe and a window of its own, once. When the whole
+  collection is complete (every outfit, world, decoration and sticker), a window says so, once for each size of the
+  collection (new worlds and albums make it bigger, and the next 100% gets its window too), and the collection shows
+  🏆 100%; the presents after it are bonus hearts.
 - Belts: white → … → black → **Pink Master Belt** (3 missions per belt, ~3 weeks). Lucky's headband matches the current belt.
-- **Wardrobe:** 28 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
+- **Wardrobe:** 45 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
-- **8 worlds** by level, each with its own tappable details and Decorate items.
-- **11 decorations**, **60 stickers in 6 albums** (a full album gives a special item), **37 badges**, the English tab (jokes, tongue twisters, sayings).
+- **12 worlds** by level, each with its own tappable details and Decorate items. The worlds after level 30 (farm 32,
+  coral reef 35, jungle 38, dino valley 41) live in their own modules, `js/zones/<id>.js`: picture, holiday spots,
+  Lucky's lines, what each thing does on a tap (two ways), a double tap and a long press, guests and animations
+  (the contract is in `js/zones/index.js`). They start without decorations, so their own things can be seen.
+- **18 decorations** (the trampoline, the treasure chest, the dinosaur egg, the swing, the hot-air balloon, the
+  mushroom house and the telescope are super ones), **90 stickers in 9 albums** (a full album gives a special item;
+  the farm album a cowboy hat, the jungle-and-dinos album a dino costume, the sky-and-magic album a wizard's hat),
+  **47 badges**, the English tab (jokes, tongue twisters, sayings).
 - Pacing, measured with a 60-day model of the real tables: all stickers in about 3 weeks; the last world in 4 weeks
   with two sessions a day and 6 weeks with one; the level items in 5–9 weeks. An hour a day earns only about twice
   what 12 minutes do. Two stickers in three come from the album closest to done, so the albums fill one after another

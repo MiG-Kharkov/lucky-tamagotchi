@@ -1,4 +1,5 @@
 import { wearLayers, WEAR_BY_ID } from './wardrobe.js';
+import { ZONES } from './zones/index.js';
 
 // SVG art: Lucky (ginger lop-eared bunny), Tali (chihuahua), scenes, belts.
 
@@ -427,6 +428,46 @@ ${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) 
       return `<svg viewBox="0 0 140 60" xmlns="http://www.w3.org/2000/svg"><ellipse cx="70" cy="34" rx="66" ry="22" fill="#5BB8E8"/><ellipse cx="70" cy="30" rx="58" ry="16" fill="#7FD0F2"/>
 <path d="M40 30 a12 7 0 1 0 22 2 l-10 -2z" fill="#4CAF50"/><circle cx="96" cy="30" r="9" fill="#FF9EC7"/><circle cx="96" cy="30" r="4" fill="#FFE066"/>
 <g transform="translate(50 20)"><ellipse cx="0" cy="4" rx="9" ry="6" fill="#6CCB5F"/><circle cx="-4" cy="-2" r="3.5" fill="#6CCB5F"/><circle cx="4" cy="-2" r="3.5" fill="#6CCB5F"/><circle cx="-4" cy="-2" r="1.6" fill="#222"/><circle cx="4" cy="-2" r="1.6" fill="#222"/></g></svg>`;
+    case 'trampoline':
+      return `<svg viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg"><ellipse cx="60" cy="66" rx="50" ry="4" fill="#000" opacity=".12"/>
+<path d="M18 30 L12 64 M102 30 L108 64 M44 36 L42 66 M76 36 L78 66" stroke="#6B4FE0" stroke-width="5" stroke-linecap="round"/>
+<ellipse cx="60" cy="28" rx="56" ry="16" fill="#4D9BFF"/><ellipse class="tramp-mat" cx="60" cy="27" rx="46" ry="11" fill="#2A2F45"/>
+${Array.from({ length: 14 }, (_, i) => { const a = (i / 14) * Math.PI * 2; return `<path d="M${(60 + Math.cos(a) * 47).toFixed(1)} ${(27 + Math.sin(a) * 11.5).toFixed(1)} L${(60 + Math.cos(a) * 54).toFixed(1)} ${(28 + Math.sin(a) * 15).toFixed(1)}" stroke="#C8D2E6" stroke-width="2"/>`; }).join('')}
+<path d="M30 22 q30 -8 60 0" stroke="#fff" stroke-width="2" opacity=".25" fill="none"/></svg>`;
+    case 'chest':
+      return `<svg viewBox="0 0 90 72" xmlns="http://www.w3.org/2000/svg"><ellipse cx="45" cy="69" rx="40" ry="3" fill="#000" opacity=".12"/>
+<rect x="8" y="30" width="74" height="38" rx="4" fill="#B5733F"/><path d="M8 30 Q8 6 45 6 Q82 6 82 30Z" fill="#C98650"/>
+<path d="M8 44 H82 M8 58 H82" stroke="#9A5F32" stroke-width="2"/><path d="M20 30 V68 M70 30 V68 M20 30 Q20 10 30 8 M70 30 Q70 10 60 8" stroke="#FFD23F" stroke-width="5" fill="none"/>
+<path d="M6 30 H84" stroke="#E6A800" stroke-width="5"/><rect x="38" y="26" width="14" height="16" rx="3" fill="#FFD23F" stroke="#E6A800" stroke-width="2"/><circle cx="45" cy="33" r="2.4" fill="#7A4A26"/>
+<circle cx="30" cy="27" r="3" fill="#FFF3A8" class="twinkle"/></svg>`;
+    case 'dinoEgg':
+      return `<svg viewBox="0 0 64 80" xmlns="http://www.w3.org/2000/svg"><ellipse cx="32" cy="76" rx="28" ry="4" fill="#000" opacity=".12"/>
+<path d="M6 66 q26 14 52 0 l-4 10 q-22 8 -44 0z" fill="#D8A53B"/><path d="M8 68 l-4 -6 M18 72 l-2 -8 M46 72 l3 -8 M56 68 l5 -5" stroke="#E7B94F" stroke-width="2.4" stroke-linecap="round"/>
+<g class="egg-body"><path d="M32 4 C50 4 58 34 56 50 C54 66 44 72 32 72 C20 72 10 66 8 50 C6 34 14 4 32 4Z" fill="#F4F0DC"/>
+<circle cx="22" cy="28" r="5" fill="#8FD47C"/><circle cx="40" cy="20" r="3.5" fill="#8FD47C"/><circle cx="42" cy="46" r="6" fill="#8FD47C"/><circle cx="24" cy="54" r="4" fill="#8FD47C"/>
+<path d="M18 16 q4 -6 10 -8" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/></g></svg>`;
+    case 'swing':
+      return `<svg viewBox="0 0 100 112" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="109" rx="44" ry="3" fill="#000" opacity=".12"/>
+<path d="M8 108 L22 6 L36 108 M64 108 L78 6 L92 108" stroke="#C98E5A" stroke-width="6" stroke-linecap="round" fill="none"/><path d="M16 8 H84" stroke="#A86B3C" stroke-width="7" stroke-linecap="round"/>
+<g class="swing-seat"><path d="M38 10 V74 M62 10 V74" stroke="#8C5A3C" stroke-width="2.5"/><rect x="32" y="72" width="36" height="7" rx="3" fill="#FF5FA2"/>
+${[0, 1, 2, 3].map((i) => `<circle cx="38" cy="${20 + i * 14}" r="2.5" fill="#FFD23F"/><circle cx="62" cy="${24 + i * 14}" r="2.5" fill="#FF7AB8"/>`).join('')}</g></svg>`;
+    case 'balloon':
+      return `<svg viewBox="0 0 80 112" xmlns="http://www.w3.org/2000/svg"><ellipse cx="40" cy="109" rx="16" ry="3" fill="#000" opacity=".12"/>
+<g class="balloon-bob amb"><path d="M40 4 C66 4 76 26 72 44 C68 60 52 70 48 78 H32 C28 70 12 60 8 44 C4 26 14 4 40 4Z" fill="#FF5FA2"/>
+<path d="M40 4 C50 4 54 30 52 46 C50 60 46 70 45 78 H35 C34 70 30 60 28 46 C26 30 30 4 40 4Z" fill="#FFD23F"/><path d="M40 4 C43 4 44 40 42 78 H38 C36 40 37 4 40 4Z" fill="#4D9BFF"/>
+<path d="M33 78 L30 90 M47 78 L50 90" stroke="#8C5A3C" stroke-width="2"/><rect x="28" y="88" width="24" height="16" rx="3" fill="#C98E5A"/><path d="M28 94 H52 M34 88 V104 M40 88 V104 M46 88 V104" stroke="#A86B3C" stroke-width="1.6"/>
+<path d="M20 22 q6 -12 16 -14" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".6"/></g></svg>`;
+    case 'mushroom':
+      return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="50" cy="97" rx="40" ry="3.5" fill="#000" opacity=".12"/>
+<path d="M28 96 V52 H72 V96Z" fill="#FFF3E0"/><path d="M42 96 V76 a8 8 0 0 1 16 0 V96Z" fill="#A86B3C"/><circle cx="55" cy="86" r="1.6" fill="#FFD23F"/>
+<rect x="31" y="60" width="11" height="10" rx="3" fill="#8FD0FF" stroke="#E8D8C0" stroke-width="2"/>
+<path d="M4 56 Q8 8 50 6 Q92 8 96 56 Q50 66 4 56Z" fill="#E8413A"/>${[[24, 30, 7], [50, 18, 6], [74, 32, 8], [40, 44, 5], [64, 48, 4], [14, 48, 4], [86, 48, 4]].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}" fill="#fff"/>`).join('')}
+<path d="M68 52 q2 -10 8 -14" stroke="#4CB84C" stroke-width="3" fill="none"/><circle cx="77" cy="37" r="3" fill="#FFD23F"/></svg>`;
+    case 'telescope':
+      return `<svg viewBox="0 0 70 100" xmlns="http://www.w3.org/2000/svg"><ellipse cx="35" cy="97" rx="26" ry="3" fill="#000" opacity=".12"/>
+<path d="M35 56 L14 96 M35 56 L56 96 M35 56 V96" stroke="#7A5236" stroke-width="4" stroke-linecap="round"/>
+<g transform="rotate(-32 35 50)"><rect x="6" y="42" width="56" height="16" rx="6" fill="#E6A800"/><rect x="2" y="44" width="12" height="12" rx="3" fill="#C98E00"/><rect x="58" y="39" width="10" height="22" rx="4" fill="#FFD23F"/>
+<circle cx="66" cy="50" r="6" fill="#8FD0FF"/><path d="M20 44 h26" stroke="#FFF3A8" stroke-width="3" stroke-linecap="round" opacity=".7"/></g><circle cx="35" cy="56" r="5" fill="#7A5236"/></svg>`;
     default:
       return '';
   }
@@ -919,3 +960,14 @@ export const PROPS = {
   dizzy: { slot: 'fx', art: () => `<g transform="translate(100 24) scale(1 .4)"><g class="pp-orbit">${[0, 90, 180, 270].map((a) => { const r = (a * Math.PI) / 180; return starPath(Math.cos(r) * 34, Math.sin(r) * 34, 0.6); }).join('')}</g></g>` },
   bump: { slot: 'bump', art: () => `<ellipse cx="118" cy="44" rx="11" ry="9" fill="#FF9DBB" stroke="#E86A92" stroke-width="2"/><path d="M113 40 q4 -3 8 0" stroke="#fff" stroke-width="2" fill="none"/>` },
 };
+
+// The worlds after level 30 (js/zones): their pictures, holiday spots and the things Lucky wears in their scenes
+const ZONE_ART = { svgOpen, cloud, flower, stars, snow, tapG, at, em };
+for (const z of ZONES) {
+  WORLDS[z.id] = (u) => z.art(u, ZONE_ART);
+  SPOTS[z.id] = z.spots;
+  for (const [id, p] of Object.entries(z.props?.(ZONE_ART) || {})) {
+    if (PROPS[id]) throw new Error(`zone ${z.id}: the prop ${id} is taken`);
+    PROPS[id] = p;
+  }
+}

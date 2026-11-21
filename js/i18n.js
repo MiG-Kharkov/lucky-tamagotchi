@@ -1,4 +1,5 @@
 import { CONFIG } from './config.js';
+import { ZONES } from './zones/index.js';
 
 // All game texts. Lists are [ru, en] pairs (sometimes with an emoji as the third element).
 
@@ -146,6 +147,7 @@ export const STR = {
     holidays: 'Праздничные украшения', holidayAuto: 'Праздники по календарю',
     calTitle: 'Праздничный календарь', calDays: 'До праздника осталось дней: {n}', calToday: 'Сегодня {x}! Открой главное окошко!',
     nicholasGift: 'Подарок от святого Миколая',
+    finaleTitle: 'Великий мастер!', finaleText: 'Уровень 60! Все шестнадцать миров открыты. {n} {n|день|дня|дней} вместе — и это только начало.',
     collFullTitle: 'Вся коллекция собрана!', collFullText: '100%: все наряды, миры, украшения и {n} {n|наклейка|наклейки|наклеек}.',
     bdTitle: 'С днём рождения, {name}!', bdSub: 'Наши с тобой дни', bdDays: '{n|день|дня|дней} вместе', bdJokes: '{n|шутка|шутки|шуток} Тали', bdMissions: '{n|миссия|миссии|миссий} ниндзя',
     bdStickers: '{n|наклейка|наклейки|наклеек}', bdBelt: 'Пояс: {x}', bdKeepy: 'рекорд с мячом', bdSign: 'Твои Лаки и {dog} 🐰🐶', bdThanks: 'Спасибо!',
@@ -309,6 +311,7 @@ export const STR = {
     holidays: 'Holiday decorations', holidayAuto: 'Holidays by the calendar',
     calTitle: 'Holiday calendar', calDays: 'Days to go: {n}', calToday: "It's {x} today! Open the big window!",
     nicholasGift: 'A present from St Nicholas',
+    finaleTitle: 'Grand Master!', finaleText: 'Level 60! All sixteen worlds are open. {n} {n|day|days} together, and this is only the beginning.',
     collFullTitle: 'The whole collection is complete!', collFullText: '100%: every outfit, world and decoration, and all {n} stickers.',
     bdTitle: 'Happy birthday, {name}!', bdSub: 'Our days together', bdDays: '{n|day|days} together', bdJokes: '{n|joke|jokes} heard', bdMissions: 'ninja {n|mission|missions}',
     bdStickers: '{n|sticker|stickers}', bdBelt: 'Belt: {x}', bdKeepy: 'keepy-uppy record', bdSign: 'Love, Lucky and {dog} 🐰🐶', bdThanks: 'Thank you!',
@@ -334,7 +337,7 @@ export const STR = {
 // {n|очко|очка|очков}: the word that goes with the number (Russian: one, few, many; English: one, other)
 function plural(lang, n, forms) {
   const f = forms.split('|'), a = Math.abs(Number(n)) % 100, b = a % 10;
-  if (lang !== 'ru') return a === 1 ? f[0] : f[1] ?? f[0];
+  if (lang !== 'ru') return Math.abs(Number(n)) === 1 ? f[0] : f[1] ?? f[0]; // English: 101 days, not 101 day
   return f[a > 10 && a < 20 ? 2 : b === 1 ? 0 : b >= 2 && b <= 4 ? 1 : 2] ?? f[f.length - 1];
 }
 
@@ -934,6 +937,30 @@ export const LUCKY = {
     moonBack: [['Я вернулся! Луна передаёт привет.', "I'm back! The moon says hello."]],
     myCastle: [['Мой собственный замок! Я король кроликов.', "My very own castle! I'm the bunny king."]],
     pond: [['Плюх! Лягушка дома?', 'Splash! Is the frog at home?']],
+    // ⭐ decorations after level 30: the trampoline, the treasure chest, the dinosaur egg
+    trampBounce: [['Прыг! Скок! Я лечу выше облаков!', "Boing! Boing! I'm flying higher than the clouds!"], ['Батут — лучшее изобретение после морковки!', 'Trampolines are the best invention after carrots!']],
+    trampFlip: [['Сальто! Видела? Десять баллов!', 'A somersault! Did you see? Ten out of ten!']],
+    trampHigh: [['Самый высокий прыжок! Я чуть не достал до луны!', 'The highest jump ever! I nearly reached the moon!']],
+    chestOpen: [['Сокровища! Золото, жемчуг… и морковка!', 'Treasure! Gold, pearls… and a carrot!'], ['Ого, сундук полон монет! Я богатый кролик!', "Whoa, the chest is full of coins! I'm a rich bunny!"]],
+    chestSock: [['Старый носок? Пираты, вы серьёзно?', 'An old sock? Seriously, pirates?']],
+    chestHide: [['Тут тесно, но для меня в самый раз!', "It's a bit cramped, but just right for me!"]],
+    chestCount: [['Одна монетка, две монетки… Сбился! Начну сначала.', "One coin, two coins… I lost count! Let's start again."]],
+    eggWobble: [['Яйцо шевелится! Там кто-то есть!', "The egg is wobbling! There's someone inside!"]],
+    eggPeek: [['Ку-ку! Динозаврик выглядывает!', 'Peekaboo! A baby dino is peeking out!']],
+    eggHatch: [['Вылупился! Привет, малыш! Я буду твоим другом.', "It's hatched! Hello, little one! I'll be your friend."]],
+    eggWarm: [['Посижу на яйце, чтобы ему было тепло. Я теперь курица?', "I'll sit on the egg to keep it warm. Am I a hen now?"]],
+    swingGo: [['Вперёд-назад, выше-выше!', 'Back and forth, higher and higher!'], ['Качаться — почти как летать!', 'Swinging is almost like flying!']],
+    swingJump: [['Прыжок с качелей! Приземление — десять баллов!', 'A jump off the swing! A perfect landing!']],
+    swingHigh: [['Выше всех! Вижу крыши и облака!', 'Higher than everyone! I can see roofs and clouds!']],
+    balloonUp: [['Шар хочет улететь! Держу его!', "The balloon wants to fly away! I've got it!"]],
+    balloonRide: [['Я лечу на воздушном шаре! Пока, земля!', "I'm flying in a hot-air balloon! Bye, ground!"]],
+    balloonView: [['Сверху всё такое маленькое! Даже морковки.', 'Everything looks so tiny from up here! Even the carrots.']],
+    mushroomPeek: [['Тук-тук! В грибочке живёт улитка.', 'Knock, knock! A snail lives in the mushroom.']],
+    mushroomHide: [['Мой грибной домик! Найди меня!', 'My mushroom house! Come and find me!']],
+    mushroomTiny: [['Я стал крошечным! Теперь домик мне как раз.', "I've gone tiny! Now the house fits me just right."]],
+    scopeLook: [['Смотрю в телескоп… Вижу планету с кольцами!', 'Looking through the telescope… I can see a planet with rings!'], ['Ого! Луна совсем близко! На ней кратер, похожий на морковку.', "Whoa! The moon looks so close! It has a crater shaped like a carrot."]],
+    scopeWish: [['Падающая звезда! Скорее загадывай желание!', 'A shooting star! Quick, make a wish!']],
+    scopeAlien: [['Там инопланетянин! Он машет мне лапкой!', "There's an alien! He's waving at me!"]],
     sticker: [['Обожаю свои наклейки!', 'I love my stickers!']],
     fairy: [['Фея! Загадывай желание!', 'A fairy! Make a wish!']],
     sledge: [['Санки! Уи-и-и!', 'A sledge! Wheee!']],
@@ -1204,6 +1231,7 @@ export const LUCKY = {
     angry: [['Бывает! Давай сделаем ниндзя-вдох. Это помогает.', "That happens! Let's take a ninja breath. It helps."]],
   },
   collectionFull: [['Вот это да! Ты собрала всё-всё! Настоящий ниндзя-коллекционер!', "Wow! You've collected absolutely everything! A true ninja collector!"]],
+  finale: [['Шестьдесят уровней! Ты теперь Великий мастер, а я самый счастливый кролик на свете!', "Sixty levels! You're a Grand Master now, and I'm the happiest bunny in the world!"]],
   planDone: [['Все дела на сегодня сделаны! Ты молодец. Теперь можно поиграть на улице.', "Everything's done for today! Well done. Now you can go and play outside."]],
   breathIn: [['Вдох…', 'Breathe in…']],
   breathOut: [['Выдох…', 'Breathe out…']],
@@ -1219,6 +1247,15 @@ export const RIDDLES = [
   [['Загадка: что становится мокрым, когда сушит?', 'Riddle: what gets wetter the more it dries?'], ['Полотенце!', 'A towel!']],
   [['Загадка: что идёт вверх и вниз, но не двигается?', "Riddle: what goes up and down but doesn't move?"], ['Лестница!', 'The stairs!']],
 ];
+
+// the worlds after level 30 bring their own lines (js/zones)
+for (const z of ZONES) {
+  LUCKY.arrive[z.id] = z.arrive;
+  for (const [k, v] of Object.entries(z.lines)) {
+    if (LUCKY.antics[k]) throw new Error(`zone ${z.id}: the line key ${k} is taken`);
+    LUCKY.antics[k] = v;
+  }
+}
 
 // The dog's lines
 export const DOG = {

@@ -3,6 +3,34 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.12.0] – 2026-11-21
+
+The levels after 30: she had nearly finished the game, so it goes on to level 60.
+
+### Added
+- **Four new worlds**, each with five things that answer a tap (two different ways), a double tap and a long press,
+  its own guests and Lucky's lines: a **carrot farm** (32: a carrot bed with a giant carrot, a scarecrow and its crow,
+  a haystack to dive into, a hen that lays eggs, a barn with a cow, a pig and a horse), a **coral reef** (35: Lucky in
+  a bubble helmet, a turtle taxi, a glowing jellyfish, a clam, corals with a shy fish, a sunken chest), the **jungle**
+  (38: a waterfall shower, a liana to swing on, a parrot that repeats English words and gets some hilariously wrong,
+  a monkey, hibiscus) and a **dino valley** (41: a volcano that pops popcorn, a brachiosaurus slide, an egg with a
+  baby dinosaur, a fossil rock, giant footprints). They start without decorations, so their own things can be seen.
+- **New outfits** from level 31 to 60 (a straw hat, dungarees, a snorkel mask, an explorer's hat, binoculars, a dino
+  hood, flying goggles, a northern-lights cape, butterfly wings, an embroidered shirt, a ribbon wreath, a rainbow
+  scarf, a monocle, the Grand Master's robe), **seven super decorations** (a trampoline, a treasure chest, a dinosaur
+  egg, a swing, a hot-air balloon, a mushroom house, a telescope), **three sticker albums** (farm; jungle and dinos;
+  sky and magic, with a cowboy hat, a dino costume and a wizard's hat as prizes) and **ten badges**.
+- **Level 60 is the finale:** the Grand Master's robe and a window of its own.
+
+### Changed
+- **A level after 30 takes 150 hearts** (it was 335 and growing): a new world about every five days. Hearts already
+  saved past 150 bring the next level on the next start.
+- The whole-collection window comes again when a bigger collection is complete (new worlds and albums make it bigger).
+- English plurals: 101 days, not 101 day.
+
+### Fixed
+- An animation of a thing's part (the carrots' dance) was cut short when the tap's bounce on the same thing ended.
+
 ## [1.11.0] – 2026-11-20
 
 Softer limits: the phone has its own screen-time limit, so the game no longer needs to be the strict one.

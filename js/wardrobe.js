@@ -68,6 +68,31 @@ export const WEAR = [
     art: () => ({ head: `<path d="M91 52 L100 0 L109 52Z" fill="#FFE9F6" stroke="#FF8CC6" stroke-width="2" stroke-linejoin="round"/>
       <path d="M93 42 l14 -5 M95 29 l11 -4 M97 16 l7 -3" stroke="#FF8CC6" stroke-width="2" stroke-linecap="round"/>
       ${flowerDot(80, 54, '#B78CFF')}${flowerDot(120, 54, '#FFD23F')}` }) },
+  // after level 30 (with the farm, the reef, the jungle and the dino valley)
+  { id: 'sunhat', slot: 'head', level: 31, name: ['Соломенная шляпа', 'Straw hat'],
+    art: () => ({ head: `<ellipse cx="100" cy="58" rx="54" ry="11" fill="#EFC25A"/><path d="M72 58 Q74 22 100 22 Q126 22 128 58Z" fill="#F7D06B"/>
+      <path d="M73 48 Q100 54 127 48 L128 56 Q100 62 72 56Z" fill="#FF5FA2"/><path d="M52 60 q48 10 96 0" stroke="#D9A93A" stroke-width="2" fill="none"/>
+      <path d="M84 30 q16 -4 32 0 M78 40 q22 -4 44 0" stroke="#E2B44C" stroke-width="2" fill="none"/>${flowerDot(126, 50, '#fff')}` }) },
+  { id: 'safari', slot: 'head', level: 39, name: ['Шлем исследователя', "Explorer's hat"],
+    art: () => ({ head: `<ellipse cx="100" cy="60" rx="52" ry="9" fill="#CDB77E"/><path d="M60 60 Q62 18 100 16 Q138 18 140 60Z" fill="#E7D7A4"/>
+      <path d="M62 50 Q100 58 138 50 L139 58 Q100 66 61 58Z" fill="#7A5236"/><path d="M100 17 V58 M80 22 Q76 40 78 56 M120 22 Q124 40 122 56" stroke="#D6C38C" stroke-width="2" fill="none"/>
+      <circle cx="100" cy="16" r="4" fill="#D6C38C"/>` }) },
+  { id: 'dinoHood', slot: 'head', level: 42, name: ['Капюшон-динозавр', 'Dino hood'],
+    art: () => ({ head: `<path d="M48 76 Q46 30 100 22 Q154 30 152 76 Q150 60 138 52 Q100 36 62 52 Q50 60 48 76Z" fill="#6CCB5F"/>
+      <path d="M62 52 Q100 38 138 52" stroke="#4FAE45" stroke-width="3" fill="none"/>
+      ${[[66, 34, -40], [82, 24, -20], [100, 20, 0], [118, 24, 20], [134, 34, 40]].map(([x, y, r]) => `<path d="M-8 4 L0 -12 L8 4Z" fill="#FF9F43" transform="translate(${x} ${y}) rotate(${r})"/>`).join('')}
+      <circle cx="80" cy="44" r="5" fill="#fff"/><circle cx="120" cy="44" r="5" fill="#fff"/><circle cx="81" cy="45" r="2.5" fill="#2A2730"/><circle cx="119" cy="45" r="2.5" fill="#2A2730"/>` }) },
+  { id: 'cowboy', slot: 'head', rarity: 'gold', name: ['Ковбойская шляпа', 'Cowboy hat'],
+    art: () => ({ head: `<path d="M40 50 Q48 66 100 66 Q152 66 160 50 Q150 58 100 58 Q50 58 40 50Z" fill="#A86B3C"/>
+      <path d="M70 58 Q66 22 86 20 Q100 28 114 20 Q134 22 130 58Z" fill="#C2814A"/><path d="M70 50 Q100 56 130 50 L130 57 Q100 63 70 57Z" fill="#5A3A22"/>
+      ${star5(100, 41, 7, '#FFD23F')}` }) },
+  { id: 'ribbonWreath', slot: 'head', level: 55, name: ['Венок с лентами', 'Ribbon wreath'],
+    art: () => ({ back: `${['#FF5FA2', '#FFD23F', '#4D9BFF', '#4CB84C', '#B78CFF'].map((c, i) => `<path d="M${132 + i * 3} 64 q${10 + i * 2} 40 ${2 + i * 5} ${84 - i * 6}" stroke="${c}" stroke-width="5" fill="none" stroke-linecap="round"/>`).join('')}`,
+      head: `<path d="M54 66 Q100 34 146 66" stroke="#4CB84C" stroke-width="6" fill="none" stroke-linecap="round"/>
+      ${[[58, 62, '#E2313B'], [70, 52, '#FFD23F'], [84, 45, '#4D9BFF'], [100, 42, '#E2313B'], [116, 45, '#FF7AB8'], [130, 52, '#FFD23F'], [142, 62, '#E2313B']].map(([x, y, c]) => flowerDot(x, y, c)).join('')}` }) },
+  { id: 'wizardHat', slot: 'head', rarity: 'gold', name: ['Шляпа волшебника', "Wizard's hat"],
+    art: () => ({ head: `<ellipse cx="100" cy="58" rx="50" ry="9" fill="#5B3FB8"/><path d="M70 58 Q90 30 96 -8 Q106 6 112 2 Q114 30 130 58Z" fill="#6E4FD8"/>
+      ${star5(98, 30, 7, '#FFD23F')}${star5(116, 46, 4.5, '#FFE9A8')}<circle cx="84" cy="44" r="2.5" fill="#FFE9A8"/><path d="M71 54 Q100 60 129 54" stroke="#FFD23F" stroke-width="4" fill="none"/>` }) },
 
   // ---------- face ----------
   { id: 'glasses', slot: 'face', level: 6, name: ['Очки-звёздочки', 'Star glasses'],
@@ -90,6 +115,18 @@ export const WEAR = [
   { id: 'eyepatch', slot: 'face', rarity: 'gold', name: ['Пиратская повязка', 'Pirate eyepatch'],
     art: () => ({ over: `<path d="M52 70 L150 100" stroke="#222" stroke-width="3.5"/><ellipse cx="120" cy="90" rx="15" ry="13" fill="#222"/>
       <path d="M113 86 l5 4 -5 4 M127 86 l-5 4 5 4" stroke="#fff" stroke-width="1.8" fill="none" opacity=".8"/>` }) },
+  { id: 'snorkel', slot: 'face', level: 36, name: ['Маска с трубкой', 'Snorkel mask'],
+    art: () => ({ over: `<path d="M50 86 L44 84 M150 86 L156 84" stroke="#2A2730" stroke-width="4" stroke-linecap="round"/>
+      <rect x="56" y="72" width="88" height="36" rx="16" fill="#BFE9FF" fill-opacity=".35" stroke="#FF8A2B" stroke-width="5"/>
+      <path d="M68 80 l8 -4 M108 80 l8 -4" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".75"/>
+      <path d="M146 96 Q162 96 162 80 V30" stroke="#FFD23F" stroke-width="8" fill="none" stroke-linecap="round"/><rect x="155" y="22" width="14" height="10" rx="3" fill="#FF5FA2"/>` }) },
+  { id: 'aviator', slot: 'face', level: 45, name: ['Лётные очки', 'Flying goggles'],
+    art: () => ({ over: `<path d="M48 84 Q100 70 152 84" stroke="#7A5236" stroke-width="7" fill="none"/>
+      <circle cx="80" cy="88" r="16" fill="#9FE3FF" fill-opacity=".45" stroke="#C98E5A" stroke-width="6"/><circle cx="120" cy="88" r="16" fill="#9FE3FF" fill-opacity=".45" stroke="#C98E5A" stroke-width="6"/>
+      <path d="M96 86 h8" stroke="#C98E5A" stroke-width="5"/><path d="M71 80 l7 -4 M111 80 l7 -4" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>` }) },
+  { id: 'monocle', slot: 'face', level: 58, name: ['Монокль', 'Monocle'],
+    art: () => ({ over: `<circle cx="120" cy="90" r="15" fill="#DDF3FF" fill-opacity=".3" stroke="#E6A800" stroke-width="4"/><path d="M134 96 q8 20 -4 44" stroke="#E6A800" stroke-width="2" fill="none"/>
+      <path d="M112 82 l6 -3" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/>` }) },
 
   // ---------- neck ----------
   { id: 'scarf', slot: 'neck', level: 12, name: ['Ниндзя-шарф', 'Ninja scarf'],
@@ -108,6 +145,15 @@ export const WEAR = [
   { id: 'medal', slot: 'neck', rarity: 'gold', name: ['Медаль ниндзя', 'Ninja medal'],
     art: () => ({ neck: `<path d="M84 130 L100 158 L116 130" stroke="#4D9BFF" stroke-width="8" fill="none" stroke-linejoin="round"/>
       <circle cx="100" cy="164" r="12" fill="#FFD23F" stroke="#E6A800" stroke-width="3"/>${star5(100, 164.5, 7, '#fff')}` }) },
+  { id: 'binoculars', slot: 'neck', level: 40, name: ['Бинокль', 'Binoculars'],
+    art: () => ({ neck: `<path d="M66 130 Q100 150 134 130" stroke="#7A5236" stroke-width="4" fill="none"/>
+      <rect x="80" y="148" width="16" height="22" rx="5" fill="#3A3F4A"/><rect x="104" y="148" width="16" height="22" rx="5" fill="#3A3F4A"/><rect x="94" y="152" width="12" height="8" rx="2" fill="#5A606C"/>
+      <circle cx="88" cy="171" r="6" fill="#6FD3FF" stroke="#3A3F4A" stroke-width="3"/><circle cx="112" cy="171" r="6" fill="#6FD3FF" stroke="#3A3F4A" stroke-width="3"/>
+      <path d="M85 168 l3 -2 M109 168 l3 -2" stroke="#fff" stroke-width="1.6"/>` }) },
+  { id: 'rainbowScarf', slot: 'neck', level: 57, name: ['Радужный шарф', 'Rainbow scarf'],
+    art: () => ({ neck: `<defs><linearGradient id="wRbw" x1="0" x2="1">${['#FF6B8B', '#FFA24C', '#FFE066', '#6FD68A', '#6FB8FF', '#A98BFF'].map((c, i) => `<stop offset="${i / 5}" stop-color="${c}"/>`).join('')}</linearGradient></defs>
+      <path d="M58 128 Q100 150 142 128 L144 142 Q100 164 56 142Z" fill="url(#wRbw)"/>
+      <path d="M118 146 l10 38 -14 3 -6 -37z" fill="url(#wRbw)"/><path d="M116 186 v7 M121 185 v7 M126 184 v7" stroke="#A98BFF" stroke-width="2.4" stroke-linecap="round"/>` }) },
 
   // ---------- costume ----------
   { id: 'cape', slot: 'body', level: 20, name: ['Плащ героя', 'Hero cape'],
@@ -128,6 +174,35 @@ export const WEAR = [
   { id: 'dragon', slot: 'body', rarity: 'gold', name: ['Крылья дракона', 'Dragon wings'],
     art: () => ({ back: `<g fill="#9B6BFF" stroke="#6B4FE0" stroke-width="2" stroke-linejoin="round">
       <path d="M62 136 L18 96 L26 124 L8 124 L24 144 L10 152 L56 166Z"/><path d="M138 136 L182 96 L174 124 L192 124 L176 144 L190 152 L144 166Z"/></g>` }) },
+  { id: 'overalls', slot: 'body', level: 33, name: ['Комбинезон фермера', "Farmer's dungarees"],
+    art: () => ({ body: `<path d="M66 156 Q100 148 134 156 L140 190 Q100 202 60 190Z" fill="#4D8FDB"/>
+      <path d="M76 132 L80 158 M124 132 L120 158" stroke="#4D8FDB" stroke-width="7" stroke-linecap="round"/>
+      <circle cx="80" cy="158" r="3.6" fill="#FFD23F"/><circle cx="120" cy="158" r="3.6" fill="#FFD23F"/>
+      <path d="M88 166 H112 V178 Q100 182 88 178Z" fill="#3B74BC"/><path d="M66 156 Q100 148 134 156" stroke="#3B74BC" stroke-width="2" fill="none" stroke-dasharray="4 4"/>
+      <path d="M96 168 v8" stroke="#FF8A2B" stroke-width="3" stroke-linecap="round"/><path d="M96 168 q-4 -6 0 -8 q4 2 0 8" fill="#4CB84C"/>` }) },
+  { id: 'dinoSuit', slot: 'body', rarity: 'gold', name: ['Костюм динозавра', 'Dino costume'],
+    art: () => ({ back: `<path d="M146 168 Q184 170 196 140 Q188 186 150 192Z" fill="#6CCB5F"/>
+      ${[[40, 120, -60], [36, 142, -80], [40, 164, -100], [160, 120, 60], [164, 142, 80], [160, 164, 100], [182, 156, 30]].map(([x, y, r]) => `<path d="M-9 5 L0 -13 L9 5Z" fill="#FF9F43" transform="translate(${x} ${y}) rotate(${r})"/>`).join('')}`,
+      body: `<path d="M74 152 Q100 144 126 152 Q132 176 100 192 Q68 176 74 152Z" fill="#B8EBA8" fill-opacity=".9"/>
+      <path d="M78 162 H122 M76 172 H124 M82 182 H118" stroke="#8FD47C" stroke-width="2"/>` }) },
+  { id: 'auroraCape', slot: 'body', level: 48, name: ['Плащ северного сияния', 'Northern lights cape'],
+    art: () => ({ back: `<defs><linearGradient id="wAur" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5BF0B4"/><stop offset=".5" stop-color="#6FB8FF"/><stop offset="1" stop-color="#C77DFF"/></linearGradient></defs>
+      <path d="M60 126 Q28 178 36 204 L164 204 Q172 178 140 126Z" fill="url(#wAur)"/>${[[50, 170], [70, 190], [150, 176], [132, 196], [44, 196]].map(([x, y]) => star5(x, y, 4, '#fff')).join('')}`,
+      neck: `<path d="M64 130 Q100 146 136 130" stroke="#3E8FD6" stroke-width="7" fill="none" stroke-linecap="round"/>${star5(100, 141, 8, '#FFE9A8')}` }) },
+  { id: 'butterfly', slot: 'body', level: 51, name: ['Крылья бабочки', 'Butterfly wings'],
+    art: () => ({ back: `<g stroke="#8B4FD8" stroke-width="2.5"><path d="M70 138 Q-4 56 2 132 Q6 170 64 160Z" fill="#FFB347"/><path d="M66 164 Q10 168 18 202 Q46 214 70 176Z" fill="#FF7AB8"/>
+      <path d="M130 138 Q204 56 198 132 Q194 170 136 160Z" fill="#FFB347"/><path d="M134 164 Q190 168 182 202 Q154 214 130 176Z" fill="#FF7AB8"/></g>
+      <circle cx="22" cy="112" r="8" fill="#fff" opacity=".85"/><circle cx="178" cy="112" r="8" fill="#fff" opacity=".85"/><circle cx="30" cy="190" r="5" fill="#fff" opacity=".75"/><circle cx="170" cy="190" r="5" fill="#fff" opacity=".75"/>
+      <circle cx="36" cy="132" r="4" fill="#8B4FD8" opacity=".6"/><circle cx="164" cy="132" r="4" fill="#8B4FD8" opacity=".6"/>` }) },
+  { id: 'vyshyvanka', slot: 'body', level: 54, name: ['Вышиванка', 'Embroidered shirt'],
+    art: () => ({ body: `<path d="M52 142 Q100 124 148 142 L152 184 Q100 198 48 184Z" fill="#FFFDF6" stroke="#EDE3D3" stroke-width="2"/>
+      <path d="M100 132 V170" stroke="#E2313B" stroke-width="2"/>
+      ${[146, 156, 166].map((y) => `<g transform="translate(100 ${y})"><path d="M-6 0 L0 -5 L6 0 L0 5Z" fill="#E2313B"/><path d="M-12 0 h3 M9 0 h3" stroke="#1E1E1E" stroke-width="2"/></g>`).join('')}
+      <path d="M56 176 Q100 190 144 176" stroke="#E2313B" stroke-width="4" fill="none" stroke-dasharray="5 4"/><path d="M56 182 Q100 196 144 182" stroke="#1E1E1E" stroke-width="2" fill="none" stroke-dasharray="3 5"/>` }) },
+  { id: 'grandMaster', slot: 'body', level: 60, name: ['Мантия Великого мастера', "Grand Master's robe"],
+    art: () => ({ back: `<path d="M58 126 Q22 180 30 206 L170 206 Q178 180 142 126Z" fill="#8B4FD8"/><path d="M58 126 Q36 176 44 204" stroke="#FFD23F" stroke-width="4" fill="none"/><path d="M142 126 Q164 176 156 204" stroke="#FFD23F" stroke-width="4" fill="none"/>`,
+      neck: `<path d="M62 130 Q100 150 138 130" stroke="#FFD23F" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <circle cx="100" cy="146" r="13" fill="#FF5FA2" stroke="#FFD23F" stroke-width="4"/>${star5(100, 146.5, 7.5, '#fff')}` }) },
 ];
 
 export const WEAR_BY_ID = Object.fromEntries(WEAR.map((w) => [w.id, w]));
