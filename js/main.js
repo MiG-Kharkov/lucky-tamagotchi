@@ -14,13 +14,14 @@ import * as art from './art.js';
 import { sfx, unlockAudio, setSound, setVoice, stopSpeech, speak, soundStatus, testSound } from './sound.js';
 import { REPLY, ASKS, MOOD_OPTS, MOOD_REPLY, TOUCH_REPLY, STORY, FROG } from './dialogs.js';
 import { GAMES, HOLIDAY_GAMES, openGame } from './game.js';
+import { BRAIN_GAMES, BRAIN_CSS } from './brain.js';
 import { createAntics, gestures, DOUBLE_MS } from './antics.js';
 import { createTricks } from './tricks.js';
 import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 // the worlds after level 30 bring their own animations
-document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}</style>`);
+document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}\n${BRAIN_CSS}</style>`);
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -2538,9 +2539,12 @@ function openPlay() {
   const best = (g) => { const b = Math.max(0, ...Object.entries(S.games.best).filter(([k]) => k.startsWith(g.id + ':')).map(([, v]) => v)); return b ? `<i class="gi-best">🏆 ${b}</i>` : ''; };
   const html = `<p class="muted center">${note}</p>${holiday ? `<p class="center g-holi-head">${EV.icon} ${tr('holidayGames')}</p>` : ''}
     <div class="game-list">${list.map((g) => `<button class="game-item" data-id="${g.id}" ${can ? '' : 'disabled'}>
-      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${g.target ? best(g) : ''}</button>`).join('')}</div>`;
+      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${g.target ? best(g) : ''}</button>`).join('')}</div>
+    <p class="center g-brain-head">🧠 <b>${tr('brainGames')}</b> · ${tr('brainFree')}</p>
+    <div class="game-list brain-list">${BRAIN_GAMES.map((g) => `<button class="game-item" data-id="${g.id}">
+      <span class="gi-emoji">${g.emoji}</span><span class="gi-text"><b>${tr('g_' + g.id)}</b><small>${tr('g_' + g.id + '_hint')}</small></span>${best(g)}</button>`).join('')}</div>`;
   openSheet((holiday ? '' : '🎈 ') + tr('pickGame'), html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
-    b.onclick = () => { sfx.tap(); closeSheet(); startGame(list.find((g) => g.id === b.dataset.id)); };
+    b.onclick = () => { sfx.tap(); closeSheet(); startGame(list.find((g) => g.id === b.dataset.id) || BRAIN_GAMES.find((g) => g.id === b.dataset.id)); };
   }));
 }
 
@@ -2556,7 +2560,7 @@ function closeGame() {
 }
 
 function startGame(game) {
-  if (S.pet.energy < 22) return say(P('tooTired'));
+  if (S.pet.energy < (game.brain ? 10 : 22)) return say(P('tooTired'));
   if (S.pet.hunger < 25) { setTemp('sad', 1500); return say(fresh(LUCKY.gameRefuse)); }
   leaveMain('game');
   antics.clearProps();
@@ -2575,14 +2579,17 @@ function startGame(game) {
     onCancel: closeGame,
     // a game counts from its start (a reload can't get round the day's games), and what it earned is kept the
     // moment it ends, before the end card is closed (iOS may close the app in the background meanwhile)
-    onStart: () => { const R = S.round; if (!R.n) R.at = Date.now(); R.n++; st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S); },
+    onStart: () => {
+      if (game.brain) { stat('brainGames'); st.save(S); return; } // brain training: as much as she likes
+      const R = S.round; if (!R.n) R.at = Date.now(); R.n++; st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S);
+    },
     onScore: (score) => {
       if (score >= game.great) stat('gamesGreat');
       if (game.id === 'talk') stat('talkRight', Math.floor(score / 3));
       st.boost(S, 'fun', 20);
       st.boost(S, 'energy', -game.energy);
       // up to 8 hearts a game and 40 a day: five good games count (a new level's window waits for the game to close)
-      award(addH(Math.min(8, Math.ceil((score / 30) * 8)), 'game', 40));
+      award(game.brain ? addH(Math.min(6, Math.ceil((score / 30) * 6)), 'brain', 20) : addH(Math.min(8, Math.ceil((score / 30) * 8)), 'game', 40));
       st.save(S);
     },
     onEnd: (score) => {
@@ -2590,7 +2597,7 @@ function startGame(game) {
       renderStats();
       setTemp('happy', 1500);
       if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
-      toast('🎈 ' + roundNote());
+      if (!game.brain) toast('🎈 ' + roundNote());
       st.save(S);
     },
   });
@@ -3984,7 +3991,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id) || BRAIN_GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

@@ -64,6 +64,8 @@ export const BADGES = [
   ['sneeze10', '🤧', ['Будь здоров!', 'Bless you!'], 'sneezes', 10],
   ['tickle10', '😂', ['Щекотун', 'Tickle monster'], 'tickles', 10],
   ['games10', '🎈', ['Игрок', 'Player'], 'games', 10],
+  ['brain10', '🧩', ['Умница-разумница', 'Clever clogs'], 'brainGames', 10],
+  ['brain50', '🧠', ['Мозговой штурм', 'Brainstorm'], 'brainGames', 50],
   ['great10', '🏆', ['Чемпион', 'Champion'], 'gamesGreat', 10],
   ['talk15', '🗣️', ['Полиглот', 'Polyglot'], 'talkRight', 15],
   ['quiz20', '🧠', ['Умница', 'Smarty'], 'quizRight', 20],

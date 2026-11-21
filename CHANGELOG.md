@@ -3,6 +3,23 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.18.0] – 2026-11-21
+
+### Added
+- **🧠 Brain training** in Play, under the usual games: four puzzles in the spirit of the Brain Evolution test, made
+  simple and friendly, with Lucky playing along in a corner. They are open any time and don't count as the round's
+  games; up to 20 hearts a day from them.
+  - **Remember!**: shapes on a field (colours, shapes, some bouncing or spinning); then find all the ones asked for.
+  - **Number chain**: each answer starts the next sum (+/− to 20, to 50, then with ×).
+  - **Squares**: tap two opposite corners of a rectangle whose four corners are the same colour, and it pops; a hint
+    glows when she is stuck.
+  - **Who's who?**: find the one bunny that fits the clues (ears, fur, spots, a bow, a hat, glasses); after a wrong
+    one Lucky says which clue is different.
+- Two badges for brain training.
+
+### Changed
+- When the round of games is over, Lucky says brain training is still open.
+
 ## [1.17.1] – 2026-11-21
 
 ### Changed

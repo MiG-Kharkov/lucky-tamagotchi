@@ -73,7 +73,7 @@ export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, s
   });
 
   const ctx = {
-    stage, sfx, lang, tr, svgOk, svgHappy, svgSad,
+    stage, sfx, lang, tr, svgOk, svgHappy, svgSad, translate,
     get level() { return level; },
     info: (html) => { info.hidden = false; info.innerHTML = html; },
     // the holiday games end with their points

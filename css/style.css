@@ -1841,4 +1841,7 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 .scene.checking .lucky { cursor: pointer; filter: drop-shadow(0 0 12px #A8E6FF); }
 .act.checkup-act { background: linear-gradient(180deg, #DDF3FF, #A8E6FF); }
 .act.checkup-act .a-name { color: #2A6F9A; }
+.g-brain-head { margin: 16px 0 8px; color: var(--muted); font-size: 14px; }
+.g-brain-head b { color: var(--purple); }
+.brain-list .game-item { background: linear-gradient(#F3EDFF, #fff); }
 

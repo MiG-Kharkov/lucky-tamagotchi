@@ -68,6 +68,7 @@ Nothing bad ever happens to him: no illness, no dying, no guilt.
 | 🐰 **Care** | One Lucky button: feed (with real bunny facts), wash (mud spots, a rubber duck, a shake that splashes the screen), brush (fluff balls that become fluffy friends), teach him tricks with a clicker (and watch his show), a weekly check-up with a health card; one wish a day, sometimes a riddle in English |
 | 😊 **Real moods** | Four moods from the pet's needs. Grumpy when hungry, over the moon when everything is perfect |
 | 💬 **Conversations** | Lucky asks questions and you pick the answer: favourite things, *would you rather*, guessing games, mini-adventures |
+| 🧠 **Brain training** | Four puzzles for any time, not counted in the rounds: Remember!, Number chain, Squares, Who's who? |
 | 🎮 **Mini-games** | Carrot Rain (don't catch the pizza!) · Ninja Memory · Copy Lucky (melodies) · Chat with Lucky (how people really talk in Ireland) · and the holiday games. Easy / normal / hard, stars and records to beat |
 | 🥷 **Ninja dojo** | A real-world mission a day, with Lucky as the sensei: he counts your bunny hops out loud, calls *Sneak!* and *Freeze!*, plays freeze-dance music, sends you on treasure hunts at home and wears the mask you drew. Six ninja skills and a scroll of stamps |
 | 👗 **Wardrobe** | 45 funny items in 4 slots: Viking helmet, frog hat, moustache, tutu, dragon wings, a dino hood, an embroidered shirt… mix and match |
