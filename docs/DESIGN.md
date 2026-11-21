@@ -225,8 +225,9 @@ and a step towards the next belt (3 stamps per belt).
 - Belts: white → … → black → **Pink Master Belt** (3 missions per belt, ~3 weeks). Lucky's headband matches the current belt.
 - **Wardrobe:** 45 items in 4 slots (head, face, neck, costume), combinable. From levels, presents with rarity
   (common / rare / gold) and complete albums.
-- **12 worlds** by level, each with its own tappable details and Decorate items. The worlds after level 30 (farm 32,
-  coral reef 35, jungle 38, dino valley 41) live in their own modules, `js/zones/<id>.js`: picture, holiday spots,
+- **16 worlds** by level, each with its own tappable details and Decorate items. The worlds after level 30 (farm 32,
+  coral reef 35, jungle 38, dino valley 41, sky islands 44, northern lights 47, fairy forest 50, village 53) live in
+  their own modules, `js/zones/<id>.js`: picture, holiday spots,
   Lucky's lines, what each thing does on a tap (two ways), a double tap and a long press, guests and animations
   (the contract is in `js/zones/index.js`). They start without decorations, so their own things can be seen.
 - **18 decorations** (the trampoline, the treasure chest, the dinosaur egg, the swing, the hot-air balloon, the

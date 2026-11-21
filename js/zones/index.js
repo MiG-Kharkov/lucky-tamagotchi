@@ -22,6 +22,10 @@ import farm from './farm.js';
 import reef from './reef.js';
 import jungle from './jungle.js';
 import dino from './dino.js';
+import sky from './sky.js';
+import aurora from './aurora.js';
+import fairy from './fairy.js';
+import village from './village.js';
 
-export const ZONES = [farm, reef, jungle, dino];
+export const ZONES = [farm, reef, jungle, dino, sky, aurora, fairy, village];
 export const ZONE_IDS = new Set(ZONES.map((z) => z.id));

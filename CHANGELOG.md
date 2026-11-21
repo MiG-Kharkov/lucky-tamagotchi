@@ -3,6 +3,25 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.14.0] – 2026-11-21
+
+The last four worlds on the way to level 60.
+
+### Added
+- **Sky islands** (44): a hot-air balloon on a rope, a rainbow to slide down (each stripe rings a note), cloud sheep
+  to count, bounce on or wear as a hat, a floating island with a waterfall into the clouds; a little cloud gives Lucky
+  a ride.
+- **Northern lights** (47): lights that change colour (Lucky glows in it, catches a ribbon as a scarf), a polar bear
+  in a scarf, ice fishing (a fish, a boot, a mitten, a seal, now and then a lost penguin), a reindeer to ride, and a
+  snow hare, Lucky's white cousin.
+- **Fairy forest** (50): an owl in a hollow ("Professor Lucky"), a fairy door (the fairy asks a riddle, sprinkles dust
+  that makes him tiny, lends him her wings), bluebells that ring, glowing mushrooms to bounce on, fireflies in a jar
+  and in a heart.
+- **Village** (53), a Ukrainian one from a summer at Grandma's: a white hut with a thatched roof and varenyky on the
+  sill, a stork on its nest, a sweep well, a rooster on the wattle fence, a cherry tree (cherry earrings!) and
+  sunflowers. A few greetings are in Ukrainian, read by the Ukrainian voice.
+- With them all sixteen worlds are open at level 60, the finale.
+
 ## [1.13.0] – 2026-11-21
 
 Lucky and Tali do things together now, instead of just running at each other.
