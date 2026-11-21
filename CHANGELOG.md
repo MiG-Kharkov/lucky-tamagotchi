@@ -3,6 +3,19 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.13.0] – 2026-11-21
+
+Lucky and Tali do things together now, instead of just running at each other.
+
+### Added
+- **🐾 Play together** offers three of eight games (new ones first), two a visit, and the child is in every one:
+  Fetch, Hide and seek, Football, Tug of war, a Dance-off, a Treasure hunt, a Race and a Photo (a polaroid of the two
+  pulling faces). 2–5 hearts a game; Tali doesn't go home in the middle of one.
+- **How Tali arrives:** with a ball for Lucky, sneaking up for a "Boo!", in sunglasses, with a letter, or in a
+  somersault, besides the old ways. A joke straight away only some of the time (always when Lucky is sad).
+- **Moments while he is here:** nose to nose, chasing a butterfly, a stick as a present, a nap, a shared snack.
+- **How he leaves:** waving, yawning, called home, or running after a ball.
+
 ## [1.12.0] – 2026-11-21
 
 The levels after 30: she had nearly finished the game, so it goes on to level 60.

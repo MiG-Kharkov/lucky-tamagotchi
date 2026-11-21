@@ -46,8 +46,8 @@
 ## 💗 Meet Lucky
 
 Lucky is a ginger lop-eared bunny who dreams of earning the **Pink Master Belt** of ninja training.
-His best friend **Tali**, a tiny white chihuahua with black spots, drops by to play and tell jokes
-(Lucky laughs and plays along), and a **riddle frog** sometimes hops in with a puzzle.
+His best friend **Tali**, a tiny white chihuahua with black spots, drops by to tell jokes and to play: fetch, hide
+and seek, football, tug of war, a dance-off, a treasure hunt, a race and a photo, with the child in every game, and a **riddle frog** sometimes hops in with a puzzle.
 Both are real: Lucky is drawn after the girl's own bunny, and Tali is the family's chihuahua.
 
 Lucky talks with real recorded voices, reacts to how he feels and asks questions.

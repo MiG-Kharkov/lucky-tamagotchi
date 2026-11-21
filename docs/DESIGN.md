@@ -72,8 +72,19 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
 - **Tali's visits:** he drops by while the child plays, not at set times, so there is nothing to miss:
   in the day's first session always (after 1.5–3.5 minutes of play), in later sessions 60% of the time,
   at most 3 visits a day and 40 minutes apart. He stays about 6 minutes, never at night or while Lucky sleeps,
-  and brings one present a day.
-- **Tali's jokes** (102, 14 of them knock-knock): one when he arrives, more with the 😂 button next to him
+  and brings one present a day. He arrives in a scene of his own (with a ball for Lucky, sneaking up for a "Boo!", in
+  sunglasses, with a letter, in a somersault, or as before: running, jumping, digging, on a skateboard); while he is
+  there they have little moments now and then (nose to nose, a butterfly, a stick as a present, Tali dozing off, a
+  snack); he leaves waving, yawning, called home, or after a ball.
+- **🐾 Play together** (two games a visit): three of eight games on offer, new ones first, each with the child in
+  it (`js/together.js`): **Fetch** (tap the ball; Tali brings back the ball, a sock, a stick, and a carrot for Lucky),
+  **Hide and seek** (three bushes, his tail gives him away, later each round), **Football** (Tali in goal leans before
+  he dives: kick to the other corner), **Tug of war** (tap fast; somebody ends up in the grass, often both),
+  **Dance-off** (repeat Tali's moves with three buttons, then a disco), **Treasure** (pick one of three holes: a bone,
+  a carrot, an old boot or hearts), **Race** (3-2-1 to the flag in two lanes, tap fast; sometimes a photo finish),
+  **Photo** (they pull faces, catch the moment with 📸 and get a polaroid). Lucky's moves, Tali's lines; 2–5 hearts a
+  game, 15 a day; he doesn't go home in the middle of a game; ✕ ends it.
+- **Tali's jokes** (102, 14 of them knock-knock): one when he arrives some of the time (always when Lucky is sad), more with the 😂 button next to him
   (3 a visit), and a cheering-up one when Lucky is sad. A joke is a small scene: the question (Lucky tilts his head),
   the punchline with a *ba-dum-tss*, Lucky laughs, does something that fits (glasses for a clever joke, soaked
   for a wet one, hiding for a ghost) and comments. In knock-knock jokes Lucky plays along ("Who's there?").

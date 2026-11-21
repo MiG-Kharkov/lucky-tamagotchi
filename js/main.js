@@ -6,6 +6,7 @@ import { IDIOMS, TWISTERS, IDIOM_BY_ID, TWISTER_BY_ID } from './english.js';
 import { openMission } from './ninja.js';
 import { PLACES, DECOR, ALBUMS, STICKERS, BADGES, SUPER } from './content.js';
 import { ZONES, ZONE_IDS } from './zones/index.js';
+import { TOGETHER, playTogether, offerGames, CSS as TG_CSS, ARRIVALS, MOMENTS, DEPARTURES, TALI_CSS } from './together.js';
 import { WEAR, WEAR_BY_ID, SLOTS } from './wardrobe.js';
 import { VERSION, BUILD } from './version.js';
 import { CONFIG } from './config.js';
@@ -19,7 +20,7 @@ import { speechText } from './voicekey.js';
 import { EVENTS, EVENT_BY_ID, eventOn, eventPreview, holidayOnly, justPassed } from './events.js';
 
 // the worlds after level 30 bring their own animations
-document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}</style>`);
+document.head.insertAdjacentHTML('beforeend', `<style id="zone-css">${ZONES.map((z) => z.css || '').join('\n')}\n${TG_CSS}\n${TALI_CSS}</style>`);
 
 const $ = (s, r = document) => r.querySelector(s);
 
@@ -2432,11 +2433,13 @@ function dogArrive() {
     ${giftToday ? '' : `<button class="gift" aria-label="gift">🎁</button>`}
     <button class="joke-btn joke-go" aria-label="joke">😂</button>
     <button class="joke-btn twist-btn" aria-label="tongue twister">👅</button>
-    ${S.dog.played ? '' : `<button class="pill together">🐾 ${tr('playTogether')}</button>`}`;
+    ${togetherLeft() > 0 ? `<button class="pill together">🐾 ${tr('playTogether')}</button>` : ''}`;
   const body = ui.dog.querySelector('.dog-body');
-  // he runs in, jumps in from the sky, pops out of the ground, spins in or rolls in on a skateboard
-  const entry = pick(['enter', 'enterJump', 'enterDig', 'enterSpin', 'enterSkate']);
+  // he runs in with a ball, sneaks up for a "Boo!", comes in sunglasses, brings a letter, somersaults in, jumps in
+  // from the sky, pops out of the ground or rolls in on a skateboard
+  const arrival = pick(ARRIVALS), entry = arrival.entry;
   hop(body, entry, 1900);
+  nextMomentAt = Date.now() + 50e3 + Math.random() * 30e3;
   if (entry === 'enterSkate') { ui.dog.insertAdjacentHTML('beforeend', `<span class="skate">${(EV && EV.stage >= 3 && HOLIDAY_RIDE[EV.id]) || '🛹'}</span>`); setTimeout(() => ui.dog.querySelector('.skate')?.remove(), 1500); sfx.whoosh(); }
   if (entry === 'enterDig') setTimeout(() => { const d = body.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); fxAt(d.left - sc.left + d.width / 2, d.bottom - sc.top - 10, ['💨', '🌱'], 6, 'spark'); sfx.puff(); }, 200);
   if (entry === 'enterJump') setTimeout(() => sfx.boing(), 500);
@@ -2467,20 +2470,11 @@ function dogArrive() {
     taliTwister();
   };
   const tog = ui.dog.querySelector('.together');
-  if (tog) tog.onclick = () => {
-    if (mode !== 'main') return;
-    S.dog.played = true;
-    stat('dogPlays');
-    tog.remove();
-    sfx.happy();
-    say(fresh(DOG.play), 'dog');
-    hop(ui.lucky, 'zoom');
-    hop(body, 'zoom');
-    st.boost(S, 'fun', 20);
-    renderStats();
-    setTimeout(() => { if (!maybeIdiom('play', 0.4)) { say(fresh(LUCKY.dogPlay)); setTemp('laugh', 1500); } heartsBurst(...luckyPoint(0.5, 0.2), 5); }, 1400);
-    award(addH(5, 'dog', 8));
-    st.save(S);
+  if (tog) tog.onclick = (e) => {
+    e.stopPropagation();
+    if (mode !== 'main' || chainQ.length || ask) { sfx.tap(); return; }
+    sfx.tap();
+    openTogether();
   };
   // hello, then straight away a joke (a cheering-up one if Lucky is sad)
   setTimeout(() => {
@@ -2495,9 +2489,89 @@ function dogArrive() {
     if (trick) T0.trickTreat = true;
     if (trick) hello =[timed('dog', DOG.trickOrTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) { const r = d.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); antics.fly('🍬', luckyPoint(0.7, 0.6), [r.left - sc.left + r.width / 2, r.top - sc.top + r.height * 0.45], 700, { arc: 50, spin: 300, size: 26 }); } sfx.pop(); return 200; },
       timed('lucky', LUCKY.holidayThings.trickTreat[0]), () => { const d = ui.dog.querySelector('.dog-body'); if (d) hop(d, 'hop'); sfx.crunch(); return 300; }, timed('dog', DOG.sweetThanks[0])];
+    // his arrival scene first (not on the first meeting, nor with a trick or treat); a joke straight away only
+    // some of the time (always when Lucky is sad: it cheers him up)
+    const scene = S.dog.met && !trick ? arrival.steps(taliKit()) : [];
     S.dog.met = true;
-    taliJoke(sad ? DOG.cheer : DOG.jokeNew, hello);
-  }, 700);
+    if (sad || Math.random() < 0.4) taliJoke(sad ? DOG.cheer : DOG.jokeNew, [...scene, ...hello]);
+    else talk([...scene, ...hello], true);
+  }, entry === 'tgSneak' ? 1700 : 700);
+}
+
+// ---------- Lucky and Tali play together (js/together.js) ----------
+
+const TOGETHER_PER_VISIT = 2;
+const togetherLeft = () => (turbo() ? 99 : TOGETHER_PER_VISIT - (S.dog.games || 0));
+let tgRun = null, nextMomentAt = 0, leavingAt = 0;
+
+// the scene kit for his arrivals, moments and departures
+function taliKit() {
+  const body = () => ui.dog.querySelector('.dog-body');
+  return {
+    line: (who, key) => timed(who, fresh(who === 'dog' ? DOG[key] : LUCKY.antics[key])),
+    dogDo: (cls, ms) => { const b = body(); if (b) hop(b, cls, ms); },
+    pose: (face, ms, cls, clsMs) => { setTemp(face, ms); if (cls) hop(ui.lucky, cls, clsMs); },
+    fly: antics.fly, popUp: antics.popUp, fxAt, hearts: heartsBurst, sfx,
+    luckyAt: luckyPoint,
+    dogAt: (fx = 0.5, fy = 0.3) => { const b = body(); if (!b) return luckyPoint(1.4, 0.5); const r = b.getBoundingClientRect(), sc = ui.scene.getBoundingClientRect(); return [r.left - sc.left + r.width * fx, r.top - sc.top + r.height * fy]; },
+    dogWear: (emoji, ms) => {
+      const w = document.createElement('span');
+      w.className = 'dog-wear';
+      w.textContent = emoji;
+      w.style.setProperty('--dw', ui.dog.offsetWidth + 'px');
+      ui.dog.appendChild(w);
+      setTimeout(() => w.remove(), ms);
+    },
+  };
+}
+
+function openTogether() {
+  const list = offerGames(S.dog.playedGames || []);
+  const html = `<div class="game-list">${list.map((g) => `<button class="game-item" data-id="${g.id}">
+    <span class="gi-emoji">${g.e}</span><span class="gi-text"><b>${L(g.name)}</b><small>${L(g.hint)}</small></span></button>`).join('')}</div>`;
+  openSheet(`🐾 ${tr('playTogether')}`, html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
+    b.onclick = () => { sfx.tap(); closeSheet(); startTogether(list.find((g) => g.id === b.dataset.id)); };
+  }));
+}
+
+function startTogether(game) {
+  if (mode !== 'main' || !dogHere || !game) return;
+  stopChain();
+  antics.end();
+  mode = 'together';
+  const d = S.dog;
+  d.stayUntil = Math.max(d.stayUntil, Date.now() + 90e3); // he doesn't go home in the middle of a game
+  d.games = (d.games || 0) + 1;
+  d.playedGames = [...(d.playedGames || []).filter((id) => id !== game.id), game.id];
+  stat('dogPlays');
+  if (togetherLeft() <= 0) ui.dog.querySelector('.together')?.remove();
+  st.save(S);
+  tgRun = playTogether(game, {
+    scene: ui.scene, lucky: ui.lucky, dog: ui.dog, sfx, hop, setTemp, LUCKY, DOG,
+    say: (list, who) => say(fresh(list), who),
+    fly: antics.fly, popUp: antics.popUp, fxAt, hearts: heartsBurst, luckyPoint,
+    luckyPic: (face) => luckyPic({ face, wear: S.wear }),
+    dogPic: (face) => art.dog({ face }),
+    onDone: (stars) => {
+      tgRun = null;
+      if (mode === 'together') mode = 'main';
+      nextMomentAt = Date.now() + 60e3;
+      if (stars === null) return; // closed before the end
+      st.boost(S, 'fun', 15);
+      renderStats();
+      setTemp('happy', 1500);
+      // 2 to 5 hearts a game, up to 15 a day
+      award(addH(2 + Math.max(0, Math.min(3, stars)), 'dog', 15));
+      st.save(S);
+    },
+  });
+}
+
+// a little moment of theirs while he is here (nose to nose, a butterfly, a stick, a nap, a snack)
+function taliMoment(now) {
+  if (now < nextMomentAt || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy() || !userActive() || now < busyUntil) return;
+  nextMomentAt = now + 70e3 + Math.random() * 50e3;
+  talk(pick(MOMENTS)(taliKit()), true);
 }
 
 // ---------- Tali's jokes ----------
@@ -2668,10 +2742,20 @@ gestures(ui.dog, (t) => (mode === 'main' ? t.closest('.dog-body') : null), (kind
   antics.dog(kind, body);
 });
 
+// He waves goodbye, yawns and goes for a nap, hears them calling him home, or runs off after a ball
 function dogLeave(silent = false) {
   if (!dogHere) return;
+  if (leavingAt) { if (silent || Date.now() - leavingAt > 15e3) goHome(silent, true); return; } // a goodbye scene is on
+  const dep = !silent && mode === 'main' && !sheetOpen && !modalOpen && !ask && !chainQ.length ? pick(DEPARTURES) : null;
+  if (!dep) return goHome(silent);
+  leavingAt = Date.now();
+  talk([...dep(taliKit()), () => { goHome(false, true); return 0; }], true);
+}
+function goHome(silent, saidBye = false) {
+  if (!dogHere) return;
   dogHere = false;
-  if (!silent && mode === 'main' && !sheetOpen) sayAuto(fresh(DOG.bye), 'dog');
+  leavingAt = 0;
+  if (!silent && !saidBye && mode === 'main' && !sheetOpen) sayAuto(fresh(DOG.bye), 'dog');
   const body = ui.dog.querySelector('.dog-body');
   body?.classList.add('leave');
   setTimeout(() => { if (!dogHere) { ui.dog.innerHTML = ''; ui.scene.classList.remove('has-dog'); } }, silent ? 0 : 1200);
@@ -2696,8 +2780,10 @@ function updateDog(now, asleep) {
   const forced = now < d.forceUntil;
   if (dogHere) {
     if (forced) { d.stayUntil = Math.max(d.stayUntil, d.forceUntil); d.forceUntil = 0; } // invited while here: he stays longer
-    // time to go home (never in the middle of a joke); at once when Lucky falls asleep
-    if (asleep || (now >= d.stayUntil && !chainQ.length)) { d.lastAt = now; dogLeave(asleep); st.save(S); }
+    if (asleep && tgRun) tgRun.cancel();
+    // time to go home (never in the middle of a joke or a game); at once when Lucky falls asleep
+    if (asleep || (now >= d.stayUntil && !chainQ.length && !tgRun)) { d.lastAt = now; dogLeave(asleep); st.save(S); }
+    else if (!asleep && !tgRun) taliMoment(now);
     return;
   }
   if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy() || Date.now() < quietUntil) return;
@@ -2710,7 +2796,7 @@ function updateDog(now, asleep) {
   if (!forced) d.n++;
   d.stayUntil = forced ? d.forceUntil : now + DOG_STAY;
   d.forceUntil = 0;
-  d.played = false;
+  d.games = 0;
   d.jokes = 0;
   d.twisters = 0;
   dogArrive();
@@ -3379,7 +3465,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id)), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

@@ -1,5 +1,6 @@
 import { CONFIG } from './config.js';
 import { ZONES } from './zones/index.js';
+import { LINES as TG_LINES, TALI_LINES } from './together.js';
 
 // All game texts. Lists are [ru, en] pairs (sometimes with an emoji as the third element).
 
@@ -1480,3 +1481,8 @@ export const BELTS = [
 
 // Decorate items available from day one
 
+// Lucky and Tali's games and visit scenes (js/together.js) bring their own lines
+for (const src of [TG_LINES, TALI_LINES]) {
+  for (const [k, v] of Object.entries(src.lucky)) { if (LUCKY.antics[k]) throw new Error(`line key ${k} is taken`); LUCKY.antics[k] = v; }
+  for (const [k, v] of Object.entries(src.dog)) { if (DOG[k]) throw new Error(`dog line key ${k} is taken`); DOG[k] = v; }
+}
