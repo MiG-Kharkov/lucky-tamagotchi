@@ -102,5 +102,7 @@ export const BADGES = [
   ['album9', '🏛️', ['Все альбомы', 'Every album'], 'albums', 9],
   ['jokes25', '😂', ['Хохотушка', 'Giggle champion'], 'jokes', 25],
   ['twisters10', '👅', ['Скороговорщица', 'Twister champion'], 'twisters', 10],
+  ['tricks1', '🎯', ['Юный тренер', 'Young trainer'], 'tricks', 1],
+  ['tricks6', '🎪', ['Цирк Лаки', "Lucky's circus"], 'tricks', 6],
   ['idioms10', '🎭', ['Знаток выражений', 'Saying explorer'], 'idioms', 10],
 ];

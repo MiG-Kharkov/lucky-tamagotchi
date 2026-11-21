@@ -3,6 +3,16 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.16.0] – 2026-11-21
+
+### Added
+- **🎯 Tricks: clicker training**, the way real bunnies learn. Lucky tries all sorts of things (scratching an ear,
+  sniffing, looking around) and she taps the big 🔔 Click right when he does the trick they are learning; a click at
+  the wrong moment only puzzles him. Five good clicks, over a few days (two trainings a day), and he knows it: spin,
+  star jump, high five, bow, stand up, roll.
+- Learned tricks he shows by himself now and then ("Look what you taught me!"), and all of them in **Lucky's show**
+  🎪, with music and confetti. Two badges: Young trainer and Lucky's circus.
+
 ## [1.15.0] – 2026-11-21
 
 Caring for Lucky is one button now, and each part of it is a little game instead of a chore.

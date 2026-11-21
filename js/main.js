@@ -825,6 +825,7 @@ function statValue(key) {
     case 'jokes': return S.jokes.heard.length;
     case 'twisters': return S.twisters.heard.length;
     case 'idioms': return S.idioms.heard.length;
+    case 'tricks': return learnedTricks().length;
     case 'worlds': return S.worldsSeen.length;
     default: return S.stats[key] || 0;
   }
@@ -948,7 +949,7 @@ const ACTIONS = [
 
 function buildActions() {
   careRow = null;
-  ui.actions.classList.remove('care-row');
+  ui.actions.classList.remove('care-row', 'train-row');
   ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${typeof a.e === 'function' ? a.e() : a.e}</span><span class="a-name">${tr(a.id)}</span></button>`).join('');
   ui.actions.querySelectorAll('.act').forEach((b) => {
     b.onclick = () => {
@@ -1341,6 +1342,7 @@ const CARE_ITEMS = [
   ['wash', '🫧', () => startWash()],
   ['brush', '🪮', () => startBrush()],
   ['scratch', '🤲', () => startScratch()],
+  ['train', '🎯', () => openTraining()],
   ['dress', '👗', () => openCollection('outfits')],
 ];
 
@@ -1360,6 +1362,7 @@ function showCareRow() {
   careRow = 'care';
   const T0 = st.today(S), w = wishOf();
   ui.actions.classList.add('care-row');
+  ui.actions.classList.remove('train-row');
   ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>`
     + CARE_ITEMS.map(([id, e]) => `<button class="act ${!T0.wishDone && w.kind === id ? 'wish' : ''}" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${tr(id === 'feed' ? 'feed' : id)}</span></button>`).join('');
   bindCareRow((id) => (id === 'back' ? buildActions() : CARE_ITEMS.find(([x]) => x === id)[2]()));
@@ -1381,6 +1384,7 @@ function bindCareRow(fn) {
       finishWash();
       finishBrush();
       endScratch();
+      if (mode === 'train' || mode === 'show') { if (b.dataset.id === 'back') stopTraining(); else fn(b.dataset.id); return; } // the clicker
       if (mode !== 'main') return;
       sfx.tap();
       clearTimeout(careIdle);
@@ -1581,6 +1585,145 @@ function endScratch() {
   scratch = null;
   mode = 'main';
   ui.scene.classList.remove('scratching');
+}
+
+// ----- teaching tricks: clicker training, the way real bunnies learn -----
+// Lucky tries all sorts of things; she taps Click right when he does the trick they are learning. Five good clicks
+// (over a few days, two trainings a day) and he knows it: he shows it now and then by himself, and in his show.
+const TRICKS = [
+  { id: 'spin', cls: 'pirouette', ms: 800, name: ['Кружок', 'Spin'] },
+  { id: 'jump', cls: 'starjump', ms: 800, name: ['Прыжок', 'Star jump'] },
+  { id: 'highfive', cls: 'highfive', ms: 1000, name: ['Дай пять', 'High five'] },
+  { id: 'bow', cls: 'bow', ms: 1500, name: ['Поклон', 'Bow'] },
+  { id: 'stand', cls: 'stretchUp', ms: 1600, name: ['Столбик', 'Stand up'] },
+  { id: 'roll', cls: 'roll', ms: 1400, name: ['Кувырок', 'Roll'] },
+];
+const DECOYS = [['groom', 1600], ['sniff', 1500], ['look', 1500], ['tilt', 1400], ['thump', 600]];
+const TRICK_STEPS = 5, TRAINS_PER_DAY = 2;
+const trickOf = () => TRICKS.find((t) => ((S.tricks || {})[t.id] || 0) < TRICK_STEPS);
+const learnedTricks = () => TRICKS.filter((t) => ((S.tricks || {})[t.id] || 0) >= TRICK_STEPS);
+let train = null;
+
+function showTrainRow() {
+  careRow = 'train';
+  const t = trickOf(), n = t ? (S.tricks || {})[t.id] || 0 : TRICK_STEPS;
+  ui.actions.classList.add('care-row', 'train-row');
+  ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>
+    <button class="act clicker" data-id="click"><span class="a-ico">🔔</span><span class="a-name">${tr('click')}${t ? ` · ${L(t.name)}` : ''} <b class="dots">${t ? '●'.repeat(n) + '○'.repeat(TRICK_STEPS - n) : '★'}</b></span></button>
+    ${learnedTricks().length ? `<button class="act" data-id="show"><span class="a-ico">🎪</span><span class="a-name">${tr('show')}</span></button>` : ''}`;
+  // the big button is the clicker during a training, and starts the next one between them
+  bindCareRow((id) => (id === 'back' ? showCareRow() : id === 'show' ? startShow() : train ? clickerTap() : openTraining()));
+}
+
+function openTraining() {
+  const T0 = st.today(S), t = trickOf();
+  showTrainRow();
+  if (!t) { say(fresh(LUCKY.allTricks)); return; }
+  if ((T0.trains || 0) >= TRAINS_PER_DAY && !turbo()) { say(fresh(LUCKY.trainTired)); return; }
+  leaveMain('train');
+  // eight moves, the trick among them three or four times (never first)
+  const moves = Array.from({ length: 8 }, () => null);
+  const spots = shuffle([1, 2, 3, 4, 5, 6, 7]).slice(0, 3 + (Math.random() < 0.5 ? 1 : 0));
+  spots.forEach((i) => { moves[i] = 'trick'; });
+  train = { t, moves, i: 0, win: null, clicked: false, good: 0, missedSaid: false, timer: 0 };
+  const ms = say(fresh(LUCKY.trainHint[t.id]));
+  if (!S.trainedOnce) { S.trainedOnce = true; setTimeout(() => toast(`<b>💡 ${tr('didYouKnow')}</b>${bi(TRAIN_FACT)}`, 6000), 400); }
+  train.timer = setTimeout(nextMove, Math.max(1800, ms + 300));
+}
+const TRAIN_FACT = ['Настоящих кроликов тоже учат трюкам: щелчок кликера и маленькое лакомство.', 'Real bunnies learn tricks too: a click of a clicker and a tiny treat.'];
+
+function nextMove() {
+  if (!train || mode !== 'train') return;
+  // the trick went by without a click
+  if (train.win && !train.clicked && !train.missedSaid) { train.missedSaid = true; say(fresh(LUCKY.trainMiss)); }
+  if (train.i >= train.moves.length) return endTraining();
+  const m = train.moves[train.i++];
+  train.clicked = false;
+  if (m === 'trick') {
+    hop(ui.lucky, train.t.cls, train.t.ms + 100);
+    train.win = { from: Date.now(), to: Date.now() + train.t.ms + 650 };
+  } else {
+    const [cls, ms] = pick(DECOYS);
+    hop(ui.lucky, cls, ms);
+    if (cls === 'thump') sfx.thump();
+    train.win = null;
+  }
+  train.timer = setTimeout(nextMove, 1900 + Math.random() * 400);
+}
+
+function clickerTap() {
+  if (!train || mode !== 'train') return;
+  sfx.note(1568);
+  const now = Date.now();
+  if (train.win && !train.clicked && now >= train.win.from && now <= train.win.to) {
+    train.clicked = true;
+    train.good++;
+    S.tricks ||= {};
+    S.tricks[train.t.id] = ((S.tricks[train.t.id] || 0) + 1);
+    antics.fly('🥕', [ui.scene.clientWidth / 2, ui.scene.clientHeight + 10], luckyPoint(0.5, 0.56), 500, { arc: 60, size: 26 });
+    setTimeout(() => { setTemp('eat', 900); sfx.crunch(); }, 500);
+    heartsBurst(...luckyPoint(0.5, 0.2), 3);
+    if (train.good === 1 || Math.random() < 0.3) say(fresh(LUCKY.trainGood));
+    st.save(S);
+    if (S.tricks[train.t.id] >= TRICK_STEPS) { clearTimeout(train.timer); setTimeout(() => endTraining(true), 1200); }
+    else showTrainRow();
+    return;
+  }
+  // a click at the wrong moment: he wonders what that was for
+  setTemp('ok', 900);
+  hop(ui.lucky, 'tilt', 1400);
+  if (Math.random() < 0.5) say(fresh(LUCKY.trainNo));
+}
+
+function endTraining(learned = false) {
+  if (!train) return;
+  clearTimeout(train.timer);
+  const t = train.t, good = train.good, T0 = st.today(S);
+  train = null;
+  if (mode === 'train') mode = 'main';
+  T0.trains = (T0.trains || 0) + 1;
+  stat('trainings');
+  st.boost(S, 'fun', 8);
+  st.boost(S, 'energy', -5);
+  renderStats();
+  award(addH(2 + Math.min(4, good), 'train', 8));
+  if (learned) {
+    stat('tricks');
+    confetti();
+    sfx.fanfare();
+    setTemp('stars', 2600);
+    setTimeout(() => hop(ui.lucky, t.cls, t.ms + 100), 300);
+    say(fresh(LUCKY.trickLearned[t.id]));
+  } else say(fresh(LUCKY.trainDone));
+  careDone('train', null, 2600);
+  st.save(S);
+  if (careRow === 'train') showTrainRow();
+}
+
+// ◀ in the middle of a training: it ends, what was learned stays
+function stopTraining() {
+  if (mode === 'show') { endShow(); return showCareRow(); }
+  if (train) endTraining();
+  showCareRow();
+}
+
+// The show: every trick he knows, one after another, with music and confetti at the end
+let show = null;
+function startShow() {
+  const list = learnedTricks();
+  if (!list.length || mode !== 'main') return;
+  leaveMain('show');
+  show = { timers: [] };
+  const ms0 = say(fresh(LUCKY.showStart));
+  let at = Math.max(1600, ms0 + 200);
+  list.forEach((t) => { show.timers.push(setTimeout(() => { hop(ui.lucky, t.cls, t.ms + 100); sfx.note(523 + Math.random() * 400); }, at)); at += t.ms + 700; });
+  show.timers.push(setTimeout(() => { confetti(); sfx.fanfare(); setTemp('laugh', 2000); heartsBurst(...luckyPoint(0.5, 0.2), 8); say(fresh(LUCKY.showEnd)); const T0 = st.today(S); if (!T0.showDone) { T0.showDone = true; award(addH(3, 'train', 8)); } stat('shows'); endShow(); }, at));
+}
+function endShow() {
+  if (!show) return;
+  show.timers.forEach(clearTimeout);
+  show = null;
+  if (mode === 'show') mode = 'main';
 }
 
 // ---------- taps ----------
@@ -1935,6 +2078,13 @@ let nextFidgetAt = Date.now() + 40e3;
 function maybeFidget(now) {
   if (now < nextFidgetAt || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || !windowActive() || now - lastInput < 12e3 || now < busyUntil) return;
   nextFidgetAt = now + 35e3 + Math.random() * 35e3;
+  const known = learnedTricks();
+  if (known.length && Math.random() < 0.25) {
+    const t = pick(known);
+    hop(ui.lucky, t.cls, t.ms + 100);
+    if (Math.random() < 0.4) setTimeout(() => say(fresh(LUCKY.trickSelf)), t.ms + 200);
+    return;
+  }
   antics.fidget();
 }
 
@@ -3178,6 +3328,8 @@ function enterSleep() {
   if (mode === 'wash') finishWash();
   if (mode === 'brush') finishBrush();
   if (mode === 'scratch') endScratch();
+  if (mode === 'train') endTraining();
+  if (mode === 'show') endShow();
   cancelAsk();
   silence();
   ui.scene.querySelectorAll('.surprise, .visitor, .frog').forEach((x) => x.remove());
@@ -3504,7 +3656,7 @@ function loop() {
     S.session.activeMs += dt;
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
-    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'scratch' || mode === 'edit')) {
+    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'scratch' || mode === 'train' || mode === 'show' || mode === 'edit')) {
       if (!S.session.warned && S.session.activeMs >= limit - 60e3 && sleepSoon(S.session.activeMs >= limit + 30e3)) { S.session.warned = true; S.session.warnedAt = now; }
       const dayLimit = S.settings.dailyMax * 60e3, played = S.playedMs[T0.date] || 0; // the day's limit: the same minute's notice
       if (dayLimit && !T0.dayWarned && played >= dayLimit - 60e3 && sleepSoon(played >= dayLimit + 30e3)) { T0.dayWarned = true; T0.dayWarnedAt = now; }
@@ -3781,7 +3933,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), spot: () => spotOf(), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), spot: () => spotOf(), trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

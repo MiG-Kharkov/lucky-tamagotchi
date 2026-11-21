@@ -1817,4 +1817,12 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
   animation: dropRun 2.6s ease-in var(--d) both; }
 @keyframes dropRun { 0% { opacity: 0; transform: scale(.3); } 12% { opacity: 1; transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: translateY(70px) scaleY(1.3); } }
 @media (prefers-reduced-motion: reduce) { .fluffy, .lucky.shiny::after, .lucky.shiny::before { animation: none !important; } }
+.actions.care-row { grid-template-columns: .7fr repeat(6, 1fr); gap: 4px; }
+.actions.care-row .a-name { font-size: 10px; }
+.actions.train-row { grid-template-columns: .7fr repeat(4, 1fr) 1fr; }
+.act.clicker { grid-column: span 4; background: linear-gradient(180deg, #FFE9A8, #FFD23F); }
+.act.clicker .a-ico { font-size: 30px; }
+.act.clicker .a-name { font-size: 13px; color: #8A5A00; }
+.act.clicker .dots { letter-spacing: 1px; margin-left: 4px; color: var(--pink-d); }
+.act.clicker:active { transform: scale(.96); }
 
