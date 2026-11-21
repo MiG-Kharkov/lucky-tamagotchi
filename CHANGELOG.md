@@ -3,6 +3,16 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.14.1] – 2026-11-21
+
+### Changed
+- **"🐾 Play together" starts one game straight away**, picked for her (new ones first), once a visit. The list of all
+  eight is only in Turbo, for parents testing.
+- During a game with Tali the decorations step away and come back after it, so the game's things don't land on the
+  castle, the pond or the ball.
+- Tali and his buttons stand in front of the decorations (the pond covered "Play together"). The race countdown is
+  bigger, and in football Lucky hops instead of a ninja kick that turned him upside down.
+
 ## [1.14.0] – 2026-11-21
 
 The last four worlds on the way to level 60.

@@ -76,8 +76,9 @@ then mood-based lines and general topics, and 3% rare lines. Reactions to action
   sunglasses, with a letter, in a somersault, or as before: running, jumping, digging, on a skateboard); while he is
   there they have little moments now and then (nose to nose, a butterfly, a stick as a present, Tali dozing off, a
   snack); he leaves waving, yawning, called home, or after a ball.
-- **🐾 Play together** (two games a visit): three of eight games on offer, new ones first, each with the child in
-  it (`js/together.js`): **Fetch** (tap the ball; Tali brings back the ball, a sock, a stick, and a carrot for Lucky),
+- **🐾 Play together** (one game a visit): it starts one of eight games straight away, new ones first (in Turbo a
+  list of all eight, for testing), each with the child in it, on a clean stage (the decorations step away for it;
+  `js/together.js`): **Fetch** (tap the ball; Tali brings back the ball, a sock, a stick, and a carrot for Lucky),
   **Hide and seek** (three bushes, his tail gives him away, later each round), **Football** (Tali in goal leans before
   he dives: kick to the other corner), **Tug of war** (tap fast; somebody ends up in the grass, often both),
   **Dance-off** (repeat Tali's moves with three buttons, then a disco), **Treasure** (pick one of three holes: a bone,

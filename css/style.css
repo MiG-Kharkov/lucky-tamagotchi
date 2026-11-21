@@ -92,7 +92,7 @@ input, select { font: inherit; }
 }
 
 .scene.has-dog .lucky { left: 36%; --lw: min(56%, 270px); }
-.dog { position: absolute; right: 3%; bottom: 6%; width: min(36%, 170px); z-index: 4; }
+.dog { position: absolute; right: 3%; bottom: 6%; width: min(36%, 170px); z-index: 5; } /* above the front decorations: his buttons stay tappable */
 .dog-body { aspect-ratio: 200 / 210; cursor: pointer; }
 .dog-body svg { width: 100%; height: 100%; overflow: visible; }
 .dog-body .tail { transform-box: fill-box; transform-origin: 0% 100%; animation: wag .5s ease-in-out infinite alternate; }

@@ -156,7 +156,7 @@ const football = {
         shot = true;
         tl.remove(); tr.remove();
         const [bx, by] = g.luckyAt(0.7, 0.9), tx = gx + (side === 'L' ? -1 : 1) * W * 0.12, ty = gy - H * 0.06;
-        g.pose('happy', 1200, 'kick', 900);
+        g.pose('happy', 1200, 'hop', 600); // the ninja 'kick' turns him upside down: a hop reads as a kick here
         g.sfx.bonk();
         g.fly('⚽', [bx, by], [tx, ty], 600, { arc: 40, spin: 720, size: 30 });
         g.dogDo('tgDive' + lean, 900);
@@ -305,8 +305,8 @@ const race = {
     g.luckyTo(me, 700);
     g.dogTo(tali, 700);
     g.say('lucky', 'tgRaceGo');
-    ['3', '2', '1'].forEach((n, i) => g.at(1600 + i * 800, () => { g.popUp(n, W / 2, H * 0.5, 700, 80, 'pop-stay tg-count'); g.sfx.beep(false); }));
-    g.at(4000, () => { g.popUp('GO!', W / 2, H * 0.5, 900, 64, 'pop-stay tg-count'); g.sfx.beep(true); g.say('dog', 'tgRaceGo'); started = true; });
+    ['3', '2', '1'].forEach((n, i) => g.at(1600 + i * 800, () => { g.popUp(n, W * 0.62, H * 0.56, 760, 84, 'tg-count'); g.sfx.beep(false); }));
+    g.at(4000, () => { g.popUp('GO!', W * 0.62, H * 0.56, 900, 64, 'tg-count'); g.sfx.beep(true); g.say('dog', 'tgRaceGo'); started = true; });
     const go = g.btn('🏃', W / 2, H * 0.92, () => { if (!started || over) return; me = Math.min(84, me + 2.6); g.luckyTo(me, 160); g.sfx.tap(); if (me >= 84) finish(); }, 'tg-big pulse');
     const tick = g.every(200, () => {
       if (!started || over) return;
@@ -445,11 +445,11 @@ export function playTogether(game, api) {
   return { cancel: () => finish(null), on: () => !over };
 }
 
-// Three games to offer: ones not played yet first, then the ones played longest ago
+// The games in the order to offer them: ones not played yet first (in a random order), then the ones played longest ago
 export function offerGames(played = []) {
   const fresh = shuffle(TOGETHER.filter((t) => !played.includes(t.id)));
   const old = played.map((id) => TOGETHER.find((t) => t.id === id)).filter(Boolean);
-  return [...fresh, ...old].slice(0, 3);
+  return [...fresh, ...old];
 }
 
 // the games' look (main.js adds it to the page)
@@ -458,6 +458,10 @@ export const CSS = `
 .tg-layer > * { pointer-events: auto; }
 .tg-layer.tg-out { opacity: 0; transition: opacity .35s; }
 .scene.tg-on .dog > button, .scene.tg-on .dog > .pill { display: none; }
+/* a game is a clean stage: the decorations step away for a moment and come back after it */
+.decor { transition: opacity .4s; }
+.scene.tg-on .decor, .scene.tg-on .hunt { opacity: 0; pointer-events: none !important; }
+.scene.tg-on .decor * { pointer-events: none !important; }
 .tg-btn { position: absolute; transform: translate(-50%, -50%); border: 0; background: none; padding: 0; font-size: 44px; line-height: 1; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .tg-btn.pulse { animation: tgPulse 1.1s ease-in-out infinite; }
 @keyframes tgPulse { 50% { transform: translate(-50%, -50%) scale(1.14); } }
@@ -483,7 +487,8 @@ export const CSS = `
 .tg-mound { width: 25%; aspect-ratio: 2; transform: translate(-50%, -50%) scale(0); transition: transform .4s cubic-bezier(.3, 1.6, .5, 1); }
 .tg-mound.up { transform: translate(-50%, -50%) scale(1); }
 .tg-flag { font-size: 52px; pointer-events: none !important; }
-.fly-fx.tg-count { font-weight: 900; color: #fff; text-shadow: 0 3px 0 #FF5FA2, 0 0 12px #0003; font-family: inherit; }
+.fly-fx.tg-count { font-weight: 900; color: #fff; text-shadow: 0 3px 0 #FF5FA2, 0 0 12px #0003; font-family: inherit; transform: translate(-50%, -50%); animation: tgCount var(--ms) ease-out forwards; }
+@keyframes tgCount { from { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } 25% { transform: translate(-50%, -50%) scale(1); opacity: 1; } 80% { opacity: 1; } to { opacity: 0; } }
 .tg-flash { position: absolute; inset: 0; background: #fff; animation: tgFlash .5s ease-out forwards; pointer-events: none; }
 @keyframes tgFlash { from { opacity: 1; } to { opacity: 0; } }
 .tg-photo { width: min(72%, 290px); pointer-events: none !important; animation: tgPhotoIn .5s cubic-bezier(.3, 1.4, .5, 1); }

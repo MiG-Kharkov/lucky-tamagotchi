@@ -2500,7 +2500,7 @@ function dogArrive() {
 
 // ---------- Lucky and Tali play together (js/together.js) ----------
 
-const TOGETHER_PER_VISIT = 2;
+const TOGETHER_PER_VISIT = 1;
 const togetherLeft = () => (turbo() ? 99 : TOGETHER_PER_VISIT - (S.dog.games || 0));
 let tgRun = null, nextMomentAt = 0, leavingAt = 0;
 
@@ -2525,8 +2525,10 @@ function taliKit() {
   };
 }
 
+// "Play together": one game, picked for her (new ones first). In Turbo (for parents testing) a list of all eight.
 function openTogether() {
-  const list = offerGames(S.dog.playedGames || []);
+  if (!turbo()) return startTogether(offerGames(S.dog.playedGames || [])[0]);
+  const list = TOGETHER;
   const html = `<div class="game-list">${list.map((g) => `<button class="game-item" data-id="${g.id}">
     <span class="gi-emoji">${g.e}</span><span class="gi-text"><b>${L(g.name)}</b><small>${L(g.hint)}</small></span></button>`).join('')}</div>`;
   openSheet(`🐾 ${tr('playTogether')}`, html, (root) => root.querySelectorAll('.game-item').forEach((b) => {
