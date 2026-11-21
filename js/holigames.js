@@ -50,6 +50,7 @@ export const HOLIDAY_GAMES = {
       // the pads play C, D, E and G; Lucky's tunes follow "Jingle Bells"
       pads: [{ e: '🔔', c: '#FFD23F', f: 523 }, { e: '🎁', c: '#E2313B', f: 587 }, { e: '⭐', c: '#4D9BFF', f: 659 }, { e: '🎄', c: '#2E9E4E', f: 784 }],
       melody: [2, 2, 2, 2, 2, 2, 2, 3, 0, 1, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 2, 2, 2, 2, 3, 0, 1, 2],
+      max: { easy: 10, normal: 16, hard: 28 }, // the whole song on Hard
     } },
   ],
   newyear: [

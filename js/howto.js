@@ -20,7 +20,8 @@ export function cardDemo(kind, t = {}) {
       html = `<span class="gd-a gd-peek">${t.good?.[0]?.e || '👻'}</span><span class="gd-a gd-peek2">${bad(nope || '🐈')}</span>${[0, 1, 2].map((i) => `<span class="gd-spot s${i}">${t.spot || '🕳️'}</span>`).join('')}<span class="gd-a gd-boom">✨</span><span class="gd-hand">👆</span>`;
       break;
     case 'pairs': {
-      const [a, b] = t.faces || ['🐰', '🥕'], back = t.back || '🐾';
+      // two faces that don't look like the back (some themes use the back's picture as a face too)
+      const back = t.back || '🐾', [a, b] = (t.faces || ['🐰', '🥕', '🌸']).filter((f) => f !== back).slice(1, 3);
       html = [a, b, a, b].map((f, i) => `<span class="gd-card c${i}"><b>${back}</b><b class="face">${f}</b></span>`).join('') + '<span class="gd-hand">👆</span>';
       break;
     }
@@ -33,7 +34,7 @@ export function cardDemo(kind, t = {}) {
       html = `<span class="gd-ground"></span><span class="gd-a gd-coin">${t.items?.[0]?.e || '🥕'}</span><span class="gd-a gd-rock">${t.obstacles?.[0]?.e || '🪨'}</span><span class="gd-a gd-runner">🐰</span><span class="gd-hand">👆</span>`;
       break;
     case 'fire':
-      html = `<span class="gd-a gd-rocket">🚀</span><span class="gd-a gd-burst">🎆</span><span class="gd-hand">👆</span>`;
+      html = `<span class="gd-a gd-rocket">🎇</span><span class="gd-a gd-burst">✨</span><span class="gd-a gd-burst b2">⭐</span><span class="gd-hand">👆</span>`;
       break;
     case 'talk':
       html = `<span class="gd-q">Hi! 👋</span><span class="gd-opt o1">Hello!</span><span class="gd-opt o2">Thank you!</span><span class="gd-a gd-yes">✓</span><span class="gd-hand">👆</span>`;
@@ -83,13 +84,14 @@ export const HOWTO_CSS = `
 .d-whack .gd-peek2 .gd-bad { position: static; display: inline-block; position: relative; }
 .d-whack .gd-boom { left: 44%; bottom: 40px; opacity: 0; animation-name: gdBoom2; }
 .d-whack .gd-hand { left: 46%; bottom: -40px; animation-name: gdTapW; }
-@keyframes gdPeek { 0%, 10% { bottom: 10px; } 22%, 40% { bottom: 44px; opacity: 1; } 44%, 100% { bottom: 10px; opacity: 0; } }
-@keyframes gdPeek2 { 0%, 55% { bottom: 10px; } 66%, 86% { bottom: 44px; } 94%, 100% { bottom: 10px; } }
+@keyframes gdPeek { 0%, 10% { bottom: 10px; opacity: 0; } 16% { opacity: 1; } 22%, 40% { bottom: 44px; opacity: 1; } 44%, 100% { bottom: 10px; opacity: 0; } }
+@keyframes gdPeek2 { 0%, 55% { bottom: 10px; opacity: 0; } 60% { opacity: 1; } 66%, 86% { bottom: 44px; opacity: 1; } 94%, 100% { bottom: 10px; opacity: 0; } }
 @keyframes gdBoom2 { 0%, 40% { opacity: 0; transform: scale(.4); } 46% { opacity: 1; transform: scale(1.3); } 62%, 100% { opacity: 0; transform: scale(1.5); } }
 @keyframes gdTapW { 0%, 14% { bottom: -40px; } 30% { bottom: 26px; transform: none; } 38% { bottom: 26px; transform: scale(.8); } 44% { bottom: 26px; transform: none; } 60%, 100% { bottom: -40px; } }
 /* pairs */
 .d-pairs .gd-card { top: 24px; width: 44px; height: 60px; border-radius: 10px; background: #fff; box-shadow: 0 3px 0 #0001, 0 0 0 2px #E8DDF0; font-size: 26px; }
-.d-pairs .gd-card b { position: absolute; inset: 0; display: grid; place-items: center; }
+.d-pairs .gd-card b { position: absolute; inset: 0; display: grid; place-items: center; border-radius: 10px; }
+.d-pairs .gd-card b:not(.face) { background: linear-gradient(135deg, #FFD1E6, #E3D4FF); }
 .d-pairs .gd-card .face { opacity: 0; }
 .d-pairs .c0 { left: 14px; } .d-pairs .c1 { left: 68px; } .d-pairs .c2 { left: 122px; } .d-pairs .c3 { left: 176px; }
 .d-pairs .c0, .d-pairs .c2 { animation-name: gdMatch; }
@@ -116,17 +118,19 @@ export const HOWTO_CSS = `
 .d-run .gd-ground { left: 0; right: 0; bottom: 0; height: 18px; background: repeating-linear-gradient(90deg, #7ACB6B 0 16px, #6BBE5C 16px 32px); animation: gdGround 1.2s linear infinite; }
 .d-run .gd-runner { left: 30px; bottom: 16px; font-size: 32px; animation-name: gdHop; transform: scaleX(-1); }
 .d-run .gd-rock { bottom: 16px; left: 110%; animation: gdRock 3.6s linear infinite; }
+.d-run .gd-hand { z-index: 5; }
 .d-run .gd-coin { top: 18px; left: 110%; font-size: 22px; animation: gdCoin 3.6s linear infinite; }
-.d-run .gd-hand { left: 170px; top: 116px; animation-name: gdTapR; }
+.d-run .gd-hand { left: 196px; top: 116px; animation-name: gdTapR; }
 @keyframes gdGround { to { background-position: -32px 0; } }
 @keyframes gdHop { 0%, 34% { bottom: 16px; } 46% { bottom: 64px; } 60%, 100% { bottom: 16px; } }
-@keyframes gdRock { from { left: 110%; } to { left: -20%; } }
+@keyframes gdRock { 0%, 10% { left: 110%; } 60%, 100% { left: -20%; } }
 @keyframes gdCoin { 0% { left: 110%; opacity: 1; } 42% { left: 18%; opacity: 1; } 44%, 100% { left: 14%; opacity: 0; } }
-@keyframes gdTapR { 0%, 22% { top: 116px; transform: none; } 30% { top: 56px; transform: none; } 35% { transform: scale(.8); } 40% { top: 56px; transform: none; } 55%, 100% { top: 116px; } }
+@keyframes gdTapR { 0%, 20% { top: 116px; transform: none; } 28% { top: 30px; transform: none; } 33% { transform: scale(.8); } 38% { top: 30px; transform: none; } 55%, 100% { top: 116px; } }
 /* fireworks */
 .d-fire { background: linear-gradient(#1B1F5C, #4A3290); }
 .d-fire .gd-rocket { left: 104px; bottom: -40px; animation-name: gdRocket; animation-timing-function: ease-out; }
 .d-fire .gd-burst { left: 96px; top: 6px; font-size: 44px; opacity: 0; animation-name: gdBurst; }
+.d-fire .gd-burst.b2 { left: 130px; top: 26px; font-size: 26px; }
 .d-fire .gd-hand { left: 150px; top: 116px; animation-name: gdTapF; }
 @keyframes gdRocket { 0% { bottom: -40px; opacity: 1; } 44% { bottom: 66px; opacity: 1; } 46%, 100% { bottom: 66px; opacity: 0; } }
 @keyframes gdBurst { 0%, 45% { opacity: 0; transform: scale(.3); } 52% { opacity: 1; transform: scale(1.2); } 80% { opacity: .9; transform: scale(1.4); } 90%, 100% { opacity: 0; } }

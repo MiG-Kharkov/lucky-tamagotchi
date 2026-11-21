@@ -41,7 +41,7 @@ export default {
   id: 'spaceMoon',
   world: 'space',
   name: ['Луна', 'The moon'],
-  spots: { L: [26, 546], R: [380, 562], l: [20, 692], r: [386, 692], sky: 300 },
+  spots: { L: [26, 546], R: [372, 562], l: [22, 668], r: [384, 668], sky: 300 },
   arrive: [
     ['Луна! Тут всё серое, а Земля в небе голубая-голубая.', 'The moon! Everything here is grey, and the Earth in the sky is so blue.'],
     ['Мы на Луне! Прыгать тут в шесть раз легче. Проверим?', "We're on the moon! Jumping is six times easier here. Shall we try?"],

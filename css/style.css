@@ -332,6 +332,13 @@ body.covered #app { visibility: hidden; }
   .g-rules { font-size: 14.5px; margin-bottom: 8px; padding: 4px 6px; }
   .game-card .g-levels { margin-bottom: 4px; }
 }
+/* the smallest phones (iPhone SE 1st gen): a smaller picture still */
+@media (max-height: 600px) {
+  .g-demo { scale: .6; margin: -24px auto -22px; }
+  .g-rules { font-size: 13.5px; line-height: 1.25; }
+  .g-rules small.g-sub { font-size: 11.5px; }
+  .game-card .row { margin-top: 6px; }
+}
 .game-card[hidden] { display: none; }
 .game-card h2 { margin: 6px 0; }
 .game-card p { color: var(--muted); font-weight: 600; margin: 0 0 16px; }
@@ -668,8 +675,9 @@ body.editing .pl.sel { outline: 3px solid var(--pink); background: #ffffff33; }
 @keyframes flame { to { transform: scaleY(.7); } }
 
 /* ---------- collection ---------- */
-.coll-tabs { overflow-x: auto; }
-.coll-tabs .tab { font-size: 12.5px; padding: 9px 2px; white-space: nowrap; }
+/* seven tabs: two rows, nothing hidden at the edge */
+.coll-tabs { flex-wrap: wrap; }
+.coll-tabs .tab { flex: 1 0 23%; font-size: 12.5px; padding: 8px 2px; white-space: nowrap; }
 .ward-top { display: flex; align-items: center; gap: 12px; background: #fff; border-radius: 20px; padding: 8px 12px; box-shadow: var(--shadow); margin-bottom: 12px; }
 .ward-preview { width: 92px; flex: none; }
 .ward-preview svg { width: 100%; overflow: visible; }
@@ -1890,7 +1898,7 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 @keyframes dreamOut { to { opacity: 0; transform: translateX(-50%) translateY(-20px); } }
 @keyframes dreamFloat { 50% { transform: translateY(-8px) rotate(-6deg); } }
 .dream-list { display: grid; gap: 8px; }
-.dream-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: #F7F2FF; }
+.dream-card { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; background: #F7F2FF; width: 100%; text-align: left; }
 .dream-card .dc-e { font-size: 28px; flex: none; }
 .dream-card.locked { opacity: .5; }
 .dream-card .dc-t { font-size: 14px; }
@@ -1900,5 +1908,11 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 .loc-arrow.left { left: 2px; } .loc-arrow.right { right: 2px; }
 .loc-arrow.hint { animation: locHint 1.2s ease-in-out infinite; background: #FFE066; }
 @keyframes locHint { 50% { transform: scale(1.15); } }
-body.editing .loc-arrow, .scene.washing .loc-arrow, .scene.brushing .loc-arrow, .scene.tg-on .loc-arrow { display: none; }
-
+body.editing .loc-arrow, .scene.washing .loc-arrow, .scene.brushing .loc-arrow, .scene.tg-on .loc-arrow,
+.scene.checking .loc-arrow, .scene:has(.nest) .loc-arrow, body:has(#actions.train-row) .loc-arrow { display: none; }
+/* the doctor's bag stays clear of Tali's buttons */
+.scene.has-dog .checkup-bag { right: auto; left: 6%; }
+/* the care row while Lucky naps: the buttons look asleep too */
+.act:disabled { opacity: .45; filter: grayscale(.6); }
+/* the quiz on its own: the phrase card steps aside */
+.phrase.quizzing { display: none; }

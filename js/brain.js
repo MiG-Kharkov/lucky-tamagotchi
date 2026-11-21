@@ -139,6 +139,9 @@ function demoShield(ctx, onSkip) {
   return sh;
 }
 
+// How long she can think before a hint comes (ms): long enough to work it out herself
+const HINT_AFTER = { remember: 16000, chain: 20000, squares: 15000, who: 16000 };
+
 // Stuck for a while: one hint (again after the next move)
 function idleWatch(ms, hint) {
   let at = Date.now(), given = false, on = true;
@@ -157,13 +160,14 @@ function demoOrPlay(ctx, { demo, play, lucky, hand, demoT }) {
     shield?.remove();
     hand.stop();
     ctx.howDone?.();
+    ctx.onPlay?.();
     play(true);
   };
   if (ctx.demo) {
     on = true;
     shield = demoShield(ctx, end);
     demo(() => on).then(() => end());
-  } else play(false);
+  } else { ctx.onPlay?.(); play(false); }
   return { get on() { return on; }, end };
 }
 
@@ -189,13 +193,13 @@ function runRemember(ctx) {
     hard: { cols: 4, rows: 4, n: [5, 7], show: 6, feats: ['color', 'shape', 'motion', 'color+shape', 'shape+motion'] } }[ctx.level] || {};
   const ROUNDS = 4, timers = [], demoT = [];
   let round = 0, points = 0, phase = 'show', field = [], want = [], left = 0, wrong = 0, ticker = 0, parts = [], sample = '';
-  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q"></p><div class="bg-grid rem" style="--cols:${L.cols}"></div><button class="btn pink bg-ready">${ctx.tr('bgReady')}</button></div>`;
+  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q"></p><div class="bg-grid rem" style="--cols:${L.cols};--rows:${L.rows}"></div><button class="btn pink bg-ready">${ctx.tr('bgReady')}</button></div>`;
   const grid = stage.querySelector('.bg-grid'), q = stage.querySelector('.bg-q'), ready = stage.querySelector('.bg-ready');
   const lucky = luckyCorner(ctx), hand = coach(ctx);
   const cell = (i) => grid.querySelector(`[data-i="${i}"]`);
   const hud = () => ctx.info(`⭐ ${points} &nbsp;${round + 1}/${ROUNDS}`);
   const text = (pair) => (ctx.lang === 'ru' ? pair[0] : pair[1]);
-  const idle = idleWatch(7000, () => {
+  const idle = idleWatch(HINT_AFTER.remember, () => {
     if (phase !== 'ask' || flow.on) return;
     const i = want.find((x) => !cell(x).classList.contains('open'));
     if (i === undefined) return;
@@ -297,7 +301,7 @@ function runRemember(ctx) {
     await W(900);
     if (!on()) return;
     lucky.say(BL.remHow2[0], 'ok', true);
-    await W(1600);
+    await W(2600);
     if (!on()) return;
     await hand.to(ready);
     if (!on()) return;
@@ -314,12 +318,12 @@ function runRemember(ctx) {
     play: (afterDemo) => { round = 0; points = 0; lucky.say(afterDemo ? BL.yourTurn[0] : BL.remStart[0], afterDemo ? 'happy' : 'ok'); newRound(); },
   });
   const cleanup = () => { clearInterval(ticker); timers.forEach(clearTimeout); demoT.forEach(clearTimeout); idle.stop(); hand.stop(); lucky.stop(); };
-  return { cleanup, stop: () => { cleanup(); return points; } };
+  return { cleanup, stop: () => { cleanup(); return points; }, inDemo: () => flow.on };
 }
 
 // ---------- Number chain (each answer starts the next sum) ----------
 // Blocks to count: a rod for each ten, a cube for each one
-const blocks = (k, cls = '') => `<span class="ch-blk ${cls}">${'<i class="ten"></i>'.repeat(Math.floor(k / 10))}${'<i class="one"></i>'.repeat(k % 10)}</span>`;
+const blocks = (k, cls = '') => `<span class="ch-blk ${cls}">${k >= 10 ? `<span class="tens">${'<i class="ten"></i>'.repeat(Math.floor(k / 10))}</span>` : ''}${k % 10 ? `<span class="ones">${'<i class="one"></i>'.repeat(k % 10)}</span>` : ''}</span>`;
 function runChain(ctx) {
   const { stage, sfx } = ctx;
   const L = { easy: { start: [2, 10], max: 20, op: [1, 9], ops: '+-' }, normal: { start: [5, 20], max: 50, op: [2, 19], ops: '+-' }, hard: { start: [10, 30], max: 100, op: [3, 25], ops: '+-*' } }[ctx.level] || {};
@@ -335,9 +339,10 @@ function runChain(ctx) {
     helped = true;
     const { a, b, op, r } = cur;
     aid.innerHTML = op === '+' ? `${blocks(a)}<b>+</b>${blocks(b, 'add')}` : op === '−' ? `${blocks(r)}${blocks(b, 'gone')}` : Array.from({ length: b }, () => blocks(a)).join('<b>+</b>');
+    aid.classList.toggle('small', a + b > 40 || op === '×'); // many blocks: smaller ones, the keys stay in view
     aid.hidden = false;
   }
-  const idle = idleWatch(7000, () => { if (flow.on || input || aid.hidden === false) return; showAid(); lucky.say(BL.chainHint[0]); });
+  const idle = idleWatch(HINT_AFTER.chain, () => { if (flow.on || input || aid.hidden === false) return; showAid(); lucky.say(BL.chainHint[0]); });
   function next(preset) {
     // a sum that stays between 0 and the level's top, different from the last number
     cur = preset || null;
@@ -404,7 +409,7 @@ function runChain(ctx) {
     showAid();
     aid.classList.add('bg-ping');
     lucky.say(BL.chainHow2[0], 'ok', true);
-    await W(2600);
+    await W(2900);
     if (!on()) return;
     lucky.say(BL.chainHow3[0], 'ok', true);
     await W(900);
@@ -434,7 +439,7 @@ function runChain(ctx) {
     },
   });
   const cleanup = () => { timers.forEach(clearTimeout); demoT.forEach(clearTimeout); idle.stop(); hand.stop(); lucky.stop(); };
-  return { cleanup, stop: () => { cleanup(); return points; } };
+  return { cleanup, stop: () => { cleanup(); return points; }, inDemo: () => flow.on };
 }
 
 // ---------- Squares (tap two opposite corners of a rectangle whose four corners are the same colour) ----------
@@ -447,7 +452,7 @@ function runSquares(ctx) {
   const color = () => rnd(0, L.colors - 1);
   for (let r = 0; r < L.rows; r++) grid.push(Array.from({ length: L.cols }, color));
   const sub = ctx.trSub ? `<small class="bg-sub">${ctx.trSub('bgSquaresHint')}</small>` : '';
-  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q">🟪 ${ctx.tr('bgSquaresHint')}${sub}</p><div class="bg-grid sq" style="--cols:${L.cols}"></div></div>`;
+  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q">🟪 ${ctx.tr('bgSquaresHint')}${sub}</p><div class="bg-grid sq" style="--cols:${L.cols};--rows:${L.rows}"></div></div>`;
   const box = stage.querySelector('.bg-grid');
   const lucky = luckyCorner(ctx), hand = coach(ctx);
   const tile = (r, c) => box.querySelector(`.sq-tile[data-r="${r}"][data-c="${c}"]`);
@@ -543,8 +548,10 @@ function runSquares(ctx) {
     }, 330));
   }
   // stuck for a while: a box's frame, two of its corners glow and the finger points at one
-  const idle = idleWatch(8000, () => {
+  const idle = idleWatch(HINT_AFTER.squares, () => {
     if (over || flow.on || busy) return;
+    sel = null;
+    box.querySelectorAll('.sel').forEach((x) => x.classList.remove('sel'));
     const [r1, c1, r2, c2] = pick(rects());
     [[r1, c1], [r2, c2]].forEach(([r, c]) => tile(r, c)?.classList.add('hint'));
     frame(r1, c1, r2, c2, 'dash');
@@ -590,10 +597,10 @@ function runSquares(ctx) {
   }
   const flow = demoOrPlay(ctx, {
     demo, lucky, hand, demoT,
-    play: (afterDemo) => { clearHint(); points = 0; secs = L.secs; hud(); lucky.say(afterDemo ? BL.yourTurn[0] : BL.sqStart[0], afterDemo ? 'happy' : 'ok'); idle.reset(); startClock(); },
+    play: (afterDemo) => { clearHint(); sel = null; box.querySelectorAll('.sel').forEach((x) => x.classList.remove('sel')); points = 0; secs = L.secs; hud(); lucky.say(afterDemo ? BL.yourTurn[0] : BL.sqStart[0], afterDemo ? 'happy' : 'ok'); idle.reset(); startClock(); },
   });
   const cleanup = () => { clearInterval(ticker); timers.forEach(clearTimeout); demoT.forEach(clearTimeout); idle.stop(); hand.stop(); lucky.stop(); };
-  return { cleanup, stop: () => { cleanup(); return points; } };
+  return { cleanup, stop: () => { cleanup(); return points; }, inDemo: () => flow.on };
 }
 
 // ---------- Who's who? (find the one bunny with all the features asked for) ----------
@@ -624,7 +631,8 @@ function runWho(ctx) {
   const L = { easy: { n: 6, ask: [2, 2] }, normal: { n: 8, ask: [3, 3] }, hard: { n: 10, ask: [3, 4] } }[ctx.level] || {};
   const ROUNDS = 6, timers = [], demoT = [];
   let round = 0, points = 0, target = null, keys = [], all = [], checks = new Set(), tries = 0, locked = false;
-  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q who-q"></p><div class="bg-grid who"></div></div>`;
+  const cols = L.n > 8 ? 4 : 3;
+  stage.innerHTML = `<div class="bg-wrap"><p class="bg-q who-q"></p><div class="bg-grid who" style="--cols:${cols};--rows:${Math.ceil(L.n / cols)};--ar:1.27"></div></div>`;
   const q = stage.querySelector('.who-q'), box = stage.querySelector('.bg-grid');
   const lucky = luckyCorner(ctx), hand = coach(ctx);
   const hud = () => ctx.info(`⭐ ${points} &nbsp;${round + 1}/${ROUNDS}`);
@@ -693,7 +701,7 @@ function runWho(ctx) {
     lucky.say(BL.whoNot[k + ':' + target[k]][0], 'sad');
   }
   // stuck: the finger points at a clue to tap
-  const idle = idleWatch(8000, () => {
+  const idle = idleWatch(HINT_AFTER.who, () => {
     if (locked || flow.on) return;
     const k = keys.find((x) => !checks.has(x));
     if (!k) return;
@@ -733,7 +741,7 @@ function runWho(ctx) {
     play: (afterDemo) => { round = 0; points = 0; lucky.say(afterDemo ? BL.yourTurn[0] : BL.whoStart[0], afterDemo ? 'happy' : 'ok'); newRound(); },
   });
   const cleanup = () => { timers.forEach(clearTimeout); demoT.forEach(clearTimeout); idle.stop(); hand.stop(); lucky.stop(); };
-  return { cleanup, stop: () => { cleanup(); return points; } };
+  return { cleanup, stop: () => { cleanup(); return points; }, inDemo: () => flow.on };
 }
 
 // targets: three stars at the target, two from 55% of it (game.js starsOf); how: a "How to play" demo
@@ -746,6 +754,10 @@ export const BRAIN_GAMES = [
 
 export const BRAIN_CSS = `
 .bg-wrap { position: absolute; inset: 64px 10px 10px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+/* a board as wide as it can be while its rows fit above Lucky's corner (about 250 px of the screen go to the rest) */
+.bg-grid.rem { width: min(100%, 360px, calc((100dvh - 250px) * var(--cols) / var(--rows))); }
+.bg-grid.sq { width: min(100%, 330px, calc((100dvh - 280px) * var(--cols) / var(--rows))); }
+.bg-grid.who { width: min(100%, 330px, calc((100dvh - 320px) * var(--cols) / var(--rows) / var(--ar, 1))); }
 .bg-q { margin: 0; text-align: center; font-weight: 800; font-size: 16px; color: var(--ink); background: #fffd; border-radius: 14px; padding: 8px 12px; box-shadow: var(--shadow); }
 .bg-q b { color: var(--pink-d); }
 .bg-sub { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
@@ -780,18 +792,24 @@ export const BRAIN_CSS = `
 .ch-aid { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: center; gap: 8px; max-width: 350px; background: #fffc; border-radius: 14px; padding: 8px 12px; box-shadow: var(--shadow); animation: whoHop .4s; }
 .ch-aid[hidden] { display: none; }
 .ch-aid > b { align-self: center; font-size: 20px; color: var(--muted); }
-.ch-blk { position: relative; display: inline-flex; flex-wrap: wrap; align-items: flex-end; gap: 3px; max-width: 150px; }
+.ch-blk { position: relative; display: inline-flex; align-items: flex-end; gap: 4px; }
+.ch-blk .tens { display: flex; gap: 3px; }
+.ch-blk .ones { display: grid; grid-template-columns: repeat(5, auto); gap: 3px; }
+.ch-aid.small .ch-blk i { width: 10px; } .ch-aid.small .ch-blk i.one { height: 10px; } .ch-aid.small .ch-blk .ones, .ch-aid.small .ch-blk .tens { gap: 2px; }
+.ch-aid.small .ch-blk i.ten { height: 44px; background-size: 100% 4.4px; }
 .ch-blk i { display: block; width: 15px; border-radius: 3px; background: #FF8A3D; box-shadow: inset 0 -2px 0 #0002; }
 .ch-blk i.one { height: 15px; }
 .ch-blk i.ten { height: 66px; background: repeating-linear-gradient(#FF8A3D 0 5.6px, #FFD9BF 5.6px 6.6px); }
 .ch-blk.add i { background: #4D9BFF; } .ch-blk.add i.ten { background: repeating-linear-gradient(#4D9BFF 0 5.6px, #CFE3FF 5.6px 6.6px); }
 .ch-blk.gone { opacity: .4; }
 .ch-blk.gone::after { content: ""; position: absolute; left: -4px; right: -4px; top: 50%; height: 3px; border-radius: 2px; background: #E2313B; transform: rotate(-24deg); }
-.ch-keys { display: grid; grid-template-columns: repeat(3, 72px); gap: 8px; margin-top: 4px; }
+/* the keys never leave the screen: when space runs out, the blocks above them shrink and scroll */
+.ch-keys { display: grid; grid-template-columns: repeat(3, 72px); gap: 8px; margin-top: 4px; flex: none; }
+.ch-aid { min-height: 0; overflow: auto; flex: 0 1 auto; }
 .ch-key { height: 56px; border-radius: 16px; background: #fff; box-shadow: var(--shadow); font-size: 26px; font-weight: 800; color: var(--ink); }
 .ch-key:active { transform: scale(.94); background: #FFE3F0; }
 .ch-key.blank { visibility: hidden; }
-.bg-grid.sq { gap: 4px; width: min(100%, 330px); }
+.bg-grid.sq { gap: 4px; }
 .sq-tile { aspect-ratio: 1; border-radius: 9px; background: var(--c); box-shadow: inset 0 -4px 0 #0002, inset 0 3px 0 #fff6; transition: transform .2s, opacity .2s; }
 .sq-tile.sel { outline: 4px solid #fff; transform: scale(.9); box-shadow: 0 0 0 7px var(--c), inset 0 -4px 0 #0002; }
 .sq-tile.hint { animation: sqHint .7s ease-in-out infinite alternate; }
@@ -814,7 +832,7 @@ export const BRAIN_CSS = `
 .who-ic svg { width: 100%; height: 100%; }
 .who-no { display: block; width: 100%; height: 100%; }
 .who-no::after { content: ""; position: absolute; left: -2px; right: -2px; top: 50%; height: 3px; border-radius: 2px; background: #E2313B; transform: rotate(-40deg); }
-.bg-grid.who { grid-template-columns: repeat(3, 1fr); gap: 8px; width: min(100%, 330px); }
+.bg-grid.who { grid-template-columns: repeat(var(--cols, 3), 1fr); gap: 8px; }
 .who-bunny { aspect-ratio: 60 / 76; border-radius: 16px; background: #fff; box-shadow: var(--shadow); padding: 6px; transition: opacity .3s, transform .3s; }
 .who-bunny svg { width: 100%; height: 100%; }
 .who-bunny.out { opacity: .25; transform: scale(.88); }
@@ -835,6 +853,6 @@ export const BRAIN_CSS = `
 .bg-ping { animation: bgPing .45s ease-out; }
 @keyframes bgPing { from { box-shadow: 0 0 0 0 #FF5FA2aa; } to { box-shadow: 0 0 0 14px #FF5FA200; } }
 .bg-shield { position: absolute; inset: 0; z-index: 8; }
-.bg-demo-tag { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); padding: 6px 14px; border-radius: 16px; background: #FFE066; color: #6B4A00; font-weight: 800; font-size: 14px; box-shadow: var(--shadow); white-space: nowrap; }
+.bg-demo-tag { position: absolute; top: 14px; left: 50%; transform: translateX(-50%); padding: 5px 10px; border-radius: 14px; background: #FFE066; color: #6B4A00; font-weight: 800; font-size: 12.5px; box-shadow: var(--shadow); white-space: nowrap; }
 .bg-skip { position: absolute; right: 10px; bottom: 12px; padding: 8px 14px; border-radius: 16px; background: #fff; color: var(--muted); font-weight: 800; font-size: 14px; box-shadow: var(--shadow); }
 `;

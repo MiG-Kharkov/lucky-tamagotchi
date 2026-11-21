@@ -235,7 +235,7 @@ and a step towards the next belt (3 stamps per belt).
   the first time, and Lucky points them out); the picture slides and Lucky walks on. A second place is a module like a
   zone with `world` instead of `level` (`js/zones/loc-<id>.js`): its picture, things, lines, guests and holiday spots.
   Each place keeps its own decorations (a new one starts bare); the world's own picture keeps its old layout. A world
-  is entered at its first place; the place she is in is kept over a reload. Eggs and coins are found per place. The
+  is entered at its first place; the place she is in is kept over a reload. Eggs and coins are found per place. A new level's decoration goes to the world's first place. The
   first eight worlds have a second place: the garden's pond, the dojo hall, the sweet factory, the pier, the ice
   rink, the moon, the cliffs, the stone garden.
 - **18 decorations** (the trampoline, the treasure chest, the dinosaur egg, the swing, the hot-air balloon, the
@@ -251,10 +251,12 @@ and a step towards the next belt (3 stamps per belt).
 
 The family's year: Halloween, Christmas, New Year, **her birthday** (7 January, from `config.js`), Valentine's Day,
 St Patrick's Day, Easter, **Songkran** (the Thai New Year, 13–15 April) and **Ukrainian Independence Day** (24
-August), with **St Nicholas Day** (6 December, as in Ukraine) inside the Christmas weeks. Three weeks before Halloween
-and Christmas, two before St Patrick's Day and Easter, a week before New Year, Valentine's Day and Independence Day and
-four days before her birthday and Songkran, the whole game is dressed up for it from the first day; the last week and
-the day itself add their own things. Parents can switch it off; Turbo previews each holiday.
+August), with **St Nicholas Day** (6 December, as in Ukraine) inside the Christmas weeks. The big ones start
+about a month ahead, as the shops and schools do: Christmas from 20 November, Halloween all of October; three weeks
+before St Patrick's Day and Easter, a week before Valentine's Day and Independence Day, five days before New Year and
+four days before her birthday and Songkran. The whole game is dressed up for it from the first day; the last week and
+the day itself add their own things. The window calendar covers the same days, except Christmas's, an Advent calendar
+from 1 December, and Halloween's, the last three weeks. Parents can switch it off; Turbo previews each holiday.
 
 - **On every screen:** the worlds (pumpkins, a cauldron, ghosts and bats; a tree, presents and a snowman; fireworks and
   a clock; a birthday cake with candles, presents, balloons and cupcakes; heart balloons, roses and a mailbox; shamrocks,

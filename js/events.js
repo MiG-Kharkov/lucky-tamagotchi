@@ -19,16 +19,18 @@ export function easter(y) {
   return new Date(y, Math.floor(n / 31) - 1, (n % 31) + 1);
 }
 
-// lead: how many days before the day the decorations start; after: how many days after it they stay.
+// lead: how many days before the day the decorations start (the big ones about a month, as the shops and schools
+// do); after: how many days after it they stay. cal: how many days before the day the window calendar starts, when
+// that isn't the whole lead (Christmas: an Advent calendar from 1 December).
 // stickers: holiday stickers for Decorate (they show only while their holiday is on, and come back next year).
 // gift: the daily surprise and the present boxes while the holiday is on.
 // today: how the calendar says "it's … today" when the name alone doesn't fit there; span: a holiday of several days.
 // prio: when two holidays are on at once (see eventOn); the family's own two from far away give way to the Irish ones.
 const [BD_MONTH, BD_DAY] = CONFIG.child.birthday;
 export const EVENTS = [
-  { id: 'halloween', icon: '🎃', name: ['Хэллоуин', 'Halloween'], date: (y) => new Date(y, 9, 31), lead: 21, after: 1,
+  { id: 'halloween', icon: '🎃', name: ['Хэллоуин', 'Halloween'], date: (y) => new Date(y, 9, 31), lead: 30, cal: 21, after: 1,
     stickers: ['🎃', '👻', '🦇', '🕸️', '🧹', '🍬'], gift: ['🎃', '🍬', '🧺'], confetti: ['#FF8A1F', '#7B3FB8', '#2E2A33', '#FFD23F', '#9BE15D'] },
-  { id: 'christmas', icon: '🎄', name: ['Рождество', 'Christmas'], date: (y) => new Date(y, 11, 25), lead: 21, after: 1,
+  { id: 'christmas', icon: '🎄', name: ['Рождество', 'Christmas'], date: (y) => new Date(y, 11, 25), lead: 35, cal: 24, after: 1,
     stickers: ['🎄', '🎁', '⛄', '🔔', '🧦', '🎅', '🦌', '🍪'], gift: ['🎁', '🎁', '🧦'], confetti: ['#E2313B', '#2E9E4E', '#FFD23F', '#FFFFFF', '#6FD3FF'] },
   { id: 'newyear', icon: '🎆', name: ['Новый год', 'New Year'], date: (y) => new Date(y, 0, 1), lead: 5, after: 1,
     stickers: ['🎆', '🎉', '🎊', '🎈', '🕛', '🎄', '✨'], gift: ['🎁', '🎉'], confetti: ['#FFD23F', '#C0C8D6', '#FF5FA2', '#8B6CFF', '#6FD3FF'] },
@@ -37,9 +39,9 @@ export const EVENTS = [
     stickers: ['🎂', '🧁', '🎁', '🥳', '👑', '🪅', '🎀'], gift: ['🎁', '🎂'], confetti: ['#FF5FA2', '#36C5F0', '#FFD23F', '#9BE15D', '#B78CFF'] },
   { id: 'valentine', icon: '💝', name: ['День святого Валентина', "Valentine's Day"], date: (y) => new Date(y, 1, 14), lead: 7, after: 0,
     stickers: ['💌', '💝', '💘', '🌹', '🧸', '💐'], gift: ['💝', '💌'], confetti: ['#FF5FA2', '#E2313B', '#FFB3D6', '#FFFFFF', '#B78CFF'] },
-  { id: 'patrick', icon: '☘️', name: ['День святого Патрика', "St Patrick's Day"], date: (y) => new Date(y, 2, 17), lead: 14, after: 0,
+  { id: 'patrick', icon: '☘️', name: ['День святого Патрика', "St Patrick's Day"], date: (y) => new Date(y, 2, 17), lead: 21, after: 0,
     stickers: ['☘️', '🍀', '🌈', '🪙', '🎩', '🎻'], gift: ['🪙', '🍀'], confetti: ['#2E9E4E', '#FFFFFF', '#FF8A1F', '#FFD23F', '#9BE15D'] },
-  { id: 'easter', icon: '🐣', name: ['Пасха', 'Easter'], date: easter, lead: 14, after: 1,
+  { id: 'easter', icon: '🐣', name: ['Пасха', 'Easter'], date: easter, lead: 21, after: 1,
     stickers: ['🥚', '🐣', '🧺', '🌷', '🐰', '🦋'], gift: ['🧺', '🥚'], confetti: ['#FFB3D6', '#B5E8FF', '#FFF2A8', '#C7F2B5', '#D9C7FF'] },
   // the Thai New Year, a water festival: three days, 13 to 15 April
   { id: 'songkran', icon: '💦', name: ['Сонгкран', 'Songkran'], date: (y) => new Date(y, 3, 13), lead: 4, after: 2, span: 3, prio: 1,

@@ -37,7 +37,7 @@ export default {
   id: 'winterRink',
   world: 'winter',
   name: ['Каток', 'The ice rink'],
-  spots: { L: [130, 692], R: [272, 694], l: [20, 692], r: [384, 692], sky: 300 },
+  spots: { L: [40, 548], R: [362, 552], l: [130, 664], r: [384, 668], sky: 300 },
   arrive: [
     ['Каток! Лёд гладкий, как зеркало. Где мои коньки?', 'The ice rink! The ice is smooth as a mirror. Where are my skates?'],
     ['Пахнет горячим шоколадом! И огоньки на ёлках горят.', 'It smells of hot chocolate! And the fairy lights are on.'],

@@ -14,7 +14,7 @@ export default {
   id: 'dojoHall',
   world: 'dojo',
   name: ['Зал додзё', 'The dojo hall'],
-  spots: { L: [162, 690], R: [252, 692], l: [118, 696], r: [386, 514], sky: 300 },
+  spots: { L: [40, 528], R: [362, 520], l: [120, 664], r: [290, 664], sky: 300 },
   arrive: [
     ['Зал додзё! Обувь снимаем… ой, у меня её и нет.', "The dojo hall! Shoes off… oh wait, I don't wear any."],
     ['Тут тихо и тепло, фонарики светятся. Идеально для тренировки!', "It's warm and quiet in here, and the lanterns are glowing. Perfect for training!"],

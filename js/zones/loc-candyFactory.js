@@ -31,7 +31,7 @@ export default {
   id: 'candyFactory',
   world: 'candy',
   name: ['Конфетная фабрика', 'The sweet factory'],
-  spots: { L: [140, 690], R: [262, 692], l: [22, 692], r: [380, 692], sky: 300 },
+  spots: { L: [40, 470], R: [370, 480], l: [22, 652], r: [384, 652], sky: 300 },
   arrive: [
     ['Конфетная фабрика! Тут пахнет шоколадом и ванилью.', 'The sweet factory! It smells of chocolate and vanilla.'],
     ['Фабрика сладостей! Я только посмотреть, честное кроличье.', "A sweet factory! I'm only here to look, bunny's honour."],

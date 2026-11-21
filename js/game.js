@@ -47,7 +47,7 @@ const demoKind = (g) => (g.kind === shooter ? 'shoot' : g.kind === catcher || g.
   : g.kind === runner ? 'run' : g.kind === 'memory' || g.id === 'memory' ? 'pairs' : g.kind === 'simon' || g.id === 'simon' ? 'copy' : g.id === 'talk' ? 'talk' : null);
 
 // speak(pair): Lucky says a [ru, en] line (in the main language); howSeen(id) / howDone(id): the "How to play" demo was seen
-export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onStart, onScore, onCancel, onEnd, speak: sayLine, howSeen, howDone }) {
+export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, svgHappy, svgSad, level = 'normal', bestOf = () => 0, onLevel, onRecord, onStart, onScore, onCancel, onEnd, onPlay, speak: sayLine, howSeen, howDone }) {
   const levels = !!game.target;
   const hint = 'g_' + game.id + '_hint', hintSub = translate ? T(lang === 'ru' ? 'en' : 'ru', hint) : '';
   host.innerHTML = `<div class="game g-${game.id}${game.holiday ? ' g-holiday' : ''}">
@@ -88,6 +88,7 @@ export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, s
     speak: sayLine,
     demo: false,
     howDone: () => howDone?.(game.id),
+    onPlay: () => onPlay?.(), // her own play begins (after a demo)
     get level() { return level; },
     info: (html) => { info.hidden = false; info.innerHTML = html; },
     // the holiday games end with their points
@@ -129,6 +130,7 @@ export function openGame(host, game, { tr, sfx, lang, translate = true, svgOk, s
   host.querySelector('.g-exit').onclick = () => {
     sfx.tap();
     if (!inst) return onCancel();          // not started yet: the attempt is not used up
+    if (inst.inDemo?.()) { ended = true; inst.cleanup(); return onCancel(); } // only Lucky's demo was watched: nothing to keep
     if (ended) return onEnd(final);
     ended = true;
     const got = inst.stop();               // left mid-game: the score so far counts

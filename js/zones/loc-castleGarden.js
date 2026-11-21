@@ -20,7 +20,7 @@ export default {
   id: 'castleGarden',
   world: 'castle',
   name: ['Сад камней', 'The stone garden'],
-  spots: { L: [150, 690], R: [262, 694], l: [20, 690], r: [384, 690], sky: 300 },
+  spots: { L: [40, 504], R: [370, 640], l: [22, 660], r: [384, 660], sky: 300 },
   arrive: [
     ['Сад камней! Тут так тихо, что слышно, как журчит вода.', "The stone garden! It's so quiet you can hear the water trickling."],
     ['Тсс… Это японский сад. Тут даже камешки причёсаны!', 'Shh… This is a Japanese garden. Even the pebbles have their hair combed!'],

@@ -72,7 +72,7 @@ export default {
   id: 'irishCliffs',
   world: 'irish',
   name: ['Утёсы', 'The cliffs'],
-  spots: { L: [214, 694], R: [356, 694], l: [92, 692], r: [384, 690], sky: 300 },
+  spots: { L: [30, 610], R: [362, 490], l: [20, 668], r: [386, 670], sky: 300 },
   arrive: [
     ['Утёсы! Внизу шумит океан, а наверху гуляют тупики.', 'The cliffs! The ocean roars below, and puffins stroll on top.'],
     ['Не подходи к краю! Тут ветер сдует любого кролика.', 'Not too close to the edge! This wind could blow a bunny away.'],

@@ -3,6 +3,56 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.21.1] – 2026-11-21
+
+After a full review of everything added since 1.11: fixes, and more time to think in the brain games.
+
+### Changed
+- **The big holidays start about a month ahead**, as the shops and schools do: Christmas from 20 November (the
+  window calendar stays an Advent calendar, from 1 December; before that it says when its first window opens),
+  Halloween all of October, St Patrick's Day and Easter three weeks ahead (they were three and two weeks).
+- **Hints wait longer**, so she has time to think: Remember! 16 s, Number chain 20 s, Squares 15 s, Who's who? 16 s
+  without a move (each move starts the wait again).
+- A new level's decoration goes to the world's first place, where her decorations are (the second places stay bare
+  for their own things).
+- The collection's seven tabs sit in two rows, so none is cut off at the edge (the English tab was hidden).
+- The phrase quiz takes the whole sheet (the phrase card with today's answer steps aside), and Next is always in view.
+- The nest's choices are named (Hay, Leaves, Wool; Flower, Star, Moon; Teddy, Carrot, Tali), not "Bedding" three times.
+- Dreams in the collection can be tapped to hear them again.
+- Three badges had the same icon as another one: Smarty 🤓, Wish granter 🧞, Giggle champion 🤣.
+- The brain games' boards fit the screen: Who's who? on Hard has four bunnies in a row (the tenth was below the
+  screen), the boards are sized to the phone's height, and Number chain's keys always stay in view (the blocks above
+  them get smaller and scroll). The blocks are easier to count: rods of ten side by side, ones in rows of five.
+- Games with Tali: Lucky's and Tali's first words come below the what-to-do card, not under it; the finger points at
+  the button from the side (the icon stays visible); the big buttons sit higher on a small phone.
+- The game cards' moving pictures: Lucky hops over the rock (it passed through him); the pairs show two pictures that
+  aren't the cards' back, on a coloured back; what peeks out of a pumpkin is hidden until it peeks; the fireworks
+  picture uses the game's own rocket. On the smallest phones the picture is smaller, so Start fits.
+- Jingle Bells on Hard plays the whole song.
+
+### Fixed
+- **The holiday eggs and coins in the second places**: some were below the picture or behind Lucky, so the egg and
+  coin hunts could not be finished there; holiday things were cut off at the bottom. Each place has new holiday spots.
+- **A wash when Lucky was nearly clean** (after brushing) ended at once with nothing: no line, no hearts, and a wash
+  wish could not be granted. Now scrubbing the mud off, or washing him to fully clean, counts.
+- **A soft lock**: if a holiday's stage changed while she chose things for the nest, every button stopped working.
+  The bar now keeps the row of whatever is going on.
+- The food wish now shows ✨ on Feed; the treat stars count down after each treat; the wished food can be eaten even
+  when he is full, and the nest wish works when he isn't tired.
+- During Lucky's show the Click button no longer starts a training over it; ◀ straight away doesn't use up a training.
+- Leaving a brain game during Lucky's demo keeps nothing (no points, no game counted).
+- Squares: skipping the demo right after Lucky chose a corner left it chosen, so her first box failed; a hint now
+  also clears a corner she had chosen. The Remember! demo's "Got it!" is heard to its end.
+- After leaving a game at once Lucky says a kind word ("Well done for trying!"), not "You're so fast!"; "A record!" is
+  no longer said when there was no record; the round's toast has one icon.
+- The check-up's row comes at once (◀ works during its first words); the doctor's bag stays clear of Tali's buttons.
+- Lines no longer cut each other: the wish celebration waits for Lucky's line after a wash, brushing or a nap; the
+  sleepy line is heard to its end; Tali, coming by himself, waits for Lucky to finish (invited, he comes at once); the bag's line and the arrow hint
+  wait their turn, and the arrow hint isn't said once she has used the arrows.
+- A boat, a cap or drumsticks from a place's scene stay in that place; a quick second tap on an arrow no longer goes
+  straight back; the arrows hide during the nest, training and the check-up; going back to the dojo plays its gong.
+- The duck in the bath doesn't pop up on top of the farm's hen; the care buttons look asleep while Lucky naps.
+
 ## [1.21.0] – 2026-11-21
 
 The games explain themselves: Lucky shows how to play and helps when she is stuck. And English comes first

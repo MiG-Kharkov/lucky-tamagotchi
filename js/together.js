@@ -190,7 +190,7 @@ const tug = {
     g.at(1300, () => g.say('lucky', 'tgTugGo'));
     g.pose('ok', 9000, 'strain', 9000);
     g.dogDo('tgPull', 9000);
-    const pull = g.btn('💪', g.W() / 2, g.H() * 0.92, () => { if (over) return; pos = Math.min(100, pos + 7); g.sfx.tap(); show(); if (pos >= 100) finish(); }, 'tg-big pulse');
+    const pull = g.btn('💪', g.W() / 2, g.H() * 0.88, () => { if (over) return; pos = Math.min(100, pos + 7); g.sfx.tap(); show(); if (pos >= 100) finish(); }, 'tg-big pulse');
     const stop = g.every(120, () => { if (over) return; pos = Math.max(-100, pos - 2.2 - Math.random() * 1.6); show(); if (pos <= -100) finish(); });
     g.at(9000, () => finish());
     function finish() {
@@ -217,7 +217,7 @@ const dance = {
   run(g) {
     let round = 0, right = 0;
     const W = g.W(), H = g.H();
-    const pads = MOVES.map(([e], i) => g.btn(e, W * (0.28 + i * 0.22), H * 0.93, () => press(i), 'tg-pad'));
+    const pads = MOVES.map(([e], i) => g.btn(e, W * (0.28 + i * 0.22), H * 0.89, () => press(i), 'tg-pad'));
     let seq = [], want = 0, listening = false;
     const light = (i) => { pads[i].classList.add('on'); setTimeout(() => pads[i].classList.remove('on'), 450); };
     const show = () => {
@@ -307,7 +307,7 @@ const race = {
     g.say('lucky', 'tgRaceGo');
     ['3', '2', '1'].forEach((n, i) => g.at(1600 + i * 800, () => { g.popUp(n, W * 0.62, H * 0.56, 760, 84, 'tg-count'); g.sfx.beep(false); }));
     g.at(4000, () => { g.popUp('GO!', W * 0.62, H * 0.56, 900, 64, 'tg-count'); g.sfx.beep(true); g.say('dog', 'tgRaceGo'); started = true; });
-    const go = g.btn('🏃', W / 2, H * 0.92, () => { if (!started || over) return; me = Math.min(84, me + 2.6); g.luckyTo(me, 160); g.sfx.tap(); if (me >= 84) finish(); }, 'tg-big pulse');
+    const go = g.btn('🏃', W / 2, H * 0.88, () => { if (!started || over) return; me = Math.min(84, me + 2.6); g.luckyTo(me, 160); g.sfx.tap(); if (me >= 84) finish(); }, 'tg-big pulse');
     const tick = g.every(200, () => {
       if (!started || over) return;
       // Tali keeps a steady pace and slows near the end when Lucky is far behind, so it stays close
@@ -365,7 +365,7 @@ const photo = {
         g.at(4400, () => g.done(3));
       });
     };
-    const cam = g.btn('📸', W / 2, H * 0.92, snap, 'tg-big pulse');
+    const cam = g.btn('📸', W / 2, H * 0.88, snap, 'tg-big pulse');
     g.at(15000, snap);
   },
 };
@@ -395,6 +395,7 @@ export function playTogether(game, api) {
   how.className = 'tg-how';
   how.innerHTML = `<span class="e">${game.e}</span><b>${main(game.name)}:</b> ${main(game.hint)}${api.translate ? `<small>${sub(game.hint)}</small>` : ''}`;
   layer.appendChild(how);
+  scene.style.setProperty('--tg-how-bottom', how.offsetTop + how.offsetHeight + 8 + 'px');
   let hand = null, pointed = false;
   const unpoint = () => { hand?.remove(); hand = null; how.classList.add('gone'); }; // her first tap: she knows what to do
   const g = {
@@ -424,7 +425,7 @@ export function playTogether(game, api) {
         pointed = true;
         hand = document.createElement('span');
         hand.className = 'tg-hand';
-        hand.textContent = '👆';
+        hand.textContent = '👉';
         hand.style.left = x + 'px';
         hand.style.top = y + 'px';
         layer.appendChild(hand);
@@ -481,9 +482,10 @@ export const CSS = `
 .tg-how b { color: var(--pink-d); }
 .tg-how small { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 2px; }
 .tg-how.gone { opacity: 0; translate: 0 -20px; }
+.scene:has(.tg-how:not(.gone)) .bubble { top: max(70px, var(--tg-how-bottom, 70px)); }
 @keyframes tgHowIn { from { translate: 0 -30px; opacity: 0; } }
-.tg-hand { position: absolute; z-index: 4; font-size: 40px; line-height: 1; pointer-events: none; transform: translate(-40%, 30%); filter: drop-shadow(0 3px 4px #0005); animation: tgPoint 1s ease-in-out infinite; }
-@keyframes tgPoint { 50% { translate: 0 -12px; scale: .88; } }
+.tg-hand { position: absolute; z-index: 4; font-size: 40px; line-height: 1; pointer-events: none; transform: translate(calc(-100% - 40px), -50%); filter: drop-shadow(0 3px 4px #0005); animation: tgPoint 1s ease-in-out infinite; }
+@keyframes tgPoint { 50% { translate: 12px 0; } }
 .tg-layer > * { pointer-events: auto; }
 .tg-layer.tg-out { opacity: 0; transition: opacity .35s; }
 .scene.tg-on .dog > button, .scene.tg-on .dog > .pill { display: none; }

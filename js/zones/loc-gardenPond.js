@@ -7,7 +7,7 @@ export default {
   id: 'gardenPond',
   world: 'garden',
   name: ['Пруд', 'The pond'],
-  spots: { L: [150, 690], R: [262, 694], l: [20, 690], r: [384, 690], sky: 300 },
+  spots: { L: [44, 500], R: [368, 560], l: [22, 666], r: [384, 664], sky: 300 },
   arrive: [
     ['Пруд! Тут живут утки, и вода такая блестящая.', 'The pond! Ducks live here, and the water is so sparkly.'],
     ['Тихо… Слышишь, как квакают и крякают?', 'Shh… Can you hear the croaking and the quacking?'],

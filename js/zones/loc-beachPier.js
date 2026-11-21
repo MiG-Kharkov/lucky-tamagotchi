@@ -45,7 +45,7 @@ export default {
   id: 'beachPier',
   world: 'beach',
   name: ['Пирс и маяк', 'The pier'],
-  spots: { L: [44, 690], R: [340, 690], l: [236, 694], r: [384, 694], sky: 300 },
+  spots: { L: [40, 548], R: [360, 500], l: [22, 668], r: [384, 668], sky: 300 },
   arrive: [
     ['Пирс и маяк! Отсюда видно всё море.', 'The pier and the lighthouse! You can see the whole sea from here.'],
     ['Чайки кричат, волны шумят… Пахнет морем и приключениями!', 'Seagulls calling, waves splashing… It smells like the sea and adventures!'],

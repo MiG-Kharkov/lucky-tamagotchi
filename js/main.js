@@ -593,7 +593,8 @@ function layout() {
 
 // A new decoration is placed in the current world right away
 function placeNewDecor(id) {
-  const items = layout();
+  if (!S.layout[S.bg]) { const k = S.loc?.[S.bg]; if (k) delete S.loc[S.bg]; layout(); if (k) S.loc[S.bg] = k; } // the first place's layout made as usual
+  const items = S.layout[S.bg];
   if (!items.some((it) => it.id === id)) items.push({ k: 'decor', id, x: DECOR_POS[id][0], y: DECOR_POS[id][1], s: 1, f: 0 });
 }
 
@@ -954,6 +955,21 @@ const ACTIONS = [
   { id: 'collection', e: '🎀', fn: () => openCollection() },
 ];
 
+// The bar again when something around it changed (a holiday's stage, the language): a care flow on the way keeps its
+// own row; only the usual bar would leave its buttons dead (they wait for mode 'main')
+function refreshBar() {
+  if (mode === 'nest' && nest) {
+    if (nest.step < NEST_STEPS.length) return nestRow();
+    showCareRow();
+    ui.actions.querySelectorAll('.act').forEach((b) => { b.disabled = true; });
+    return;
+  }
+  if (mode === 'checkup' && checkup) return checkupRow();
+  if (mode === 'train' || mode === 'show' || careRow === 'train') return showTrainRow();
+  if (careRow) return showCareRow();
+  buildActions();
+}
+
 function buildActions() {
   careRow = null;
   ui.actions.classList.remove('care-row', 'train-row');
@@ -997,13 +1013,14 @@ function renderLocArrows() {
     b.className = `loc-arrow ${dir < 0 ? 'left' : 'right'}${fresh2 ? ' hint' : ''}`;
     b.textContent = dir < 0 ? '‹' : '›';
     b.setAttribute('aria-label', dir < 0 ? 'previous place' : 'next place');
-    b.onclick = (e) => { e.stopPropagation(); finishWash(); goLoc(dir); };
+    b.onclick = (e) => { e.stopPropagation(); finishWash(); finishBrush(); goLoc(dir); };
     ui.scene.appendChild(b);
   }
   // the first time in a world with another place: Lucky points it out
   if (fresh2 && renderLocArrows.toldFor !== S.bg) {
     renderLocArrows.toldFor = S.bg;
-    setTimeout(() => { if (mode === 'main' && !chainQ.length) say(fresh(LUCKY.locHint)); }, 3500);
+    const world = S.bg;
+    setTimeout(() => { if (mode === 'main' && !chainQ.length && S.bg === world && !(S.locSeen || []).includes(world)) say(fresh(LUCKY.locHint), 'lucky', { auto: true }); }, 3500);
   }
 }
 
@@ -1014,6 +1031,7 @@ function goLoc(dir) {
   sfx.whoosh();
   stopChain();
   antics.end();
+  antics.clearProps(); // a boat or a cap from this place's scene stays here
   const layers = [ui.bg, ui.decor, ui.decorFront, ui.hunt];
   layers.forEach((el) => el.animate([{ transform: 'none', opacity: 1 }, { transform: `translateX(${-dir * 35}%)`, opacity: 0 }], { duration: 260, easing: 'ease-in', fill: 'forwards' }));
   hop(ui.lucky, 'walk', 700);
@@ -1027,8 +1045,12 @@ function goLoc(dir) {
     renderDecor();
     layers.forEach((el) => { el.getAnimations().forEach((a) => a.cancel()); el.animate([{ transform: `translateX(${dir * 35}%)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 300, easing: 'ease-out' }); });
     st.save(S);
-    goLoc.busy = false;
-    setTimeout(() => { if (mode === 'main' && !chainQ.length) say(fresh(next === S.bg ? (ARRIVE[S.bg] || LUCKY.place) : (LUCKY.arrive[next] || LUCKY.place))); }, 350);
+    setTimeout(() => { goLoc.busy = false; }, 400); // the picture slides in and Lucky walks on first
+    setTimeout(() => {
+      if (mode !== 'main' || chainQ.length) return;
+      if (next === S.bg && S.bg === 'dojo') sfx.gong();
+      say(fresh(next === S.bg ? (ARRIVE[S.bg] || LUCKY.place) : (LUCKY.arrive[next] || LUCKY.place)));
+    }, 350);
   }, 270);
 }
 
@@ -1071,7 +1093,7 @@ function updateEvent(force = false) {
     b.style.setProperty('--ev-icon', `"${ev.icon}"`);
   } else b.style.removeProperty('--ev-icon');
   if (ui.props) antics.setSticky('season', ev && ev.stage >= 3 ? SEASON_HAT[ev.id] : null);
-  buildActions();
+  refreshBar();
   renderEventBtn();
   renderBg();
   renderDecor();
@@ -1099,7 +1121,7 @@ function calendarDays(ev) {
   const n = new Date(), t0 = new Date(n.getFullYear(), n.getMonth(), n.getDate());
   const target = new Date(t0.getFullYear(), t0.getMonth(), t0.getDate() + ev.days);
   const days = [];
-  for (let k = ev.lead; k >= 0; k--) {
+  for (let k = Math.min(ev.lead, ev.cal ?? ev.lead); k >= 0; k--) {
     const d = new Date(target.getFullYear(), target.getMonth(), target.getDate() - k);
     days.push({ key: st.dayKey(d.getTime()), day: d.getDate(), offset: Math.round((d - t0) / 864e5), big: k === 0 });
   }
@@ -1126,7 +1148,9 @@ function openCalendar() {
   if (!EV || mode !== 'main') return;
   const cal = calendarDays(EV), opened = (S.calendar[cal.id] ||= []), today = st.today(S).date;
   const head = EV.days > 0 ? tr('calDays', { n: EV.days }) : EV.days > -(EV.span || 1) ? tr('calToday', { x: L(EV.today || EV.name) }) : tr('calAfter');
-  const html = `<p class="muted center cal-head">${head}<br><small>${tr('calHint')}</small></p>
+  // Advent: the calendar starts later than the decorations (Christmas: 1 December)
+  const first = cal.days[0], when = new Date(Date.now() + first.offset * 864e5).toLocaleDateString(S.lang === 'ru' ? 'ru-RU' : 'en-IE', { day: 'numeric', month: 'long' });
+  const html = `<p class="muted center cal-head">${head}<br><small>${first.offset > 0 ? tr('calFirst', { d: when }) : tr('calHint')}</small></p>
     <div class="cal-grid">${cal.days.map((d) => {
       const open = opened.includes(d.key), now = d.key === today, can = calOpenable(d, opened);
       const cls = open ? 'open' : now ? 'now' : can ? 'missed' : 'future';
@@ -1188,7 +1212,7 @@ function applyLang() {
   document.documentElement.lang = S.lang;
   buildStats();
   renderStats();
-  buildActions();
+  refreshBar();
   renderTop();
   if (mode === 'sleep') renderSleep(true);
 }
@@ -1240,9 +1264,9 @@ function hiccups() {
 
 function feed(f) {
   const T0 = st.today(S);
-  if (S.pet.hunger >= 95) return say(fresh(LUCKY.full));
+  if (S.pet.hunger >= 95 && !(wishOf().kind === 'food' && !T0.wishDone)) return say(fresh(LUCKY.full));
   if (f.treat && T0.treats >= 3 && !turbo()) return say(fresh(LUCKY.noTreats));
-  if (f.treat) T0.treats++;
+  if (f.treat) { T0.treats++; ui.actions.querySelectorAll('.treat').forEach((t) => { t.textContent = '★' + Math.max(0, 3 - T0.treats); }); }
   const hungerBefore = S.pet.hunger;
   const [x1, y1] = luckyPoint(0.5, 0.55);
   const r = ui.scene.getBoundingClientRect();
@@ -1308,7 +1332,9 @@ function startWash() {
     ui.fx.appendChild(d);
     return { d, x, y, left: 5 };
   }) : [];
-  if (Math.random() < 0.35) { const [x, y] = luckyPoint(1.05, 0.85); antics.popUp('🦆', x, y, 6000, 34, 'pop-stay duck'); setTimeout(() => sfx.squeak(), 300); }
+  if (Math.random() < 0.35) {
+    const at = (fx) => luckyPoint(fx, 0.85), r = ui.scene.getBoundingClientRect(), free = ([px, py]) => !document.elementFromPoint(r.left + px, r.top + py)?.closest('[data-tap], .pl');
+    const [x, y] = free(at(1.05)) ? at(1.05) : at(-0.05); antics.popUp('🦆', x, y, 6000, 34, 'pop-stay duck'); setTimeout(() => sfx.squeak(), 300); }
   say(mudSpots.length ? fresh(LUCKY.washMud) : P('washHint'));
   clearTimeout(washIdle);
   washIdle = setTimeout(finishWash, 8000);
@@ -1337,7 +1363,8 @@ function washMove(e) {
   renderStats();
   clearTimeout(washIdle);
   washIdle = setTimeout(finishWash, 3500);
-  if (S.pet.clean >= 99) finishWash();
+  // fully clean ends the bath, unless there is mud left to scrub
+  if (S.pet.clean >= 99 && !mudSpots.some((m) => m.left)) finishWash();
 }
 
 function finishWash() {
@@ -1345,24 +1372,27 @@ function finishWash() {
   clearTimeout(washIdle);
   mode = 'main';
   ui.scene.classList.remove('washing');
+  // a real wash: enough rubbing, all the mud scrubbed off, or rubbed until fully clean (when he was nearly clean already)
+  const scrubbed = mudSpots.length > 0 && mudSpots.every((m) => !m.left);
   mudSpots.forEach((m) => m.d.remove());
   mudSpots = [];
   ui.fx.querySelector('.duck')?.remove();
-  if (washGain >= 8) {
+  if (washGain >= 8 || scrubbed || (washGain > 0 && S.pet.clean >= 99)) {
     const [x, y] = luckyPoint(0.5, 0.3);
     for (let i = 0; i < 5; i++) setTimeout(() => floatFx(x + Math.random() * 120 - 60, y + Math.random() * 60, '✨', 'spark'), i * 80);
     sfx.sparkle();
     setTemp('happy', 1500);
     stat('washes');
     award(addH(3, 'wash', 6));
+    let ms = 0;
     // now and then he shakes himself dry, and the screen gets splashed
     if (Math.random() < 0.5) {
       sfx.shake();
       hop(ui.lucky, 'shakeOff', 1200);
       screenDrops();
-      say(fresh(LUCKY.washShake));
-    } else say(fresh(cleanBefore < 30 ? LUCKY.washDirty : LUCKY.clean));
-    careDone('wash', null, 2200);
+      ms = say(fresh(LUCKY.washShake));
+    } else ms = say(fresh(cleanBefore < 30 ? LUCKY.washDirty : LUCKY.clean));
+    careDone('wash', null, Math.max(2200, ms + 400));
   }
 }
 let mudSpots = [];
@@ -1421,7 +1451,7 @@ function showCareRow() {
   ui.actions.classList.add('care-row');
   ui.actions.classList.remove('train-row');
   ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>`
-    + CARE_ITEMS.map(([id, e]) => `<button class="act ${!T0.wishDone && w.kind === id ? 'wish' : ''}" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${tr(id === 'feed' ? 'feed' : id)}</span></button>`).join('');
+    + CARE_ITEMS.map(([id, e]) => `<button class="act ${!T0.wishDone && (w.kind === 'food' ? 'feed' : w.kind) === id ? 'wish' : ''}" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${tr(id === 'feed' ? 'feed' : id)}</span></button>`).join('');
   bindCareRow((id) => (id === 'back' ? buildActions() : CARE_ITEMS.find(([x]) => x === id)[2]()));
 }
 
@@ -1440,7 +1470,8 @@ function bindCareRow(fn) {
     b.onclick = () => {
       finishWash();
       finishBrush();
-      if (mode === 'train' || mode === 'show') { if (b.dataset.id === 'back') stopTraining(); else fn(b.dataset.id); return; } // the clicker
+      if (mode === 'show') { if (b.dataset.id === 'back') stopTraining(); return; } // the show: only ◀
+      if (mode === 'train') { if (b.dataset.id === 'back') stopTraining(); else fn(b.dataset.id); return; } // the clicker
       if (mode !== 'main') return;
       sfx.tap();
       clearTimeout(careIdle);
@@ -1551,8 +1582,8 @@ function finishBrush(said = false) {
   award(addH(3, 'brush', 6));
   st.today(S).shine = true;
   applyShine();
-  if (said !== true) say(fresh(LUCKY.brushDone));
-  const wished = careDone('brush', null, 2400);
+  const ms = said !== true ? say(fresh(LUCKY.brushDone)) : 0;
+  const wished = careDone('brush', null, Math.max(2400, ms + 400, typeof said === 'number' ? said + 400 : 0));
   if (!wished) setTimeout(() => toast(`<b>💡 ${tr('didYouKnow')}</b>${bi(pick(BRUSH_FACTS))}`, 6000), 2600);
 }
 const BRUSH_FACTS = [
@@ -1588,15 +1619,15 @@ const DREAMS = [
   ['stars', '⭐✨'], ['rooster', '🐓🌻'], ['robot', '🤖🥕'], ['circus', '🎪🤸'], ['bubble', '🫧🛁'], ['you', '💗🐰'],
 ];
 const NEST_STEPS = [
-  ['nestBedding', [['🌾', 'hay'], ['🍂', 'leaves'], ['🧶', 'wool']]],
-  ['nestPillow', [['🌸', 'flower'], ['⭐', 'star'], ['🌙', 'moon']]],
-  ['nestToy', [['🧸', 'bear'], ['🥕', 'carrot'], ['🐶', 'tali']]],
+  ['nestBedding', [['🌾', 'hay', ['Сено', 'Hay']], ['🍂', 'leaves', ['Листья', 'Leaves']], ['🧶', 'wool', ['Шерсть', 'Wool']]]],
+  ['nestPillow', [['🌸', 'flower', ['Цветок', 'Flower']], ['⭐', 'star', ['Звёздочка', 'Star']], ['🌙', 'moon', ['Луна', 'Moon']]]],
+  ['nestToy', [['🧸', 'bear', ['Мишка', 'Teddy']], ['🥕', 'carrot', ['Морковка', 'Carrot']], ['🐶', 'tali', ['Тали', 'Tali']]]],
 ];
 let nest = null;
 
 function startNest() {
   const T0 = st.today(S);
-  if (S.pet.energy >= 90 && !turbo()) return say(fresh(LUCKY.nestNotSleepy));
+  if (S.pet.energy >= 90 && !turbo() && !(wishOf().kind === 'nest' && !T0.wishDone)) return say(fresh(LUCKY.nestNotSleepy));
   if ((T0.naps || 0) >= 3 && !turbo()) return say(fresh(LUCKY.nestEnough));
   leaveMain('nest');
   nest = { step: 0, picks: [], el: document.createElement('div'), timers: [] };
@@ -1612,7 +1643,7 @@ function nestRow() {
   const [key, opts] = NEST_STEPS[nest.step];
   ui.actions.classList.add('care-row');
   ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>`
-    + opts.map(([e, id]) => `<button class="act" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${tr(key)}</span></button>`).join('');
+    + opts.map(([e, id, name]) => `<button class="act" data-id="${id}"><span class="a-ico">${e}</span><span class="a-name">${L(name)}</span></button>`).join('');
   ui.actions.querySelectorAll('.act').forEach((b) => {
     b.onclick = () => {
       sfx.tap();
@@ -1632,8 +1663,8 @@ function nestNap() {
   showCareRow();
   ui.actions.querySelectorAll('.act').forEach((b) => { b.disabled = true; });
   const at = (ms, fn) => nest.timers.push(setTimeout(fn, ms));
-  say(fresh(LUCKY.nestSleep));
-  at(1200, () => { ui.lucky.classList.add('napping'); setTemp('sleep', 7000); sfx.yawn(); stopSpeech(); hideBubble(); });
+  const sleepy = say(fresh(LUCKY.nestSleep));
+  at(Math.max(1200, Math.min(2400, sleepy + 100)), () => { ui.lucky.classList.add('napping'); setTemp('sleep', 7000); sfx.yawn(); stopSpeech(); hideBubble(); });
   [2000, 3200, 4400].forEach((d) => at(d, () => floatFx(...luckyPoint(0.7, 0.15), '💤', 'spark')));
   // the dream: new ones first
   const seen = (S.dreams ||= []);
@@ -1651,7 +1682,7 @@ function nestNap() {
     ui.lucky.classList.remove('napping');
     hop(ui.lucky, 'stretchUp', 1600);
     setTemp('happy', 2500);
-    say(fresh(LUCKY.dreams[id]));
+    const told = say(fresh(LUCKY.dreams[id]));
     if (isNew) { seen.push(id); setTimeout(() => toast(`💭 <b>${tr('newDream')}</b>`, 3500), 600); }
     const T0 = st.today(S);
     T0.naps = (T0.naps || 0) + 1;
@@ -1661,7 +1692,7 @@ function nestNap() {
     award(addH(2, 'nest', 6));
     st.save(S);
     endNest(true);
-    careDone('nest', null, 3800);
+    careDone('nest', null, Math.max(3800, told + 400));
   });
 }
 
@@ -1671,6 +1702,7 @@ function endNest(done) {
   const el = nest.el;
   nest = null;
   ui.lucky.classList.remove('napping');
+  ui.scene.querySelectorAll('.dream').forEach((d) => d.remove());
   el.classList.add('away');
   setTimeout(() => el.remove(), 900);
   if (mode === 'nest') mode = 'main';
@@ -1793,6 +1825,8 @@ function endTraining(learned = false) {
 // ◀ in the middle of a training: it ends, what was learned stays
 function stopTraining() {
   if (mode === 'show') { endShow(); return showCareRow(); }
+  // left before the trick came by even once: it doesn't count (no hearts, the day's trainings stay)
+  if (train && !train.good && !train.moves.slice(0, train.i).includes('trick')) { clearTimeout(train.timer); train = null; if (mode === 'train') mode = 'main'; }
   if (train) endTraining();
   showCareRow();
 }
@@ -1840,13 +1874,14 @@ function maybeCheckupBag(now) {
   b.onclick = (e) => { e.stopPropagation(); if (mode !== 'main') return; sfx.tap(); b.remove(); startCheckup(); };
   ui.scene.appendChild(b);
   sfx.pop();
-  if (!chainQ.length) say(fresh(LUCKY.checkup.bag));
+  if (!chainQ.length) say(fresh(LUCKY.checkup.bag), 'lucky', { auto: true });
 }
 
 function startCheckup() {
   leaveMain('checkup');
   checkup = { step: 0, weight: (18 + st.dayPick(S, 'w', 3)) / 10 };
   ui.scene.classList.add('checking');
+  checkupRow(); // its own row at once (◀ works during the intro)
   const ms = say(fresh(LUCKY.checkup.intro));
   setTimeout(() => checkupStep(0), Math.max(1500, ms + 200));
 }
@@ -2744,8 +2779,9 @@ function startGame(game) {
     onCancel: closeGame,
     // a game counts from its start (a reload can't get round the day's games), and what it earned is kept the
     // moment it ends, before the end card is closed (iOS may close the app in the background meanwhile)
+    onPlay: () => { if (game.brain) { stat('brainGames'); st.save(S); } },
     onStart: () => {
-      if (game.brain) { stat('brainGames'); st.save(S); return; } // brain training: as much as she likes
+      if (game.brain) return; // brain training: as much as she likes; it counts when her own play starts (onPlay)
       const R = S.round; if (!R.n) R.at = Date.now(); R.n++; st.today(S).games++; S.lastGameAt = Date.now(); stat('games'); st.save(S);
     },
     onScore: (score) => {
@@ -2761,8 +2797,9 @@ function startGame(game) {
       closeGame();
       renderStats();
       setTemp('happy', 1500);
-      if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
-      if (!game.brain) toast('🎈 ' + roundNote());
+      // a game left at once (almost no points) gets a kind word, not "you're so fast!"
+      if (!(score >= game.great && maybeIdiom('win', 0.6))) say(fresh(score >= game.great ? LUCKY.gameGreat : score <= 2 || Math.random() < 0.5 ? LUCKY.gameOk : LUCKY.gameAfter));
+      if (!game.brain) { const note = roundNote(); toast(note.startsWith('⏳') ? note : '🎈 ' + note); }
       st.save(S);
     },
   });
@@ -2982,7 +3019,7 @@ function collectionBody(tab) {
   if (tab === 'dreams') {
     const seen = S.dreams || [];
     return `<p class="muted center">${tr('dreamsOf', { n: seen.length, m: DREAMS.length })}</p><div class="dream-list">${DREAMS.map(([id, e]) => (seen.includes(id)
-      ? `<div class="dream-card"><span class="dc-e">${e}</span><span class="dc-t">${bi(LUCKY.dreams[id][0])}</span></div>`
+      ? `<button class="dream-card" data-dream="${id}"><span class="dc-e">${e}</span><span class="dc-t">${bi(LUCKY.dreams[id][0])}</span></button>`
       : '<div class="dream-card locked"><span class="dc-e">💤</span><span class="dc-t">?</span></div>')).join('')}</div>`;
   }
   if (tab === 'english') {
@@ -3030,6 +3067,7 @@ function openCollection(tab = 'outfits') {
     root.querySelectorAll('.stk.on').forEach((x) => { x.onclick = () => { sfx.pop(); hop(x, 'wiggle'); }; });
     root.querySelectorAll('.badge.on').forEach((x) => { x.onclick = () => { sfx.sparkle(); hop(x, 'wiggle'); }; });
     root.querySelectorAll('.joke-card[data-j]').forEach((x) => { x.onclick = () => { sfx.tap(); hop(x, 'wiggle'); playJoke(JOKE_BY_ID[x.dataset.j]); }; });
+    root.querySelectorAll('.dream-card[data-dream]').forEach((x) => { x.onclick = () => { hop(x, 'wiggle'); speak(fill(L(LUCKY.dreams[x.dataset.dream][0]), S.lang), S.lang, 'lucky'); }; });
     root.querySelectorAll('.book-chips .chip').forEach((b) => { b.onclick = () => { sfx.tap(); bookChip = b.dataset.chip; again(); }; });
     root.querySelectorAll('.tw-speed').forEach((b) => { b.onclick = () => { sfx.tap(); hop(b, 'wiggle'); speak(fill(L(TWISTER_BY_ID[b.dataset.tw].t), S.lang), S.lang, 'lucky', Number(b.dataset.s)); }; });
     root.querySelectorAll('.idiom-card').forEach((b) => { b.onclick = () => { sfx.sparkle(); replayIdiom(IDIOM_BY_ID[b.dataset.idiom]); }; });
@@ -3085,6 +3123,7 @@ function quizStep(box) {
   // Lucky asks in English; the clue is the picture and the Russian meaning, small (heard only when tapped); the
   // answers are English phrases, each said when tapped
   const clue = say2(q, other());
+  box.closest('.sheet-body')?.querySelector('.phrase')?.classList.add('quizzing');
   box.innerHTML = `<div class="quiz">
     <div class="quiz-q"><b>${tr('quizQ')}</b> <span class="muted">${T0.quiz + 1}/3</span></div>
     <div class="quiz-clue"><span class="big">${q[2]}</span><button class="say-sub q">🔊 ${clue}</button></div>
@@ -3105,6 +3144,7 @@ function quizStep(box) {
       else { sfx.tap(); res.innerHTML = `${tr('quizWrong')} <b>${say2(q, S.lang)}</b>`; }
       res.innerHTML += `<div class="row"><button class="btn pink next">${T0.quiz < 3 ? tr('quizNext') : tr('done')}</button></div>`;
       res.querySelector('.next').onclick = () => (T0.quiz < 3 ? quizStep(box) : openPhrase());
+      res.scrollIntoView({ block: 'end', behavior: 'smooth' });
       st.save(S);
     };
   });
@@ -3481,7 +3521,7 @@ function updateDog(now, asleep) {
     else if (!asleep && !tgRun) taliMoment(now);
     return;
   }
-  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy() || Date.now() < quietUntil) return;
+  if (asleep || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || antics.busy() || Date.now() < quietUntil || (!forced && Date.now() < busyUntil)) return; // on his own he lets Lucky finish; invited, he comes at once
   // one visitor at a time: not while the frog is here, nor right after her
   if (!forced && (ui.scene.querySelector('.frog') || now - frogGoneAt < 30e3)) return;
   const due = forced || (dogDueAt !== null && S.session.activeMs >= dogDueAt && d.n < DOG_PER_DAY
@@ -4137,10 +4177,10 @@ function start() {
     openDojo();
   };
   $('#sleepBtn').onclick = () => { sfx.tap(); askBed(); };
-  $('#wordBtn').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openPhrase(); } };
-  $('#editBtn').onclick = () => { finishWash(); sfx.tap(); startEdit(); };
-  $('#eventBtn').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openCalendar(); } };
-  $('#lvlCard').onclick = () => { finishWash(); if (mode === 'main') { sfx.tap(); openPlan(); } };
+  $('#wordBtn').onclick = () => { finishWash(); finishBrush(); if (mode === 'main') { sfx.tap(); openPhrase(); } };
+  $('#editBtn').onclick = () => { finishWash(); finishBrush(); sfx.tap(); startEdit(); };
+  $('#eventBtn').onclick = () => { finishWash(); finishBrush(); if (mode === 'main') { sfx.tap(); openCalendar(); } };
+  $('#lvlCard').onclick = () => { finishWash(); finishBrush(); if (mode === 'main') { sfx.tap(); openPlan(); } };
   bindParentGear($('#gearBtn'));
   lastSpeech = Date.now();
   loop();
