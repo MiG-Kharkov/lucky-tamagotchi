@@ -826,6 +826,7 @@ function statValue(key) {
     case 'twisters': return S.twisters.heard.length;
     case 'idioms': return S.idioms.heard.length;
     case 'tricks': return learnedTricks().length;
+    case 'checkups': return S.stats.checkups || 0;
     case 'worlds': return S.worldsSeen.length;
     default: return S.stats[key] || 0;
   }
@@ -941,7 +942,7 @@ function renderTop() {
 }
 
 const ACTIONS = [
-  { id: 'care', e: '🐰', fn: () => openCare() },
+  { id: 'care', e: '🐰', label: 'luckyBtn', fn: () => openCare() }, // ('care' is the real-pet card's word)
   { id: 'play', e: () => (EV && EV.stage >= 3 ? EV.icon : '🎈'), fn: () => openPlay() },
   { id: 'dojo', e: '🥷', fn: () => openDojo() },
   { id: 'collection', e: '🎀', fn: () => openCollection() },
@@ -950,7 +951,7 @@ const ACTIONS = [
 function buildActions() {
   careRow = null;
   ui.actions.classList.remove('care-row', 'train-row');
-  ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${typeof a.e === 'function' ? a.e() : a.e}</span><span class="a-name">${tr(a.id)}</span></button>`).join('');
+  ui.actions.innerHTML = ACTIONS.map((a) => `<button class="act" data-id="${a.id}"><span class="a-ico">${typeof a.e === 'function' ? a.e() : a.e}</span><span class="a-name">${tr(a.label || a.id)}</span></button>`).join('');
   ui.actions.querySelectorAll('.act').forEach((b) => {
     b.onclick = () => {
       finishWash(); // Wash looks like the main screen: a button there ends the wash and does its thing
@@ -1726,6 +1727,125 @@ function endShow() {
   if (mode === 'show') mode = 'main';
 }
 
+// ----- the weekly check-up -----
+// Once a week a doctor's bag turns up in the scene. The check-up is four small steps, each with a real fact: the scales,
+// the teeth (a tap on his nose), the ears, the heart (a tap on his chest). Never an illness. A health card at the end.
+const CHECKUP_DAYS = 6;
+const checkupDue = () => S.level >= 3 && (!S.checkupAt || Date.now() - S.checkupAt >= CHECKUP_DAYS * 864e5);
+const CHECKUP_STEPS = [
+  { id: 'scale', icon: '⚖️', parts: null },
+  { id: 'teeth', icon: '🦷', parts: ['nose'] },
+  { id: 'ears', icon: '🔦', parts: ['ear'] },
+  { id: 'heart', icon: '🩺', parts: ['body', 'tummy'] },
+];
+let checkup = null;
+
+// the bag: once a session at most, after a couple of minutes of play
+function maybeCheckupBag(now) {
+  if (!checkupDue() || mode !== 'main' || sheetOpen || modalOpen || ask || antics.busy() || !userActive() || S.session.activeMs < 120e3 || ui.scene.querySelector('.checkup-bag') || maybeCheckupBag.shownAt > now - 10 * 60e3) return;
+  maybeCheckupBag.shownAt = now;
+  const b = document.createElement('button');
+  b.className = 'checkup-bag';
+  b.setAttribute('aria-label', 'check-up');
+  b.textContent = '💼';
+  b.onclick = (e) => { e.stopPropagation(); if (mode !== 'main') return; sfx.tap(); b.remove(); startCheckup(); };
+  ui.scene.appendChild(b);
+  sfx.pop();
+  if (!chainQ.length) say(fresh(LUCKY.checkup.bag));
+}
+
+function startCheckup() {
+  leaveMain('checkup');
+  checkup = { step: 0, weight: (18 + st.dayPick(S, 'w', 3)) / 10 };
+  ui.scene.classList.add('checking');
+  const ms = say(fresh(LUCKY.checkup.intro));
+  setTimeout(() => checkupStep(0), Math.max(1500, ms + 200));
+}
+
+function checkupRow() {
+  const s = CHECKUP_STEPS[checkup.step];
+  ui.actions.classList.add('care-row', 'train-row');
+  ui.actions.innerHTML = `<button class="act back" data-id="back"><span class="a-ico">◀</span><span class="a-name">${tr('back')}</span></button>
+    <button class="act clicker checkup-act" data-id="step"><span class="a-ico">${s.icon}</span><span class="a-name">${tr('checkupStep')} <b class="dots">${'●'.repeat(checkup.step)}${'○'.repeat(CHECKUP_STEPS.length - checkup.step)}</b></span></button>`;
+  ui.actions.querySelector('[data-id="back"]').onclick = () => { sfx.tap(); endCheckup(false); };
+  ui.actions.querySelector('[data-id="step"]').onclick = () => { sfx.tap(); say(fresh(LUCKY.checkup[s.id])); };
+}
+
+// n: the step this call is for (a late timer for a step already done does nothing)
+function checkupStep(n = 0) {
+  if (!checkup || mode !== 'checkup' || checkup.step !== n) return;
+  const s = CHECKUP_STEPS[n];
+  if (!s) return;
+  checkup.ready = true; // taps count from the moment he asks
+  checkupRow();
+  say(fresh(LUCKY.checkup[s.id]));
+  if (s.id === 'scale') {
+    const sc = document.createElement('button');
+    sc.className = 'vet-scale';
+    sc.innerHTML = '<span class="vs-num">0.0</span>';
+    sc.onclick = (e) => { e.stopPropagation(); if (checkup?.step === 0) checkupScale(sc); };
+    ui.scene.appendChild(sc);
+  }
+}
+
+function checkupScale(sc) {
+  checkup.step = 0.5; // busy
+  checkup.ready = false;
+  hop(ui.lucky, 'bigjump', 1100);
+  sfx.boing();
+  const num = sc.querySelector('.vs-num'), w = checkup.weight;
+  let v = 0;
+  const t = setInterval(() => {
+    v = Math.min(w, v + 0.1);
+    num.textContent = v.toFixed(1);
+    sfx.tick();
+    if (v >= w) { clearInterval(t); sc.classList.add('done'); sfx.ding(); checkupNext('scaleDone', 900); setTimeout(() => sc.remove(), 3200); }
+  }, 130);
+}
+
+function checkupNext(doneKey, delay = 300) {
+  setTimeout(() => {
+    if (!checkup) return;
+    const ms = say(fresh(LUCKY.checkup[doneKey]));
+    const n = Math.floor(checkup.step) + 1;
+    checkup.step = n;
+    if (n >= CHECKUP_STEPS.length) setTimeout(() => endCheckup(true), Math.max(1800, ms + 300));
+    else setTimeout(() => checkupStep(n), Math.max(1800, ms + 300));
+  }, delay);
+}
+
+ui.lucky.addEventListener('pointerdown', (e) => {
+  if (mode !== 'checkup' || !checkup) return;
+  e.stopPropagation();
+  const s = CHECKUP_STEPS[checkup.step];
+  if (!s || !s.parts || !checkup.ready) return;
+  const part = partOf(e.target), [x, y] = sceneXY(e);
+  if (!s.parts.includes(part)) { hop(ui.lucky, 'tilt', 1400); setTemp('ok', 900); return; }
+  checkup.step += 0.5; // busy until the line
+  checkup.ready = false;
+  if (s.id === 'teeth') { setTemp('laugh', 2200); fxAt(...luckyPoint(0.5, 0.6), ['✨', '🦷'], 4, 'spark'); sfx.sparkle(); checkupNext('teethDone', 400); }
+  else if (s.id === 'ears') { antics.popUp('🔦', x, y - 10, 1800, 34, 'pop-stay'); setTemp('happy', 1800); sfx.chime(); checkupNext('earsDone', 500); }
+  else { antics.popUp('🩺', x, y, 2600, 38, 'pop-stay'); [0, 230, 520, 750, 1040, 1270].forEach((d) => setTimeout(() => sfx.drum(), d)); fxAt(x, y - 20, ['💗'], 3, 'spark'); checkupNext('heartDone', 1400); }
+}, true);
+
+function endCheckup(complete) {
+  if (!checkup) return;
+  const w = checkup.weight;
+  checkup = null;
+  ui.scene.classList.remove('checking');
+  ui.scene.querySelector('.vet-scale')?.remove();
+  if (mode === 'checkup') mode = 'main';
+  buildActions();
+  if (!complete) return;
+  S.checkupAt = Date.now();
+  stat('checkups');
+  st.save(S);
+  showModal({ art: luckyPic({ face: 'hearts', wear: S.wear }), title: tr('checkupTitle'), text: tr('checkupText', { w: String(w).replace('.', S.lang === 'ru' ? ',' : '.') }),
+    buttons: [{ label: tr('hooray'), onClick: () => { sfx.happy(); setTimeout(() => say(fresh(LUCKY.checkup.done)), 300); } }] });
+  award(addH(5, 'checkup', 5));
+  careDone('checkup');
+}
+
 // ---------- taps ----------
 
 let tapCount = 0, tapTimes = [], earTimes = [], tickledAt = 0, answeredAt = 0;
@@ -2076,6 +2196,7 @@ function maybeVisitor(now) {
 // Quiet moments (no taps for a while): Lucky does real bunny things by himself - grooming, a stretch, a flop…
 let nextFidgetAt = Date.now() + 40e3;
 function maybeFidget(now) {
+  maybeCheckupBag(now);
   if (now < nextFidgetAt || mode !== 'main' || sheetOpen || modalOpen || ask || chainQ.length || !windowActive() || now - lastInput < 12e3 || now < busyUntil) return;
   nextFidgetAt = now + 35e3 + Math.random() * 35e3;
   const known = learnedTricks();
@@ -3330,6 +3451,7 @@ function enterSleep() {
   if (mode === 'scratch') endScratch();
   if (mode === 'train') endTraining();
   if (mode === 'show') endShow();
+  if (mode === 'checkup') endCheckup(false);
   cancelAsk();
   silence();
   ui.scene.querySelectorAll('.surprise, .visitor, .frog').forEach((x) => x.remove());
@@ -3656,7 +3778,7 @@ function loop() {
     S.session.activeMs += dt;
     S.playedMs[T0.date] = (S.playedMs[T0.date] || 0) + dt;
     const limit = S.settings.sessionMin * 60e3;
-    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'scratch' || mode === 'train' || mode === 'show' || mode === 'edit')) {
+    if (!turbo() && (mode === 'main' || mode === 'wash' || mode === 'brush' || mode === 'scratch' || mode === 'train' || mode === 'show' || mode === 'checkup' || mode === 'edit')) {
       if (!S.session.warned && S.session.activeMs >= limit - 60e3 && sleepSoon(S.session.activeMs >= limit + 30e3)) { S.session.warned = true; S.session.warnedAt = now; }
       const dayLimit = S.settings.dailyMax * 60e3, played = S.playedMs[T0.date] || 0; // the day's limit: the same minute's notice
       if (dayLimit && !T0.dayWarned && played >= dayLimit - 60e3 && sleepSoon(played >= dayLimit + 30e3)) { T0.dayWarned = true; T0.dayWarnedAt = now; }
@@ -3933,7 +4055,7 @@ if ('serviceWorker' in navigator) {
 
 if (new URLSearchParams(location.search).has('debug')) window.game = { S: () => S, st, loop, save: () => st.save(S), visitorNow: () => { nextVisitorAt = 0; }, askById: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); }, mission: (id) => startMission(MISSIONS.find((m) => m.id === id)), sound: soundStatus, laugh: (name) => antics.laughAt(name), idiom: (id) => talk(idiomSteps(IDIOM_BY_ID[id]), true), twister: () => taliTwister(), visitorEnd: (kind) => antics.visitor(kind, 120, 220), fidget: () => antics.fidget(), chat: (i) => talk(acted(CHATS[i]), true), prank: (i) => prank(PRANKS[i]), event: (spec) => { S.eventPreview = spec || null; updateEvent(); return EV && `${EV.id}:${EV.stage}`; },
   talk: (steps, keep) => talk(steps, keep), modal: (title) => showModal({ title }), toast: (html) => toast(html), frog: () => showFrog(true), dog: () => { S.dog.forceUntil = Date.now() + DOG_STAY; loop(); },
-  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), spot: () => spotOf(), trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
+  game: (id) => startGame(GAMES.find((g) => g.id === id)), together: (id) => startTogether(TOGETHER.find((g) => g.id === id)), taliMoment: () => { nextMomentAt = 0; taliMoment(Date.now()); }, taliLeave: () => dogLeave(), wish: () => wishOf(), spot: () => spotOf(), checkup: () => startCheckup(), checkupState: () => checkup && { step: checkup.step, w: checkup.weight, ready: !!checkup.ready }, trainWin: () => !!(train && train.win && !train.clicked && Date.now() >= train.win.from && Date.now() <= train.win.to), ask: (id) => { lastInput = Date.now(); busyUntil = 0; startAsk(ASKS.find((x) => x.id === id)); },
   startHoliday: (g) => startGame(g), trick: (k) => tricks.force(k), tricks: () => tricks.names(), touch: (g, part, dir) => tricks.touch(g, part, { dir }),
   now: () => ({ mode, chain: chainQ.length, keep: chainKeep, held: !!chainHeld, busy: antics.busy(), modalOpen, sheetOpen, ask: !!ask, modalQ: modalQ.length }) };
 

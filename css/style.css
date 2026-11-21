@@ -1825,4 +1825,20 @@ body.ev-newyear.ev-s3 .btn.pink, body.ev-newyear.ev-s3 .chip.on, body.ev-newyear
 .act.clicker .a-name { font-size: 13px; color: #8A5A00; }
 .act.clicker .dots { letter-spacing: 1px; margin-left: 4px; color: var(--pink-d); }
 .act.clicker:active { transform: scale(.96); }
+/* the weekly check-up */
+.checkup-bag { position: absolute; right: 6%; bottom: 30%; z-index: 6; font-size: 44px; border: 0; background: none; padding: 0; filter: drop-shadow(0 4px 6px #0003);
+  animation: bagIn .6s cubic-bezier(.3, 1.6, .5, 1), bagWiggle 2.4s ease-in-out .6s infinite; }
+.checkup-bag::after { content: "➕"; position: absolute; left: 50%; top: 52%; transform: translate(-50%, -50%); font-size: 14px; }
+@keyframes bagIn { from { transform: scale(0) translateY(40px); } }
+@keyframes bagWiggle { 0%, 80%, 100% { transform: none; } 85% { transform: rotate(-10deg); } 92% { transform: rotate(8deg); } }
+.vet-scale { position: absolute; left: 50%; bottom: 3%; z-index: 6; transform: translateX(-50%); width: 120px; height: 34px; border: 0; padding: 0; border-radius: 12px;
+  background: linear-gradient(#fff, #E9E4F0); box-shadow: 0 4px 10px #0002, inset 0 -3px 0 #D6CEE0; animation: tgPulse2 1.2s ease-in-out infinite; }
+.vet-scale.done { animation: none; }
+.scene.has-dog .vet-scale { left: 36%; }
+.vs-num { display: inline-block; min-width: 48px; padding: 2px 6px; border-radius: 6px; background: #2A2F45; color: #7CFFB2; font: 800 16px/1.2 ui-monospace, monospace; }
+.vs-num::after { content: " kg"; font-size: 11px; }
+@keyframes tgPulse2 { 50% { transform: translateX(-50%) scale(1.06); } }
+.scene.checking .lucky { cursor: pointer; filter: drop-shadow(0 0 12px #A8E6FF); }
+.act.checkup-act { background: linear-gradient(180deg, #DDF3FF, #A8E6FF); }
+.act.checkup-act .a-name { color: #2A6F9A; }
 

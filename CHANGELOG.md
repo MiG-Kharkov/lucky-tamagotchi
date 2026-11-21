@@ -3,6 +3,17 @@
 All notable changes to Lucky. The format follows [Keep a Changelog](https://keepachangelog.com),
 and versions follow [semantic versioning](https://semver.org).
 
+## [1.17.0] – 2026-11-21
+
+### Added
+- **A weekly check-up.** Once a week a doctor's bag 💼 turns up in the scene. Four small steps, each with a real fact:
+  the scales (about two bags of sugar), his teeth (a tap on his nose: bunny teeth never stop growing), his ears (lop
+  ears need checking), his heart (about two hundred beats a minute). Never an illness. A health card at the end, and a
+  Little vet badge after four.
+
+### Fixed
+- The 🐰 button said "Caring for real Lucky" instead of "Lucky" (its word was taken by the real-pet card).
+
 ## [1.16.0] – 2026-11-21
 
 ### Added

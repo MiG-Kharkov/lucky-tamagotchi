@@ -104,5 +104,6 @@ export const BADGES = [
   ['twisters10', '👅', ['Скороговорщица', 'Twister champion'], 'twisters', 10],
   ['tricks1', '🎯', ['Юный тренер', 'Young trainer'], 'tricks', 1],
   ['tricks6', '🎪', ['Цирк Лаки', "Lucky's circus"], 'tricks', 6],
+  ['vet4', '🩺', ['Маленький доктор', 'Little vet'], 'checkups', 4],
   ['idioms10', '🎭', ['Знаток выражений', 'Saying explorer'], 'idioms', 10],
 ];
