@@ -39,5 +39,8 @@ jobs:
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
+      # the uploaded site can take a moment to be listed: deploying at once sometimes finds no artifact
+      - name: Wait for the artifact
+        run: sleep 20
       - id: deployment
         uses: actions/deploy-pages@v5
